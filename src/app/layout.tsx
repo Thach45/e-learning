@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import {manrope} from "@/utils/index";
 import "./globals.css";
-import Sidebar from "@/components/layout/Sidebar";
+
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -14,15 +15,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${manrope.className} ${manrope.className} antialiased`}>
-        <div className="wrapper flex">
-          <Sidebar />
-          <main className="flex-grow p-4">
-            {children}
-          </main>
-        </div>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body className={`${manrope.className} ${manrope.className} antialiased h-screen`}>
+         {children}
+        </body>
+      </html>
+
+    </ClerkProvider>
   );
 }
