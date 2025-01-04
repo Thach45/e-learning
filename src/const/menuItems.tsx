@@ -5,6 +5,10 @@ import {
     Home,
     LayoutDashboard,
     MessageSquare,
+    ClipboardList,
+    Users,
+    ShoppingCart,
+    MessageCircle,
   } from 'lucide-react';
 
 const menuItem:TLinkItem[] = [
@@ -20,7 +24,7 @@ const menuItem:TLinkItem[] = [
     },
     {
         link: "/assignments",
-        icon: <LayoutDashboard className="h-5 w-5" />,
+        icon: <ClipboardList className="h-5 w-5" />,
         title: "Assignments"
     },
     {
@@ -32,8 +36,27 @@ const menuItem:TLinkItem[] = [
         link: "/messages",
         icon: <MessageSquare className="h-5 w-5" />,
         title: "Messages"
-    }
-
+    },
+    {
+        link: "/manage/courses",
+        icon: <LayoutDashboard className="h-5 w-5" />,
+        title: "Manage Courses"
+    },
+    {
+        link: "/manage/students",
+        icon: <Users className="h-5 w-5" />,
+        title: "Manage Students"
+    },
+    {
+        link: "/manage/orders",
+        icon: <ShoppingCart className="h-5 w-5" />,
+        title: "Manage Orders"
+    },
+    {
+        link: "/manage/comment",
+        icon: <MessageCircle className="h-5 w-5" />,
+        title: "Manage Comments"
+    },
 ]
 
 export default menuItem;

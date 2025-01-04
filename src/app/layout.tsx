@@ -3,6 +3,7 @@ import {manrope} from "@/utils/index";
 import "./globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
+import { ThemeProvider } from "@/components/mode/theme-provider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,8 +18,15 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`${manrope.className} ${manrope.className} antialiased h-screen`}>
-         {children}
+        <body className={`${manrope.className} ${manrope.className} antialiased h-screen  dark:bg-black`}>
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
         </body>
       </html>
 

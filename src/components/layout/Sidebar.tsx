@@ -1,17 +1,18 @@
+"use client";
 import React from 'react'
-import {
- 
-  Settings,
-  User
-} from 'lucide-react';
+
 import Items from '@/components/layout/renderItems';
 import menuItem from '@/const/menuItems';
+import { UserButton, useUser } from '@clerk/nextjs';
+import { ModeToggle } from '@/components/mode/ToggleMode';
 
 
 
 const Sidebar = () => {
+  const { user } = useUser();
+  
   return (
-    <div className="flex h-screen w-64 flex-col bg-white border-r">
+    <div className="flex h-screen w-64 flex-col bg-white border-r  dark:bg-black dark:text-white">
       {/* Logo Section */}
       <div className="flex h-16 items-center px-6 border-b">
         <h1 className="text-xl font-bold">LearnHub</h1>
@@ -20,11 +21,11 @@ const Sidebar = () => {
       {/* User Profile Section */}
       <div className="flex items-center gap-4 p-4 border-b">
         <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-          <User className="h-6 w-6 text-blue-600" />
+        <UserButton/>
         </div>
-        <div>
-          <p className="font-medium">John Doe</p>
-          <p className="text-sm text-gray-500">Student</p>
+        <div className="flex justify-between">
+          <p className="font-medium">{user?.username}</p>
+          
         </div>
       </div>
 
@@ -40,10 +41,9 @@ const Sidebar = () => {
 
       {/* Bottom Section */}
       <div className="border-t p-4">
-        <a href="/settings" className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
-          <Settings className="h-5 w-5" />
-          <span>Settings</span>
-        </a>s
+        <div  className="flex items-center gap-3 rounded-lg px-3 py-2">
+          <ModeToggle />
+        </div>
       </div>
     </div>
   );
