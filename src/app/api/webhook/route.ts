@@ -23,9 +23,11 @@ if (!webhookSecret) {
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
     }) as WebhookEvent;
-  } catch (e) {
-    return new Response("Bad Request", { status: 400 });
   }
+    catch (e) {
+        console.error("Error verifying webhook:", e); // Ghi lại lỗi
+        return new Response("Unauthorized", { status: 401 });
+    }
 
   const eventType = msg.type;
   if (eventType !== "user.created") {
