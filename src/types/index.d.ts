@@ -4,5 +4,12 @@ type TLinkItem = {
     title: string
 }
 
-
+type TCreateUser = {
+    clerkId: string,
+    username: string,
+    name?: string,
+    email: string,
+    avatar?: string,
+    
+}
 export const ILinkItem

@@ -38,22 +38,22 @@ const menuItem:TLinkItem[] = [
         title: "Messages"
     },
     {
-        link: "/manage/courses",
+        link: "admin/manage/courses",
         icon: <LayoutDashboard className="h-5 w-5" />,
         title: "Manage Courses"
     },
     {
-        link: "/manage/students",
+        link: "admin/manage/students",
         icon: <Users className="h-5 w-5" />,
         title: "Manage Students"
     },
     {
-        link: "/manage/orders",
+        link: "admin/manage/orders",
         icon: <ShoppingCart className="h-5 w-5" />,
         title: "Manage Orders"
     },
     {
-        link: "/manage/comment",
+        link: "admin/manage/comment",
         icon: <MessageCircle className="h-5 w-5" />,
         title: "Manage Comments"
     },

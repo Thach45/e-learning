@@ -1,9 +1,19 @@
-import React from 'react'
+import Categories from "@/components/layout/Categories";
+import FeaturedCourses from "@/components/layout/FeaturedCourses";
+import Header from "@/components/layout/Header";
+import Hero from "@/components/layout/Hero";
 
-const page = () => {
+
+export default function Home() {
   return (
-    <div>pageh</div>
+    <div className="min-h-screen bg-gray-100">
+      <Header />
+      <main>
+        <Hero />
+        <Categories />
+        <FeaturedCourses />
+      </main>
+    </div>
   )
 }
 
-export default page

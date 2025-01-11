@@ -24,7 +24,7 @@ const Sidebar = () => {
         <UserButton/>
         </div>
         <div className="flex justify-between">
-          <p className="font-medium">{user?.username}</p>
+          <p className="font-medium">{user ? user.username : "User"}</p>
           
         </div>
       </div>
