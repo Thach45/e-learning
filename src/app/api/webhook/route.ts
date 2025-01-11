@@ -1,4 +1,6 @@
+import { createUser } from "@/lib/actions/user.actions";
 import { WebhookEvent } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 import { Webhook } from "svix";
 
 const webhookSecret: string = process.env.WEBHOOK_SECRET || "";
@@ -31,7 +33,26 @@ if (!webhookSecret) {
 
   const eventType = msg.type;
   if (eventType !== "user.created") {
-    
+    const {
+      id,
+      username,
+      email_address,
+      image_url
+        } = msg.data;
+    const user = await createUser(
+        {
+            clerkId: id!,
+            username: username!,
+            email: email_address[0].email_address,
+            avatar: image_url,
+            name: username!
+            
+        }
+    );
+    return NextResponse.json({
+      message: "Ok",
+      user,
+    });
   }
 
   // Rest
