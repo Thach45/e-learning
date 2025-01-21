@@ -4,11 +4,15 @@ import { Search, ShoppingCart, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Link from 'next/link'
-import { useUser } from '@clerk/nextjs';
+import { useAuth, useUser } from '@clerk/nextjs';
 import { ModeToggle } from '@/components/mode/ToggleMode';
 
 export default function Header() {
-    const user = useUser();
+    const {user} = useUser();
+    const {signOut} = useAuth()
+    const handleLogOut = async () => {
+        await signOut();
+    }
   return (
     <header className="bg-white shadow-sm">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -31,7 +35,7 @@ export default function Header() {
             </>
                 
           ) : (
-                <Button variant="outline" className="text-sm">Log out</Button>
+                <Button variant="outline" className="text-sm" onClick={handleLogOut}>Log out</Button>
           )}
          
 

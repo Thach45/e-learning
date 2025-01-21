@@ -1,7 +1,8 @@
-
-import User from "@/database/user.model";
+"use server";
+import User, { TUser } from "@/database/user.model";
 import { connectToData } from "@/lib/mongoose";
-import { TCreateUser } from "@/types";
+import { TCreateUser, TUserInfo } from "@/types";
+
 
 export const createUser = async (user: TCreateUser) => {
     try {
@@ -14,3 +15,27 @@ export const createUser = async (user: TCreateUser) => {
     }
 
 };
+
+export const getUser= async (userId : string): Promise<TUser | null | undefined> => {
+    try {
+        connectToData();
+        
+        const info = await User.findOne({ clerkId: userId });
+      
+        return info;
+    } catch (error) {
+        console.log("Error getting user info", error);
+    }
+}
+
+export const getUserRole = async (role: string):Promise<TUserInfo[] |  undefined> => {
+ 
+    try {
+        connectToData();
+        const info = await User.find({ role: role }).select('_id name email role').exec();
+        return info;
+    }
+    catch (error) {
+        console.log("Error getting user role", error);
+    }
+}

@@ -1,15 +1,16 @@
 "use client";
 import React from 'react'
-
+import { TLinkItem } from '@/types/index';
 import Items from '@/components/layout/renderItems';
-import menuItem from '@/const/menuItems';
+
 import { UserButton, useUser } from '@clerk/nextjs';
 import { ModeToggle } from '@/components/mode/ToggleMode';
 
 
 
-const Sidebar = () => {
+const Sidebar: React.FC<{menuItem: TLinkItem[]}> = ({menuItem}) => {
   const { user } = useUser();
+  
   
   return (
     <div className="flex h-screen w-64 flex-col bg-white border-r  dark:bg-black dark:text-white">

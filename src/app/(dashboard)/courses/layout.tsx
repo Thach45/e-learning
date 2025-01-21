@@ -1,4 +1,5 @@
 import Sidebar from '@/components/layout/Sidebar';
+import { menuItem } from '@/const/menuItems';
 import React from 'react';
 
 
@@ -9,7 +10,7 @@ const Layout = ({
 }>) => {
   return (
     <div className="wrapper flex">
-      <Sidebar />
+      <Sidebar menuItem={menuItem} />
       <main className="flex-grow p-4">
         {children}
       </main>

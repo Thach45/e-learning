@@ -1,9 +1,11 @@
+
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import { Clock, Users, Star } from 'lucide-react'
 import Link from 'next/link'
+
 
 const courses:{
   id: number,
@@ -74,6 +76,7 @@ const courses:{
 ]
 
 export default function CoursesPage() {
+ 
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">Available Courses</h1>

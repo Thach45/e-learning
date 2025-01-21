@@ -9,7 +9,7 @@ export default function Hero() {
     const startCourse = () => {
         window.location.href = "/courses"
     }
-    const user = useUser();
+    const {user} = useUser();
 
   return (
     <section className="bg-gray-900 text-white py-20">

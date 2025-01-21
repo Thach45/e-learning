@@ -36,7 +36,11 @@ const menuItem:TLinkItem[] = [
         link: "/messages",
         icon: <MessageSquare className="h-5 w-5" />,
         title: "Messages"
-    },
+    }
+    
+]
+
+const menuItemAdmin:TLinkItem[] = [
     {
         link: "admin/manage/courses",
         icon: <LayoutDashboard className="h-5 w-5" />,
@@ -59,4 +63,4 @@ const menuItem:TLinkItem[] = [
     },
 ]
 
-export default menuItem;
+export { menuItem, menuItemAdmin }
