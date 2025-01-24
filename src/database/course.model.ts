@@ -77,11 +77,11 @@ const courseSchema = new Schema<TCourse>({
     },
     author: {
         type: Schema.Types.ObjectId,
-        ref: 'users',
+        ref: 'User'
     },
     students: [{
         type: Schema.Types.ObjectId,
-        ref: 'users',
+        ref: 'User',
     }],
     views: {
         type: Number,

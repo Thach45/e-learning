@@ -1,5 +1,5 @@
 
-import { ELessonType } from '@/types/enums';
+import { ELessonType, EVideoType } from '@/types/enums';
 import { Document, model, models, Schema } from 'mongoose';
 
 export interface TLesson extends Document {
@@ -11,7 +11,8 @@ export interface TLesson extends Document {
     lecture: Schema.Types.ObjectId;
     order: number;
     duration: number;
-    video: string;
+    videoType: EVideoType;
+    videoURL: string;
     content: string;
     note:{
         user: Schema.Types.ObjectId;
@@ -38,12 +39,12 @@ const lessonSchema = new Schema<TLesson>({
     },
     course: {
         type: Schema.Types.ObjectId,
-        ref: 'course',
+        ref: 'Course',
         required: true,
     },
     lecture: {
         type: Schema.Types.ObjectId,
-        ref: 'lecture',
+        ref: 'Lecture',
         required: true,
     },
     order: {
@@ -52,24 +53,36 @@ const lessonSchema = new Schema<TLesson>({
     },
     duration: {
         type: Number,
+        default: 0,
+        required: true,
+        
+    },
+    videoType: {
+        type: String,
+        enum: Object.values(EVideoType),
+        default: EVideoType.DRIVE,
         required: true,
     },
-    video: {
+    videoURL: {
         type: String,
-        required: true,
+        
+        default: '',
     },
     content: {
         type: String,
-        required: true,
+        
+        default: '',
+        
     },
     note: {
         user: {
             type: Schema.Types.ObjectId,
-            ref: 'user',
+            ref: 'User',
         },
         content: {
             type: String,
-            required: true,
+            default: '',
+            
         },
     },
     type: {

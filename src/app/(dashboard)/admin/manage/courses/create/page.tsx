@@ -1,5 +1,5 @@
 'use client';
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useForm, useFieldArray, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from "@/components/ui/button"
@@ -45,7 +45,7 @@ const courseSchema = z.object({
 type CourseFormData = z.infer<typeof courseSchema>
 
 export default function CreateCourseForm() {
-  const { register, control, handleSubmit, formState: { errors } } = useForm<CourseFormData>({
+  const { register, control, handleSubmit,reset, formState: { errors } } = useForm<CourseFormData>({
     resolver: zodResolver(courseSchema),
     defaultValues: {
       status: ECourseStatus.PENDING,
@@ -79,10 +79,10 @@ export default function CreateCourseForm() {
     control,
     name: "info.benefits"
   })
-  let [authors, setAuthors] = useState<TUserInfo[] | undefined>([]);
+  const [authors, setAuthors] = useState<TUserInfo[] | undefined>([]);
   useEffect(() => {
     const fetchAuthors = async () => {
-      authors = await getAuthors();
+      const authors = await getAuthors();
       setAuthors(authors);
     };
   
@@ -95,7 +95,6 @@ export default function CreateCourseForm() {
 
   
   const onSubmit = async (data: CourseFormData)  => {  
-    console.log(data)
     const dataCreate: TCreateCourse = {
         title: data.title,
         thumbnail: data.thumbnail,
@@ -118,13 +117,13 @@ export default function CreateCourseForm() {
 
     }
     const course = await createCourse(dataCreate);
-    console.log(course);
+    reset();
     
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <Card>
+      <Card className="mx-16">
         <CardHeader>
           <CardTitle>Create New Course</CardTitle>
           <CardDescription>Enter the details for your new course.</CardDescription>
@@ -184,25 +183,24 @@ export default function CreateCourseForm() {
               </SelectContent>
             </Select>
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="author">Author ID</Label>
-            <Input id="author" {...register('author')} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="level">Author ID</Label>
-            <Select onValueChange={(value) => register('author').onChange({ target: { value } })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select author" />
-              </SelectTrigger>
-              <SelectContent>
-                { authors.map((author) => (
-                  <SelectItem key={author?._id} value={author?._id}>{author.name}</SelectItem>
-                ))}
-                
-                
-              </SelectContent>
-            </Select>
+            <Label htmlFor="author">Author</Label>
+            <Controller
+              name="author"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select author" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {authors.map((author) => (
+                      <SelectItem key={author._id} value={author._id}>{author.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
 

@@ -23,12 +23,12 @@ const lectureSchema = new Schema<TLecture>({
     },
     course: {
         type: Schema.Types.ObjectId,
-        ref: 'course',
+        ref: 'Course',
         required: true,
     },
     lesson: [{
         type: Schema.Types.ObjectId,
-        ref: 'lesson',
+        ref: 'Lesson',
     }],
     created_at: {
         type: Date,
@@ -47,6 +47,6 @@ const lectureSchema = new Schema<TLecture>({
     
 })
 
-const Lecture = models.Lecture || model<TLecture>('lecture', lectureSchema);
+const Lecture = models.Lecture || model<TLecture>('Lecture', lectureSchema);
 
 export default Lecture;

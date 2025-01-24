@@ -25,4 +25,9 @@ enum ELessonType {
     TEXT = 'TEXT'
    
 }
-export { EUserStatus, EUserRole, ECourseStatus, ECourseLevel, ELessonType };
+enum EVideoType {
+    DRIVE = 'DRIVE',
+    UPLOAD = 'UPLOAD',
+
+}
+export { EUserStatus, EUserRole, ECourseStatus, ECourseLevel, ELessonType , EVideoType};

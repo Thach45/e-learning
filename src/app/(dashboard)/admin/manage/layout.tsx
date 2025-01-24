@@ -27,9 +27,9 @@ const Layout = async ({
   
 
   return (
-    <div className="wrapper flex">
+    <div className="wrapper flex relative">
       <Sidebar menuItem={menuItemAdmin} />
-      <main className="flex-grow p-4">
+      <main className="flex-grow p-4 ml-[250px]">
         {children}
       </main>
     </div>

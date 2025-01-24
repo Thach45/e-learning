@@ -43,4 +43,58 @@ type TCreateCourse = {
 
 }
 
+interface TCourseInfo {
+    _id: string
+    title: string
+    thumbnail: string
+    price: number
+    sale_price: number
+    status: ECourseStatus
+    author: {
+      _id: string
+      name: string
+    }
+    category: Schema.Types.ObjectId,
+    chapters?: Chapter[]
+    students: Schema.Types.ObjectId[]
+    views?: number
+
+  }
+
+type TCreateLecture = {
+    _id?: string,
+    title: string,
+    course: Schema.Types.ObjectId,
+    order?: number,
+    deleted: boolean
+}
+type TCreateLesson = {
+    title: string,
+    slug: string,
+    course: Schema.Types.ObjectId,
+    lecture: Schema.Types.ObjectId,
+    order: number,
+    deleted: boolean
+}
+type TLesson = {
+    _id: string,
+    title: string,
+    slug: string,
+    order: number,
+    course: Schema.Types.ObjectId,
+    lecture: Schema.Types.ObjectId,
+    
+}
+type TEditLesson = {
+    _id: string,
+    title: string,
+    slug: string,
+    order: number,
+    videoType: EVideoType,
+    videoURL: string,
+    content: string,
+    type: ELessonType,
+    deleted: boolean
+}
+
 export const ILinkItem

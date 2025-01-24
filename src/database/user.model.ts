@@ -20,13 +20,13 @@ const userSchema = new Schema<TUser>({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     avatar: { type: String },
-    courses: [{ type: Schema.Types.ObjectId, ref: 'course' }],
+    courses: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
     status: { type: String, enum: Object.values(EUserStatus), default: EUserStatus.ACTIVE },
     role: { type: String, enum: Object.values(EUserRole), default: EUserRole.USER },
     created_at: { type: Date, default: Date.now },
 })
 
-const User = models.Users || model<TUser>('Users', userSchema);
+const User = models.User || model<TUser>('User', userSchema);
 
 
 export default User;

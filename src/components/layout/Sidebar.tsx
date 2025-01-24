@@ -13,7 +13,7 @@ const Sidebar: React.FC<{menuItem: TLinkItem[]}> = ({menuItem}) => {
   
   
   return (
-    <div className="flex h-screen w-64 flex-col bg-white border-r  dark:bg-black dark:text-white">
+    <div className="flex h-screen w-64 flex-col bg-white border-r fixed dark:bg-black dark:text-white">
       {/* Logo Section */}
       <div className="flex h-16 items-center px-6 border-b">
         <h1 className="text-xl font-bold">LearnHub</h1>

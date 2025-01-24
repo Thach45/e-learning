@@ -39,3 +39,13 @@ export const getUserRole = async (role: string):Promise<TUserInfo[] |  undefined
         console.log("Error getting user role", error);
     }
 }
+
+export const getAuthor = async (authorId: string): Promise<TUserInfo | null | undefined> => {
+    try {
+        connectToData();
+        const author = await User.findOne({ _id: authorId }).select('_id name email role').exec();
+        return author;
+    } catch (error) {
+        console.log("Error getting author", error);
+    }
+}
