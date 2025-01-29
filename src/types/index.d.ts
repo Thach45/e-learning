@@ -117,7 +117,16 @@ type TShowLesson = {
 
 type TShowCourse = {
     _id: string,
+    info: {
+        requirements: string[],
+        benefits: string[]
+    },
+    author: Schema.Types.ObjectId,
+    thumbnail: string,
     title: string,
+    description: string,
+    rating: number[],
+    students: Schema.Types.ObjectId[],
     lectures: Schema.Types.ObjectId[],
 }
 

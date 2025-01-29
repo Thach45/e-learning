@@ -39,26 +39,35 @@ export const getCourses = async (): Promise<TCourseInfo[] | undefined> => {
     }
 };
 
-export const getCourseBySlug = async (slug: string): Promise<TShowCourse | null | undefined> => {
+export const getCourseBySlug = async (slug: string): Promise<TShowCourse | null> => {
     try {
         await connectToData();
 
-        const course = await Course.findOne({ slug: slug })
-            .select("_id title")
-            .populate({
-                path: "lectures",
-                select: "_id title lesson",
-                populate: {
-                    path: "lesson",
-                    select: "_id title content"
+        const course = await Course.findOne({ slug })
+            
+            .populate([
+                {
+                    path: "lectures",
+                    select: "_id title lesson",
+                    populate: {
+                        path: "lesson",
+                        
+                    }
+                },
+                {
+                    path: "students",
+                    select: "_id name"
+                },
+                {
+                    path: "author",
+                    select: "_id name email "
                 }
-            })
+            ])
             .lean<TShowCourse>();
-        
-        return course;
+
+        return course || null;
+    } catch (error) {
+        console.error("Error fetching course by slug:", error);
+        return null;
     }
-    catch (error) {
-        console.log("Error fetching course by slug:", error);
-        return undefined;
-    }
-}
+};

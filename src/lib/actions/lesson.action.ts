@@ -3,7 +3,7 @@
 import Lecture from "@/database/lecture.model";
 import Lesson from "@/database/lesson.model";
 import { connectToData } from "@/lib/mongoose";
-import { TCreateLesson, TEditLesson, TLesson } from "@/types";
+import { TCreateLesson, TEditLesson, TLesson, TShowLesson } from "@/types";
 
 export const createLesson = async (lesson: TCreateLesson) => {
     try {
@@ -61,6 +61,19 @@ export const updateLesson = async (id: string, lesson: TEditLesson): Promise<voi
     try {
         await connectToData();
         await Lesson.findByIdAndUpdate(id, lesson).exec();
+    }
+    catch (error) {
+        console.log("lỗi nè", error);
+    }
+}
+
+
+export const getLessonBySlug = async (slug: string): Promise<TShowLesson | null| undefined> => {
+    try {
+        await connectToData();
+        const lesson = await Lesson.findOne
+            ({ slug }).lean<TShowLesson>();
+        return lesson;
     }
     catch (error) {
         console.log("lỗi nè", error);
