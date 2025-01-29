@@ -1,5 +1,6 @@
 "use server"
 
+import Course from "@/database/course.model";
 import Lecture from "@/database/lecture.model";
 import { connectToData } from "@/lib/mongoose";
 import { TCreateLecture } from "@/types";
@@ -10,7 +11,8 @@ export const createLecture = async (lecture: TCreateLecture): Promise<void> => {
         const maxOrderLecture = await Lecture.findOne({ course: lecture.course }).sort('-order').exec();
         const newOrder = maxOrderLecture ? maxOrderLecture.order + 1 : 1;
         const newData = { ...lecture, order: newOrder };
-        await Lecture.create(newData);
+        const chap = await Lecture.create(newData);
+        await Course.findByIdAndUpdate(lecture.course, { $push: { lectures: chap._id } }).exec();
         
     }
     catch (error) {

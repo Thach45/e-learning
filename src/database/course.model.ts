@@ -121,7 +121,7 @@ const courseSchema = new Schema<TCourse>({
     },
     lectures: [{
         type: Schema.Types.ObjectId,
-        ref: 'lecture',
+        ref: 'Lecture',
     }],
     deleted: {
         type: Boolean,

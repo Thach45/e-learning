@@ -1,5 +1,6 @@
 "use server"
 
+import Lecture from "@/database/lecture.model";
 import Lesson from "@/database/lesson.model";
 import { connectToData } from "@/lib/mongoose";
 import { TCreateLesson, TEditLesson, TLesson } from "@/types";
@@ -15,8 +16,10 @@ export const createLesson = async (lesson: TCreateLesson) => {
             // content: lesson.content || '',
             order: newOrder };
        
-        console.log("newData", newData);
-        await Lesson.create(newData);
+        
+        const les = await Lesson.create(newData);
+        console.log("les", lesson);
+        await Lecture.findByIdAndUpdate(lesson.lecture, { $push: { lesson: les._id } }).exec();
         
     }
     catch (error) {
