@@ -16,8 +16,8 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<TCourseInfo[] | undefined>([])
   useEffect(() => {
     const fetchCourses = async () => {
-      const response = await getCourses()
-      setCourses(response)
+      const course = await getCourses()
+      setCourses(course)
     }
     fetchCourses()
   }, [])
@@ -49,11 +49,13 @@ export default function CoursesPage() {
                   <Clock className="w-4 h-4 text-gray-400" />
                   <span className="text-sm text-gray-600">200</span>
                   <Users className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{course.students} students</span>
+                  <span className="text-sm text-gray-600">{course.students.length} students</span>
                 </div>
                 <div className="flex items-center mb-2">
                   <Star className="w-4 h-4 text-yellow-400" />
-                  <span className="text-sm text-gray-600 ml-1">{course.rating}</span>
+                  <span className="text-sm text-gray-600 ml-1">{course.rating && course.rating.length > 0
+                        ? (course.rating.reduce((total, value) => total + value, 0) / course.rating.length).toFixed(1)
+                        : "Chưa có đánh giá"}</span>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {course.technology.map((tag) => (

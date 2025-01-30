@@ -86,10 +86,6 @@ export default function CourseManagement() {
   const handleEditLesson = (lesson: TLesson) => {
     const editLesson: TEditLesson = {
       ...lesson,
-      videoType: "",
-      videoURL: "",
-      content: "",
-      type: "",
       deleted: false
     }
     setLessonToEdit(editLesson)
@@ -105,8 +101,6 @@ export default function CourseManagement() {
   const onSubmit = async (data: TCreateLesson) => {
     data.course = new mongoose.Types.ObjectId(selectedCourse)
     data.lecture = new mongoose.Types.ObjectId(selectedChapter)
-    console.log("course", selectedCourse)
-    console.log("chapter", selectedChapter)
     await createLesson(data)
     reset() // Reset form sau khi submit thành công
   }

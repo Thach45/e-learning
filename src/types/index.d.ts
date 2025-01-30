@@ -60,7 +60,7 @@ interface TCourseInfo {
     chapters?: Chapter[]
     students: Schema.Types.ObjectId[]
     views?: number
-    rating?: number
+    rating?: number[]
     technology: string[]
     level: ECourseLevel
 
@@ -85,6 +85,11 @@ type TLesson = {
     _id: string,
     title: string,
     slug: string,
+    videoType: EVideoType,
+    videoURL: string,
+    content: string,
+    type: ELessonType,
+    
     order: number,
     course: Schema.Types.ObjectId,
     lecture: Schema.Types.ObjectId,
