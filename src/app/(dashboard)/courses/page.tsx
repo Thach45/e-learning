@@ -44,7 +44,7 @@ export default function CoursesPage() {
                 <Link href="#">
                   <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
                 </Link>
-                <p className="text-sm text-gray-600 mb-2">Instructor: {course.author.name}</p>
+                <p className="text-sm text-gray-600 mb-2">Instructor: {course.author}</p>
                 <div className="flex items-center space-x-2 mb-2">
                   <Clock className="w-4 h-4 text-gray-400" />
                   <span className="text-sm text-gray-600">200</span>

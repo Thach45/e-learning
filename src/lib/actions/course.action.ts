@@ -1,5 +1,6 @@
 "use server";
 import Course, { TCourse } from "@/database/course.model";
+import User from "@/database/user.model";
 import { connectToData } from "@/lib/mongoose";
 import { TCourseInfo, TCreateCourse, TShowCourse } from "@/types";
 
@@ -20,24 +21,15 @@ export const getCourses = async (): Promise<TCourseInfo[] | undefined> => {
     try {
         await connectToData();
 
-        const courses = await Course.find()
-            .populate([
-                {
-                    path: "lectures",
-                    populate: {
-                        path: "lesson",     
-                    }
-                },
-                {
-                    path: "students",
-                    select: "_id name"
-                },
-                {
-                    path: "author",
-                    select: "_id name email "
-                }
-            ])
-            .lean<TCourseInfo[]>();
+        const courses = await Course.find().lean<TCourseInfo[]>();
+
+        // Sử dụng Promise.all để xử lý các truy vấn không đồng bộ
+        await Promise.all(courses.map(async (course) => {
+            const author = await User.findById(course.author);
+            if (author) {
+                course.author = author.name;
+            }
+        }));
 
         const serializedCourses = courses.map(course => ({
             ...course,
@@ -45,7 +37,7 @@ export const getCourses = async (): Promise<TCourseInfo[] | undefined> => {
             category: course.category.toString(),
             students: course.students.map(student => student.toString()),
         }));
-       
+
         return serializedCourses;
     } catch (error) {
         console.log("Error fetching courses:", error);

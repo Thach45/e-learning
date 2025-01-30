@@ -127,7 +127,7 @@ export default function CourseManagement() {
           {courses?.map((course) => (
             <TableRow key={course._id}>
               <TableCell>{course.title}</TableCell>
-              <TableCell>{course.author?.name}</TableCell>
+              <TableCell>{course.author}</TableCell>
               <TableCell>${course.price}</TableCell>
               <TableCell>${course.sale_price}</TableCell>
               <TableCell>{course.status}</TableCell>

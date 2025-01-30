@@ -52,10 +52,7 @@ interface TCourseInfo {
     price: number
     sale_price: number
     status: ECourseStatus
-    author: {
-      _id: string
-      name: string
-    }
+    author: string,
     category: Schema.Types.ObjectId,
     chapters?: Chapter[]
     students: Schema.Types.ObjectId[]
@@ -89,7 +86,7 @@ type TLesson = {
     videoURL: string,
     content: string,
     type: ELessonType,
-    
+
     order: number,
     course: Schema.Types.ObjectId,
     lecture: Schema.Types.ObjectId,
