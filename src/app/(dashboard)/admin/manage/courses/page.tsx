@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Plus, Edit, Trash2 } from "lucide-react"
 import { getCourses } from "@/lib/actions/course.action"
@@ -83,8 +83,16 @@ export default function CourseManagement() {
     setRefreshTrigger(prev => prev + 1) // Trigger re-fetch
   }
 
-  const handleEditLesson = (lesson: TEditLesson) => {
-    setLessonToEdit(lesson);
+  const handleEditLesson = (lesson: TLesson) => {
+    const editLesson: TEditLesson = {
+      ...lesson,
+      videoType: "",
+      videoURL: "",
+      content: "",
+      type: "",
+      deleted: false
+    };
+    setLessonToEdit(editLesson);
     setEditLesson(true);
   };
 
@@ -168,7 +176,7 @@ export default function CourseManagement() {
                                 <Button variant="outline" size="icon" className="h-8 w-8">
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button variant="destructive" size="icon" className="h-8 w-8" onClick={()=> handleDeleteLecture(chapter._id)}>
+                                <Button variant="destructive" size="icon" className="h-8 w-8" onClick={()=> handleDeleteLecture(chapter._id ?? '')}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
@@ -182,7 +190,7 @@ export default function CourseManagement() {
                                     className="flex-grow"
                                   />
                                   {errors.title && (
-                                    <p className="text-red-500 text-sm">{errors.title.message }</p>
+                                    <p className="text-red-500 text-sm">{String(errors.title.message)}</p>
                                   )}
 
                                   {/* Input: Lesson Slug */}
@@ -192,7 +200,7 @@ export default function CourseManagement() {
                                     className="flex-grow"
                                   />
                                   {errors.slug && (
-                                    <p className="text-red-500 text-sm">{errors.slug.message}</p>
+                                    <p className="text-red-500 text-sm">{String(errors.slug.message)}</p>
                                   )}
 
                                  

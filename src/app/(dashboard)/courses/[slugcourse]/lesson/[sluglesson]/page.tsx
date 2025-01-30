@@ -3,25 +3,28 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import { PlayCircle, Loader2 } from "lucide-react"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { PlayCircle, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { getCourseBySlug } from "@/lib/actions/course.action"
 import { getLessonBySlug } from "@/lib/actions/lesson.action"
 import type { TShowCourse, TShowLesson } from "@/types"
-import { Skeleton } from "@/components/ui/skeleton"
 
 export default function CourseVideoPlayer() {
   const slug = useParams()
-  const [courseInfo, setCourseInfo] = useState<TShowCourse | null | undefined>(null)
-  const [lessons, setLessons] = useState<TShowLesson | undefined | null>(undefined)
+  const [courseInfo, setCourseInfo] = useState<TShowCourse | null>(null)
+  const [lesson, setLesson] = useState<TShowLesson | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [course, lesson] = await Promise.all([getCourseBySlug(slug.slugcourse), getLessonBySlug(slug.sluglesson)])
+        const [course, lessonData] = await Promise.all([
+          getCourseBySlug(slug.slugcourse as string),
+          getLessonBySlug(slug.sluglesson as string), ,
+        ])
         setCourseInfo(course)
-        setLessons(lesson)
+        setLesson(lessonData || null)
       } catch (error) {
         console.error("Error fetching data:", error)
       } finally {
@@ -32,93 +35,122 @@ export default function CourseVideoPlayer() {
     fetchData()
   }, [slug.slugcourse, slug.sluglesson])
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (!courseInfo || !lesson) {
+    return <div className="flex items-center justify-center h-screen">Không tìm thấy khóa học hoặc bài học</div>
+  }
+
+  const currentLectureIndex = courseInfo.lectures.findIndex((lecture) =>
+    lecture.lesson.some((l: TShowLesson) => l.slug === lesson.slug),
+  )
+  const currentLecture = courseInfo.lectures[currentLectureIndex]
+  const currentLessonIndex = currentLecture.lesson.findIndex((l: TShowLesson) => l.slug === lesson.slug)
+  const nextLesson =
+    currentLecture.lesson[currentLessonIndex + 1] || courseInfo.lectures[currentLectureIndex + 1]?.lesson[0]
+  const prevLesson =
+    currentLecture.lesson[currentLessonIndex - 1] || courseInfo.lectures[currentLectureIndex - 1]?.lesson.slice(-1)[0]
+
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="grid lg:grid-cols-[2fr,1fr] gap-8">
-          {/* Video Section */}
-          <div className="space-y-6">
-            <div className="rounded-xl overflow-hidden bg-white/5 backdrop-blur">
-              <h2 className="text-xl font-semibold p-4 border-b border-white/10">
-                {isLoading ? <Skeleton className="h-7 w-48 bg-white/10" /> : "Video bài học"}
-              </h2>
-              <div className="p-4">
-                <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                  {isLoading ? (
-                    <div className="w-full h-full flex items-center justify-center bg-white/5">
-                      <Loader2 className="w-8 h-8 animate-spin text-white/50" />
-                    </div>
-                  ) : (
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      src={`https://drive.google.com/file/d/${lessons?.videoURL}/preview`}
-                      title="Course Video"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="w-full h-full"
-                    />
-                  )}
-                </div>
-                <div className="mt-4">
-                  {isLoading ? (
-                    <Skeleton className="h-20 w-full bg-white/10" />
-                  ) : (
-                    <p className="text-gray-400 text-sm leading-relaxed">{courseInfo?.lectures[0].lesson[0].content}</p>
-                  )}
-                </div>
-              </div>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+       
+
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content */}
+          <div className="lg:w-2/3">
+            {/* Video Player */}
+            <div className="aspect-video bg-black mb-6">
+              {lesson.videoType === "DRIVE" ? (
+                <iframe
+                  src={`https://drive.google.com/file/d/${lesson.videoURL}/preview`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+
+              ) : (
+                <iframe
+                src={`https://www.youtube.com/embed/${lesson.videoURL}?rel=0`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+              )}
+
             </div>
+
+            {/* Video Description */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-semibold mb-2">{lesson.title}</h2>
+              <p className="text-muted-foreground">{lesson.content || "Không có mô tả cho video này."}</p>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between mb-8">
+              {prevLesson ? (
+                <Button variant="outline" asChild>
+                  <Link href={`/courses/${slug.slugcourse}/lesson/${prevLesson.slug}`}>
+                    <ChevronLeft className="w-4 h-4 mr-2" />
+                    Bài trước
+                  </Link>
+                </Button>
+              ) : (
+                <div></div>
+              )}
+              {nextLesson && (
+                <Button asChild>
+                  <Link href={`/courses/${slug.slugcourse}/lesson/${nextLesson.slug}`}>
+                    Bài tiếp theo
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+              )}
+            </div>
+
+            {/* Lesson Content */}
+            <div className="prose max-w-none">{lesson.content}</div>
           </div>
 
-          {/* Course Content */}
-          <div className="rounded-xl bg-white/5 backdrop-blur overflow-hidden">
-            <h2 className="text-lg font-semibold p-4 border-b border-white/10">Nội dung khóa học</h2>
-            <div className="p-4">
-              {isLoading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-12 w-full bg-white/10" />
-                  ))}
-                </div>
-              ) : (
-                <Accordion type="single" collapsible className="w-full space-y-4">
-                  {courseInfo?.lectures.map((lecture) => (
-                    <AccordionItem
-                      key={lecture._id}
-                      value={lecture._id}
-                      className="border border-white/10 rounded-lg overflow-hidden"
-                    >
-                      <AccordionTrigger className="px-4 py-3 hover:bg-white/5 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium">{lecture.title}</span>
-                          <span className="text-xs text-white/60">{lecture.lesson.length} bài học</span>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="border-t border-white/10">
-                        <div className="divide-y divide-white/10">
-                          {lecture.lesson.map((lesson) => (
-                            <Link
-                              key={lesson._id}
-                              href={`/courses/${slug.slugcourse}/lesson/${lesson.slug}`}
-                              className={`flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors ${
-                                lessons?.slug === lesson.slug ? "bg-white/10" : ""
-                              }`}
-                            >
-                              <PlayCircle
-                                className={`w-5 h-5 flex-shrink-0 ${
-                                  lessons?.slug === lesson.slug ? "text-white" : "text-white/60"
-                                }`}
-                              />
-                              <span className="text-sm font-medium">{lesson.title}</span>
-                            </Link>
-                          ))}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              )}
+          {/* Sidebar - List of Lessons */}
+          <div className="lg:w-1/3">
+            <div className="bg-muted rounded-lg p-6 sticky top-6">
+              <h3 className="text-xl font-semibold mb-4">Danh sách bài học</h3>
+              <ScrollArea className="h-[calc(100vh-200px)]">
+                {courseInfo.lectures.map((lecture) => (
+                  <div key={lecture._id} className="mb-4">
+                    <h4 className="font-medium text-sm text-muted-foreground mb-2">
+                      {lecture.title}
+                    </h4>
+                    <ul className="space-y-1">
+                      {lecture.lesson.map((lessonItem: TShowLesson) => (
+                        <li key={lessonItem._id}>
+                          <Link
+                            href={`/courses/${slug.slugcourse}/lesson/${lessonItem.slug}`}
+                            className={`
+                              flex items-center p-2 rounded text-sm
+                              ${
+                                lesson.slug === lessonItem.slug
+                                  ? "bg-primary text-primary-foreground"
+                                  : "hover:bg-muted-foreground/10"
+                              }
+                            `}
+                          >
+                            <PlayCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                            <span className="line-clamp-2">{lessonItem.title}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </ScrollArea>
             </div>
           </div>
         </div>

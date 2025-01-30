@@ -9,9 +9,8 @@ import {
   CheckCircle2,
   ArrowRight,
   PlayCircle,
-  Star,
   Trophy,
-  ChevronDown,
+ 
   User,
   BookOpen,
 } from "lucide-react"
@@ -20,7 +19,8 @@ import { Card } from "@/components/ui/card"
 import { getCourseBySlug } from "@/lib/actions/course.action"
 import { useParams } from "next/navigation"
 import { TShowCourse } from "@/types"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { ListLesson } from "@/components/layout/client/ListLesson"
+
 
 
 export default function InfoCourse() {
@@ -31,7 +31,7 @@ export default function InfoCourse() {
 
   useEffect(() => {
     const fetchData= async ()=>{
-        const course = await getCourseBySlug(slugCourse.slugcourse)
+        const course = await getCourseBySlug(slugCourse.slugcourse as string)
         setCourseInfo(course)
          
     }
@@ -82,7 +82,7 @@ export default function InfoCourse() {
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold">{
-                        courseInfo?.lectures.length > 0
+                        (courseInfo?.lectures?.length ?? 0) > 0
                         ? courseInfo?.lectures.reduce((total, value) => total + value.lesson.length, 0)
                         : "Chưa có bài học"
                     }</div>
@@ -92,7 +92,7 @@ export default function InfoCourse() {
             </div>
             <div className="relative">
               <Image
-                src={courseInfo?.thumbnail }
+                src={courseInfo?.thumbnail ?? ""}
                 alt="Course Preview"
                 width={600}
                 height={400}
@@ -163,35 +163,13 @@ export default function InfoCourse() {
       </div>
 
       {/* Course Curriculum Section */}
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold mb-8 text-center">Nội dung khóa học</h2>
-        <div className="space-y-4">
-            <Accordion type="single" collapsible className="w-full">
-                {courseInfo?.lectures.map((lecture) => (
-                    <AccordionItem key={lecture._id} value={lecture._id}>
-                        <AccordionTrigger>
-                            <div className="flex justify-between items-center cursor-pointer">
-                                <h3 className="text-xl font-semibold">
-                                    {lecture.title}
-                                </h3>
-                                
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent>
-                            <div className="grid md:grid-cols-2 gap-4">
-                                {lecture.lesson.map((lesson) => (
-                                    <div key={lesson._id} className="flex items-center gap-4">
-                                        <PlayCircle className="w-6 h-6 text-black" />
-                                        <span>{lesson.title}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                ))}
-            </Accordion>
-        </div>
+      <div className="max-w-6xl bg-gray-100 mx-auto p-4 my-8">
+            <h2 className="text-3xl font-bold mb-8 text-center">Nội dung khóa học</h2>
+            <div className="space-y-4"></div>
+            <ListLesson courseInfo={courseInfo}/>
       </div>
+      
+
 
       {/* Course Info Section */}
       <div className="bg-gray-100 py-16">

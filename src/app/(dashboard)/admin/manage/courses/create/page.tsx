@@ -62,22 +62,17 @@ export default function CreateCourseForm() {
 
   const { fields: techFields, append: appendTech } = useFieldArray({
     control,
-    name: "technology"
+    name: "info.qa"
   })
-
+  
   const { fields: reqFields, append: appendReq } = useFieldArray({
-    control,
-    name: "info.requirements"
-  })
-
-  const { fields: qaFields, append: appendQa } = useFieldArray({
     control,
     name: "info.qa"
   })
-
+  
   const { fields: benefitFields, append: appendBenefit } = useFieldArray({
     control,
-    name: "info.benefits"
+    name: "info.qa"
   })
   const [authors, setAuthors] = useState<TUserInfo[] | undefined>([]);
   useEffect(() => {
@@ -116,7 +111,7 @@ export default function CreateCourseForm() {
 
 
     }
-    const course = await createCourse(dataCreate);
+    await createCourse(dataCreate);
     reset();
     
   }
@@ -194,7 +189,7 @@ export default function CreateCourseForm() {
                     <SelectValue placeholder="Select author" />
                   </SelectTrigger>
                   <SelectContent>
-                    {authors.map((author) => (
+                    {authors?.map((author) => (
                       <SelectItem key={author._id} value={author._id}>{author.name}</SelectItem>
                     ))}
                   </SelectContent>
@@ -232,7 +227,7 @@ export default function CreateCourseForm() {
                 className="mb-2"
               />
             ))}
-            <Button type="button" variant="outline" onClick={() => appendTech('')}>
+            <Button type="button" variant="outline" onClick={() => appendTech({ question: '', answer: '' })}>
               Add Technology
             </Button>
           </div>
@@ -246,7 +241,7 @@ export default function CreateCourseForm() {
                 className="mb-2"
               />
             ))}
-            <Button type="button" variant="outline" onClick={() => appendReq('')}>
+            <Button type="button" variant="outline" onClick={() => appendReq({ question: '', answer: '' })}>
               Add Requirement
             </Button>
           </div>
@@ -261,7 +256,7 @@ export default function CreateCourseForm() {
                 className="mb-2"
               />
             ))}
-            <Button type="button" variant="outline" onClick={() => appendBenefit('')}>
+            <Button type="button" variant="outline" onClick={() => appendBenefit({ question: '', answer: '' })}>
               Add Benefit
             </Button>
           </div>

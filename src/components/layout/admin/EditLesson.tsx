@@ -28,7 +28,7 @@ const EditLessonDialog: React.FC<EditLessonDialogProps> = ({ editLesson, lesson,
     
 
   const [lessonType, setLessonType] = useState<ELessonType>(initialData.type);
-  const [videoType, setVideoType] = useState<EVideoType>(initialData.videoType);
+  
 
   const { control, handleSubmit, register, formState: { errors }, reset } = useForm<TEditLesson>({
     defaultValues: initialData,
@@ -100,41 +100,30 @@ const EditLessonDialog: React.FC<EditLessonDialogProps> = ({ editLesson, lesson,
                 <select
                   className="w-full p-2 border rounded"
                   {...register("videoType", { required: "Please select a video type" })}
-                  onChange={(e) => setVideoType(e.target.value as EVideoType)}
+                  
                 >
                   <option value={EVideoType.DRIVE}>Google Drive</option>
-                  <option value={EVideoType.UPLOAD}>Upload Video</option>
+                  <option value={EVideoType.YOUTUBE}>Youtube Video</option>
                 </select>
                 {errors.videoType && (
                   <p className="text-red-500 text-sm">{errors.videoType.message}</p>
                 )}
               </div>
 
-              {videoType === EVideoType.DRIVE && (
-                <div>
-                  <Input
-                    placeholder="Google Drive Video URL"
-                    {...register("videoURL", { required: "Video URL is required" })}
-                  />
-                  {errors.videoURL && (
-                    <p className="text-red-500 text-sm">{errors.videoURL.message}</p>
-                  )}
-                </div>
-              )}
+              
+              <div>
+                <Input
+                  placeholder="Google Drive Video URL"
+                  {...register("videoURL", { required: "Video URL is required" })}
+                />
+                {errors.videoURL && (
+                  <p className="text-red-500 text-sm">{errors.videoURL.message}</p>
+                )}
+              </div>
+            
 
-              {videoType === EVideoType.UPLOAD && (
-                <div>
-                  <input
-                    type="file"
-                    accept="video/*"
-                    className="w-full p-2 border rounded"
-                    {...register("videoURL", { required: "Please upload a video file" })}
-                  />
-                  {errors.videoURL && (
-                    <p className="text-red-500 text-sm">{errors.videoURL.message}</p>
-                  )}
-                </div>
-              )}
+             
+            
             </>
           )}
 
@@ -161,7 +150,7 @@ const EditLessonDialog: React.FC<EditLessonDialogProps> = ({ editLesson, lesson,
                   type="checkbox"
                   className="form-checkbox"
                   {...field}
-                  defaultChecked={initialData.deleted}
+                  value={initialData.deleted.toString()}
                 />
               )}
             />

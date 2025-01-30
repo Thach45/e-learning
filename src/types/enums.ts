@@ -27,7 +27,7 @@ enum ELessonType {
 }
 enum EVideoType {
     DRIVE = 'DRIVE',
-    UPLOAD = 'UPLOAD',
+    YOUTUBE = 'YOUTUBE',
 
 }
 export { EUserStatus, EUserRole, ECourseStatus, ECourseLevel, ELessonType , EVideoType};
