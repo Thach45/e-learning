@@ -1,8 +1,10 @@
 "use server";
 import Course, { TCourse } from "@/database/course.model";
-import User from "@/database/user.model";
+import Lecture, { TLecture } from "@/database/lecture.model";
+import Lesson from "@/database/lesson.model";
+import User, { TUser } from "@/database/user.model";
 import { connectToData } from "@/lib/mongoose";
-import { TCourseInfo, TCreateCourse, TShowCourse } from "@/types";
+import { TCourseInfo, TCreateCourse, TLesson, TShowCourse } from "@/types";
 
 
 export const createCourse = async (course: TCreateCourse):Promise<TCourse | null | undefined> => {
@@ -49,31 +51,45 @@ export const getCourseBySlug = async (slug: string): Promise<TShowCourse | null>
     try {
         await connectToData();
 
-        const course = await Course.findOne({ slug })
-            
-            .populate([
-                {
-                    path: "lectures",
-                    select: "_id title lesson",
-                    populate: {
-                        path: "lesson",
-                        
-                    }
-                },
-                {
-                    path: "students",
-                    select: "_id name"
-                },
-                {
-                    path: "author",
-                    select: "_id name email "
-                }
-            ])
-            .lean<TShowCourse>();
+        // Truy vấn khóa học dựa trên slug
+        const course = await Course.findOne({ slug }).lean<TShowCourse>();
 
-        return course || null;
-    } catch (error) {
-        console.error("Error fetching course by slug:", error);
+        if (!course) {
+            return null;
+        }
+
+        // Truy vấn các bài giảng liên quan
+        const lectures = await Lecture.find({ _id: { $in: course.lectures } })
+            .select('_id title lesson')
+            .lean<TLecture[]>();
+
+        // Truy vấn các bài học liên quan trong mỗi bài giảng
+        for (const lecture of lectures) {
+            const lessons = await Lesson.find({ _id: { $in: lecture.lesson } })
+                
+                .lean<TLesson[]>();
+            lecture.lesson = lessons;
+        }
+
+        // Truy vấn các học sinh liên quan
+        const students = await User.find({ _id: { $in: course.students } })
+            .select('_id name')
+            .lean<TUser[]>();
+
+        // Truy vấn tác giả liên quan
+        const author = await User.findById(course.author)
+            .select('_id name email')
+            .lean<TUser>();
+
+        // Kết hợp dữ liệu vào đối tượng khóa học
+        course.lectures = lectures;
+        course.students = students;
+        course.author = author;
+console.log(course.lectures.map(lecture => lecture.lesson));
+        return course;
+    } 
+    catch (error) {
+        console.log("Error fetching course:", error);
         return null;
     }
-};
+}
