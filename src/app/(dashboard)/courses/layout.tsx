@@ -1,31 +1,37 @@
 "use client"
 
-import type React from "react"
-import { AppSidebar } from "@/components/layout/Sidebar"
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
-import { menuItem } from "@/const/menuItems"
-import { ArrowLeftRight } from "lucide-react"
+import Sidebar from '@/components/layout/Sidebar';
+import { menuItem } from '@/const/menuItems';
+import { ArrowLeftRight } from 'lucide-react';
+import React from 'react';
 
-export default function Layout({
+
+const Layout = ({
   children,
 }: Readonly<{
-  children: React.ReactNode
-}>) {
-  return (
-    <SidebarProvider>
-      <div className="flex h-screen">
-        <AppSidebar menuItem={menuItem} />
-        <SidebarInset className="flex flex-col flex-grow">
-          <header className="flex h-14 items-center border-b px-4 lg:h-[60px]">
-            <SidebarTrigger>
-              <ArrowLeftRight className="h-6 w-6" />
-              <span className="sr-only">Toggle Sidebar</span>
-            </SidebarTrigger>
-          </header>
-          <main className="flex-1 overflow-auto p-4">{children}</main>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
-  )
-}
+  children: React.ReactNode;
+}>) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+    return !isOpen;
+  }
 
+  return (
+    <div className="wrapper flex relative">
+      <div className={`flex h-screen flex-col justify-between bg-white border-r fixed dark:bg-black dark:text-white 
+        ${!isOpen ? "w-64": "w-0 text-[0px]"} transition-width duration-300 ease-in-out`}>
+        <Sidebar menuItem={menuItem} isOpen={isOpen} />
+        <div className="absolute right-[-10px] top-[50%]">
+          <ArrowLeftRight size={24}  className="w-6 h-6 text-gray-500 dark:text-gray-300 cursor-pointer"
+          onClick={()=>toggleSidebar()} />
+        </div>
+      </div>
+      <main className={`flex-grow p-4  ${!isOpen ? "ml-[250px] ": "m-auto"}`}>
+        {children}
+      </main>
+    </div>
+  );
+};
+
+export default Layout;

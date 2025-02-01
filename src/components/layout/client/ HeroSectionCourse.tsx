@@ -1,51 +1,8 @@
-"use client"
+import React from 'react'
 
-import Image from "next/image"
-import { useEffect, useState } from "react"
-import {
-  CheckCircle2,
-  ArrowRight,
-  PlayCircle,
-  
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-
-import { getCourseBySlug } from "@/lib/actions/course.action"
-import { useParams } from "next/navigation"
-import { TShowCourse } from "@/types"
-import { ListLesson } from "@/components/layout/client/ListLesson"
-import FeaturesCourse from "@/components/layout/client/FeaturesCourse"
-import CourseInfo from "@/components/layout/client/CourseInfo"
-import { PacmanLoader } from "react-spinners"
-
-
-
-export default function InfoCourse() {
-    const slugCourse = useParams()
-  const [loading, setLoading] = useState(true)
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false)
-  const [courseInfo, setCourseInfo] = useState<TShowCourse | null| undefined>(null)
-
-  useEffect(() => {
-    const fetchData= async ()=>{
-        const course = await getCourseBySlug(slugCourse.slugcourse as string)
-        if(!course) return
-        setCourseInfo(course)
-        setLoading(false)
-    }
-    
-    fetchData()
-  }, [])
+const  HeroSectionCourse = () => {
   return (
-    <>
-    {loading ? (
-        <div className="flex justify-center items-center h-screen">
-          <PacmanLoader />
-        </div>
-    ):(
-      <div className="min-h-screen bg-white text-black rounded-lg">
-      {/* Hero Section */}
-      <div className="bg-black text-white rounded-lg">
+    <div className="bg-black text-white">
         <div className="max-w-6xl mx-auto px-4 py-16">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -95,7 +52,7 @@ export default function InfoCourse() {
               </div>
             </div>
             <div className="relative">
-              <Image
+              <Image 
                 src={courseInfo?.thumbnail ?? ""}
                 alt="Course Preview"
                 width={600}
@@ -114,39 +71,7 @@ export default function InfoCourse() {
         </div>
 
       </div>
-
-
-
-      {/* Features Section */}
-      <FeaturesCourse />
-      {/* What You'll Learn Section */}
-      <div className="bg-gray-100 py-16 rounded-lg">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-12 text-center">Bạn sẽ học được gì?</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            {courseInfo?.info.benefits.map((item, index) => (
-              <div key={index} className="flex items-start gap-4">
-                <CheckCircle2 className="w-5 h-5 text-black mt-1" />
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Course Curriculum Section */}
-      <div className="rounded-lg max-w-6xl bg-gray-100 my-16 p-4">
-            <h2 className="text-3xl font-bold mb-8 pt-4 text-center">Nội dung khóa học</h2>
-            <div className="space-y-4"></div>
-            <ListLesson courseInfo={courseInfo}/>
-      </div>
-      {/* Course Info Section */}
-      <CourseInfo  courseInfo={courseInfo}/>
-      
-    </div>
-    )}
-    </>
-   
   )
 }
 
+export default  HeroSectionCourse

@@ -5,7 +5,10 @@ import { getUser } from '@/lib/actions/user.actions';
 import { EUserRole } from '@/types/enums';
 
 import { auth } from '@clerk/nextjs/server';
+
 import { redirect } from 'next/navigation';
+
+
 
 
 const Layout = async ({
@@ -25,15 +28,20 @@ const Layout = async ({
   
 
   
-
   return (
+    
     <div className="wrapper flex relative">
-      <Sidebar menuItem={menuItemAdmin} />
-      <main className="flex-grow p-4 ml-[250px]">
+      <div className={`flex h-screen flex-col justify-between bg-white border-r fixed dark:bg-black dark:text-white 
+        `}>
+        <Sidebar menuItem={menuItemAdmin} isOpen={false} />
+       
+      </div>
+      <main className="flex-grow p-4  ml-[250px]">
         {children}
       </main>
     </div>
   );
 };
+
 
 export default Layout;
