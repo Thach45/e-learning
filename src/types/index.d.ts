@@ -86,7 +86,7 @@ type TLesson = {
     videoURL: string,
     content: string,
     type: ELessonType,
-
+    
     order: number,
     course: Schema.Types.ObjectId,
     lecture: Schema.Types.ObjectId,

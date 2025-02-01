@@ -7,6 +7,7 @@ import { connectToData } from "@/lib/mongoose";
 import { TCourseInfo, TCreateCourse, TLesson, TShowCourse } from "@/types";
 
 
+
 export const createCourse = async (course: TCreateCourse):Promise<TCourse | null | undefined> => {
     try {
         await connectToData();
@@ -59,16 +60,20 @@ export const getCourseBySlug = async (slug: string): Promise<TShowCourse | null>
         }
 
         // Truy vấn các bài giảng liên quan
+        // Truy vấn các bài học liên quan trong mỗi bài giảng
+        type TExtendedLecture = TLecture & {
+            lessons: TLesson[];
+            
+          };
         const lectures = await Lecture.find({ _id: { $in: course.lectures } })
             .select('_id title lesson')
-            .lean<TLecture[]>();
+            .lean<TExtendedLecture[]>();
 
-        // Truy vấn các bài học liên quan trong mỗi bài giảng
         for (const lecture of lectures) {
             const lessons = await Lesson.find({ _id: { $in: lecture.lesson } })
                 
                 .lean<TLesson[]>();
-            lecture.lesson = lessons;
+            lecture.lessons = lessons;
         }
 
         // Truy vấn các học sinh liên quan

@@ -48,14 +48,14 @@ export default function CourseVideoPlayer() {
   }
 
   const currentLectureIndex = courseInfo.lectures.findIndex((lecture) =>
-    lecture.lesson.some((l: TShowLesson) => l.slug === lesson.slug),
+    lecture.lessons.some((l: TShowLesson) => l.slug === lesson.slug),
   )
   const currentLecture = courseInfo.lectures[currentLectureIndex]
-  const currentLessonIndex = currentLecture.lesson.findIndex((l: TShowLesson) => l.slug === lesson.slug)
+  const currentLessonIndex = currentLecture.lessons.findIndex((l: TShowLesson) => l.slug === lesson.slug)
   const nextLesson =
-    currentLecture.lesson[currentLessonIndex + 1] || courseInfo.lectures[currentLectureIndex + 1]?.lesson[0]
+    currentLecture.lesson[currentLessonIndex + 1] || courseInfo.lectures[currentLectureIndex + 1]?.lessons[0]
   const prevLesson =
-    currentLecture.lesson[currentLessonIndex - 1] || courseInfo.lectures[currentLectureIndex - 1]?.lesson.slice(-1)[0]
+    currentLecture.lesson[currentLessonIndex - 1] || courseInfo.lectures[currentLectureIndex - 1]?.lessons.slice(-1)[0]
 
   return (
     <div className="min-h-screen bg-background">
@@ -129,7 +129,7 @@ export default function CourseVideoPlayer() {
                       {lecture.title}
                     </h4>
                     <ul className="space-y-1">
-                      {lecture.lesson.map((lessonItem: TShowLesson) => (
+                      {lecture.lessons.map((lessonItem: TShowLesson) => (
                         <li key={lessonItem._id}>
                           <Link
                             href={`/courses/${slug.slugcourse}/lesson/${lessonItem.slug}`}

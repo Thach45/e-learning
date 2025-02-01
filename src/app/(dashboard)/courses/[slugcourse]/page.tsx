@@ -56,7 +56,7 @@ export default function InfoCourse() {
               </p>
               <div className="flex flex-wrap gap-6">
                 <Button size="lg" className="bg-white text-black hover:bg-gray-100" 
-                onClick={()=>{window.location.href=`/courses/${slugCourse.slugcourse}/lesson/${courseInfo?.lectures[0].lesson[0].slug}`}}>
+                onClick={()=>{window.location.href=`/courses/${slugCourse.slugcourse}/lesson/${courseInfo?.lectures[0].lessons[0].slug}`}}>
                   Học ngay
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>

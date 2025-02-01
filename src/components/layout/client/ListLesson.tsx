@@ -25,7 +25,7 @@ export const ListLesson = ({courseInfo}: props) => {
                             </AccordionTrigger>
                             <AccordionContent>
                                 <div className="grid md:grid-cols-2 gap-4">
-                                    {lecture.lesson.map(({ _id, title }: Tlesson) => (
+                                    {lecture.lessons.map(({ _id, title }: Tlesson) => (
                                         <div key={_id} className="flex items-center gap-4">
                                             <PlayCircle className="w-6 h-6 text-black" />
                                             <span>{title}</span>
