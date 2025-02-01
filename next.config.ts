@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['cdn.freebiesupply.com', 'upload.wikimedia.org',"store.storeimages.cdn-apple.com"],
+    domains: ['cdn.freebiesupply.com', 'upload.wikimedia.org',"store.storeimages.cdn-apple.com","qtu.edu.vn"],
     remotePatterns: [
       {
         protocol: 'https',

@@ -112,6 +112,7 @@ export default function CreateCourseForm() {
 
     }
     await createCourse(dataCreate);
+    console.log("Đã tạo khóa học");
     reset();
     
   }
