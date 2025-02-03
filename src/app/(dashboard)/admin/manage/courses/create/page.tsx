@@ -131,12 +131,13 @@ export default function CreateCourseForm() {
             {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
           </div>
 
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="thumbnail">Thumbnail URL</Label>
             <Input id="thumbnail" type="url" {...register('thumbnail')} />
             {errors.thumbnail && <p className="text-red-500 text-sm">{errors.thumbnail.message}</p>}
-          </div>
+          </div> */}
 
+        
           <div className="space-y-2">
             <Label htmlFor="intro">Introduction</Label>
             <Textarea id="intro" {...register('intro')} />
