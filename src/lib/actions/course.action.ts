@@ -12,7 +12,6 @@ export const createCourse = async (course: TCreateCourse):Promise<TCourse | null
     try {
         await connectToData();
         const newCourse = await Course.create(course);
-    
         return await newCourse.save();
     } catch (error) {
         console.log("lỗi nè",error);
@@ -37,8 +36,8 @@ export const getCourses = async (): Promise<TCourseInfo[] | undefined> => {
         const serializedCourses = courses.map(course => ({
             ...course,
             _id: course._id.toString(),
-            category: course.category.toString(),
-            students: course.students.map(student => student.toString()),
+            category:course.category ? course.category.toString() : "",
+            students:course.students ? course.students.map(student => student.toString()) : [],
         }));
 
         return serializedCourses;

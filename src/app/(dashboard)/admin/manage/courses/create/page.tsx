@@ -16,6 +16,7 @@ import { createCourse } from '@/lib/actions/course.action';
 import mongoose from 'mongoose';
 import { getUserRole } from '@/lib/actions/user.actions';
 import { useEffect, useState } from 'react';
+import { PacmanLoader } from 'react-spinners';
 
 
 const courseSchema = z.object({
@@ -75,6 +76,9 @@ export default function CreateCourseForm() {
     name: "info.qa"
   })
   const [authors, setAuthors] = useState<TUserInfo[] | undefined>([]);
+  const [image, setImage] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchAuthors = async () => {
       const authors = await getAuthors();
@@ -83,16 +87,43 @@ export default function CreateCourseForm() {
   
     fetchAuthors();
   }, []);
-    const getAuthors = async (): Promise<TUserInfo[] | undefined> => {
-        const authors = await getUserRole('EXPERT');
-        return authors;
-    }
+  const getAuthors = async (): Promise<TUserInfo[] | undefined> => {
+      const authors = await getUserRole('EXPERT');
+      return authors;
+  }
 
-  
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+    }
+  };
   const onSubmit = async (data: CourseFormData)  => {  
+    setLoading(false);
+    if (!image) return alert('Vui lòng chọn ảnh');
+
+    const response = await fetch('/api/cloudinary/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: image }),
+    });
+
+    const res = await response.json();
+    if (response.ok) {
+      alert(`Upload thành công: ${res.url}`);
+      console.log('Public url:', res.url)
+    } else {
+      console.log(`Lỗi: ${res.error}`);
+    }
     const dataCreate: TCreateCourse = {
         title: data.title,
-        thumbnail: data.thumbnail,
+        thumbnail: res.url,
         intro: data.intro,
         description: data.description,
         price: data.price,
@@ -107,172 +138,182 @@ export default function CreateCourseForm() {
           requirements: data.info.requirements,
           benefits: data.info.benefits
         },
-       
-
-
     }
-    await createCourse(dataCreate);
+    createCourse(dataCreate); // return await newCourse.save() nên không cần await ở đây;
     console.log("Đã tạo khóa học");
     reset();
+    setLoading(true);
     
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-      <Card className="mx-16">
-        <CardHeader>
-          <CardTitle>Create New Course</CardTitle>
-          <CardDescription>Enter the details for your new course.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input id="title" {...register('title')} />
-            {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
-          </div>
-
-          {/* <div className="space-y-2">
-            <Label htmlFor="thumbnail">Thumbnail URL</Label>
-            <Input id="thumbnail" type="url" {...register('thumbnail')} />
-            {errors.thumbnail && <p className="text-red-500 text-sm">{errors.thumbnail.message}</p>}
-          </div> */}
-
-        
-          <div className="space-y-2">
-            <Label htmlFor="intro">Introduction</Label>
-            <Textarea id="intro" {...register('intro')} />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea id="description" {...register('description')} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+    <>
+      {loading ? (
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <Card className="mx-16">
+          <CardHeader>
+            <CardTitle>Create New Course</CardTitle>
+            <CardDescription>Enter the details for your new course.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="price">Price</Label>
-              <Input id="price" type="number" {...register('price', { valueAsNumber: true })} />
-              {errors.price && <p className="text-red-500 text-sm">{errors.price.message}</p>}
+              <Label htmlFor="title">Title</Label>
+              <Input id="title" {...register('title')} />
+              {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
             </div>
+
+            
             <div className="space-y-2">
-              <Label htmlFor="sale_price">Sale Price</Label>
-              <Input id="sale_price" type="number" {...register('sale_price', { valueAsNumber: true })} />
-              {errors.sale_price && <p className="text-red-500 text-sm">{errors.sale_price.message}</p>}
+              <Label >Thumbnail</Label>
+              <div >
+                <input type="file" accept="image/*" onChange={handleFileChange} />
+                {preview && <img src={preview} alt="Preview" width={200} />}
+              </div>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="slug">Slug</Label>
-            <Input id="slug" {...register('slug')} />
-            {errors.slug && <p className="text-red-500 text-sm">{errors.slug.message}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select onValueChange={(value) => register('status').onChange({ target: { value } })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.values(ECourseStatus).map((status) => (
-                  <SelectItem key={status} value={status}>{status}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="author">Author</Label>
-            <Controller
-              name="author"
-              control={control}
-              render={({ field }) => (
-                <Select onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select author" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {authors?.map((author) => (
-                      <SelectItem key={author._id} value={author._id}>{author.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-
-
-          <div className="space-y-2">
-            <Label htmlFor="level">Level</Label>
-            <Select onValueChange={(value) => register('level').onChange({ target: { value } })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select level" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.values(ECourseLevel).map((level) => (
-                  <SelectItem key={level} value={level}>{level}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="category">Category ID</Label>
-            <Input id="category" {...register('category')} />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Technologies</Label>
-            {techFields.map((field, index) => (
-              <Input
-                key={field.id}
-                {...register(`technology.${index}`)}
-                className="mb-2"
-              />
-            ))}
-            <Button type="button" variant="outline" onClick={() => appendTech({ question: '', answer: '' })}>
-              Add Technology
-            </Button>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Requirements</Label>
-            {reqFields.map((field, index) => (
-              <Input
-                key={field.id}
-                {...register(`info.requirements.${index}`)}
-                className="mb-2"
-              />
-            ))}
-            <Button type="button" variant="outline" onClick={() => appendReq({ question: '', answer: '' })}>
-              Add Requirement
-            </Button>
-          </div>
 
           
-          <div className="space-y-2">
-            <Label>Benefits</Label>
-            {benefitFields.map((field, index) => (
-              <Input
-                key={field.id}
-                {...register(`info.benefits.${index}`)}
-                className="mb-2"
-              />
-            ))}
-            <Button type="button" variant="outline" onClick={() => appendBenefit({ question: '', answer: '' })}>
-              Add Benefit
-            </Button>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="intro">Introduction</Label>
+              <Textarea id="intro" {...register('intro')} />
+            </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox id="deleted" {...register('deleted')} />
-            <Label htmlFor="deleted">Deleted</Label>
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button type="submit" className="w-full">Create Course</Button>
-        </CardFooter>
-      </Card>
-    </form>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea id="description" {...register('description')} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="price">Price</Label>
+                <Input id="price" type="number" {...register('price', { valueAsNumber: true })} />
+                {errors.price && <p className="text-red-500 text-sm">{errors.price.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sale_price">Sale Price</Label>
+                <Input id="sale_price" type="number" {...register('sale_price', { valueAsNumber: true })} />
+                {errors.sale_price && <p className="text-red-500 text-sm">{errors.sale_price.message}</p>}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="slug">Slug</Label>
+              <Input id="slug" {...register('slug')} />
+              {errors.slug && <p className="text-red-500 text-sm">{errors.slug.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select onValueChange={(value) => register('status').onChange({ target: { value } })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(ECourseStatus).map((status) => (
+                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="author">Author</Label>
+              <Controller
+                name="author"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select author" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {authors?.map((author) => (
+                        <SelectItem key={author._id} value={author._id}>{author.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+
+
+            <div className="space-y-2">
+              <Label htmlFor="level">Level</Label>
+              <Select onValueChange={(value) => register('level').onChange({ target: { value } })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(ECourseLevel).map((level) => (
+                    <SelectItem key={level} value={level}>{level}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">Category ID</Label>
+              <Input id="category" {...register('category')} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Technologies</Label>
+              {techFields.map((field, index) => (
+                <Input
+                  key={field.id}
+                  {...register(`technology.${index}`)}
+                  className="mb-2"
+                />
+              ))}
+              <Button type="button" variant="outline" onClick={() => appendTech({ question: '', answer: '' })}>
+                Add Technology
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Requirements</Label>
+              {reqFields.map((field, index) => (
+                <Input
+                  key={field.id}
+                  {...register(`info.requirements.${index}`)}
+                  className="mb-2"
+                />
+              ))}
+              <Button type="button" variant="outline" onClick={() => appendReq({ question: '', answer: '' })}>
+                Add Requirement
+              </Button>
+            </div>
+
+            
+            <div className="space-y-2">
+              <Label>Benefits</Label>
+              {benefitFields.map((field, index) => (
+                <Input
+                  key={field.id}
+                  {...register(`info.benefits.${index}`)}
+                  className="mb-2"
+                />
+              ))}
+              <Button type="button" variant="outline" onClick={() => appendBenefit({ question: '', answer: '' })}>
+                Add Benefit
+              </Button>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox id="deleted" {...register('deleted')} />
+              <Label htmlFor="deleted">Deleted</Label>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button type="submit" className="w-full">Create Course</Button>
+          </CardFooter>
+        </Card>
+      </form>
+
+      ): (
+        <div className="flex justify-center items-center h-screen">
+          <PacmanLoader />
+        </div>
+      )}
+    </>
   )
 }
 
