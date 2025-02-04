@@ -40,6 +40,7 @@ export async function POST(req: Request) {
       avatar: image_url,
       name: username!,
     });
+    console.log("User created:", user);
     return NextResponse.json({
       message: "Ok",
       user,

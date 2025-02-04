@@ -6,18 +6,19 @@ export interface TLesson extends Document {
     _id: string;
     title: string;
     slug: string;
-
     course: Schema.Types.ObjectId;
     lecture: Schema.Types.ObjectId;
     order: number;
     duration: number;
     videoType: EVideoType;
     videoURL: string;
-    content: string;
-    note:{
-        user: Schema.Types.ObjectId;
-        content: string;
+    attachment: {
+        title: string;
+        url: string;
     }
+    content: string;
+    description: string;
+    comment: Schema.Types.ObjectId[];
     type: ELessonType;
     created_at: Date;
     deleted: boolean;
@@ -41,6 +42,16 @@ const lessonSchema = new Schema<TLesson>({
         type: Schema.Types.ObjectId,
         ref: 'Course',
         required: true,
+    },
+    attachment: {
+        title: {
+            type: String,
+            default: '',
+        },
+        url: {
+            type: String,
+            default: '',
+        },
     },
     lecture: {
         type: Schema.Types.ObjectId,
@@ -74,16 +85,16 @@ const lessonSchema = new Schema<TLesson>({
         default: '',
         
     },
-    note: {
-        user: {
+    comment: [
+        {
             type: Schema.Types.ObjectId,
-            ref: 'User',
+            ref: 'Comment',
         },
-        content: {
-            type: String,
-            default: '',
-            
-        },
+    ],
+
+    description: {
+        type: String,
+        default: '',
     },
     type: {
         type: String,

@@ -3,37 +3,88 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import { PlayCircle, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
+import { PlayCircle, Loader2, ChevronLeft, ChevronRight, Send, Paperclip, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Textarea } from "@/components/ui/textarea"
+
 import { getCourseBySlug } from "@/lib/actions/course.action"
 import { getLessonBySlug } from "@/lib/actions/lesson.action"
-import type { TShowCourse, TShowLesson } from "@/types"
+import type { TCreateComment, TShowComment, TShowCourse, TShowLesson } from "@/types"
+import { createComment, getCommentsByLessonId } from "@/lib/actions/comment.action"
+import { useUser } from "@clerk/nextjs"
+
+// Add a new type for comments
+
+
+type Attachment = {
+  id: string
+  name: string
+  url: string
+}
+
+
 
 export default function CourseVideoPlayer() {
+  const {user} = useUser()
   const slug = useParams()
   const [courseInfo, setCourseInfo] = useState<TShowCourse | null>(null)
   const [lesson, setLesson] = useState<TShowLesson | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [comments, setComments] = useState<TShowComment[]>([])
+  const [newComment, setNewComment] = useState("")
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [newRating, setNewRating] = useState(0)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [course, lessonData] = await Promise.all([
           getCourseBySlug(slug.slugcourse as string),
-          getLessonBySlug(slug.sluglesson as string), ,
+          getLessonBySlug(slug.sluglesson as string),
+         
         ])
         setCourseInfo(course)
         setLesson(lessonData || null)
+        const commentLesson = await getCommentsByLessonId(lessonData!._id)
+        console.log(commentLesson)
+        setComments(commentLesson || [])
+        setAttachments([
+          { id: "1", name: "Lesson Slides", url: "/attachments/lesson-slides.pdf" },
+          { id: "2", name: "Exercise Sheet", url: "/attachments/exercise-sheet.docx" },
+        ])
       } catch (error) {
         console.error("Error fetching data:", error)
       } finally {
         setIsLoading(false)
+        setIsSubmitting(false)
       }
     }
 
     fetchData()
-  }, [slug.slugcourse, slug.sluglesson])
+  }, [slug.slugcourse, slug.sluglesson, isSubmitting])
+
+  const handleCommentSubmit = async  (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    if (newComment.trim()) {
+      const comment: TCreateComment = {
+        lesson: lesson!._id,
+        user: user!.id,
+        content: newComment,
+        rating: newRating,
+      };
+      await createComment(comment)
+      
+      setComments([])
+      setNewComment("")
+      setNewRating(0)
+      setIsSubmitting(false)
+      
+    }
+  }
 
   if (isLoading) {
     return (
@@ -53,15 +104,13 @@ export default function CourseVideoPlayer() {
   const currentLecture = courseInfo.lectures[currentLectureIndex]
   const currentLessonIndex = currentLecture.lessons.findIndex((l: TShowLesson) => l.slug === lesson.slug)
   const nextLesson =
-    currentLecture.lesson[currentLessonIndex + 1] || courseInfo.lectures[currentLectureIndex + 1]?.lessons[0]
+    currentLecture.lessons[currentLessonIndex + 1] || courseInfo.lectures[currentLectureIndex + 1]?.lessons[0]
   const prevLesson =
-    currentLecture.lesson[currentLessonIndex - 1] || courseInfo.lectures[currentLectureIndex - 1]?.lessons.slice(-1)[0]
+    currentLecture.lessons[currentLessonIndex - 1] || courseInfo.lectures[currentLectureIndex - 1]?.lessons.slice(-1)[0]
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-8">
-       
-
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content */}
           <div className="lg:w-2/3">
@@ -74,22 +123,109 @@ export default function CourseVideoPlayer() {
                   allowFullScreen
                   className="w-full h-full"
                 />
-
               ) : (
                 <iframe
-                src={`https://www.youtube.com/embed/${lesson.videoURL}?rel=0`}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="w-full h-full"
-              />
+                  src={`https://www.youtube.com/embed/${lesson.videoURL}?rel=0`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
               )}
-
             </div>
 
             {/* Video Description */}
             <div className="mb-8">
               <h2 className="text-2xl font-semibold mb-2">{lesson.title}</h2>
-              <p className="text-muted-foreground">{lesson.content || "Không có mô tả cho video này."}</p>
+              <Tabs defaultValue="description" className="mb-6">
+                <TabsList>
+                  <TabsTrigger value="description">Mô tả</TabsTrigger>
+                  <TabsTrigger value="attachments">Tài liệu đính kèm</TabsTrigger>
+                  <TabsTrigger value="discussion">Thảo luận & Đánh giá</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="description">
+                  <div className="prose max-w-none">{lesson.description  || "Không có mô tả cho bài học này."}</div>
+                </TabsContent>
+
+                <TabsContent value="attachments">
+                  <ul className="space-y-2">
+                    {attachments.map((attachment) => (
+                      <li key={attachment.id}>
+                        <a
+                          href={attachment.url}
+                          className="flex items-center space-x-2 text-blue-600 hover:underline"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Paperclip className="w-4 h-4" />
+                          <span>{attachment.name}</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </TabsContent>
+
+                <TabsContent value="discussion">
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center h-32">
+                      <Loader2 className="w-8 h-8 animate-spin" />
+                    </div>
+                  ) : (
+                    
+                  <div className="space-y-4">
+                      {comments.map((comment) => (
+                      <div key={comment._id} className="flex space-x-4 border-b pb-4">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                          <span className="text-sm font-medium">{comment.name.charAt(0).toUpperCase()}</span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <h4 className="font-semibold">{comment.name}</h4>
+                            <span className="text-sm text-muted-foreground">{new Date(comment.created_at).toLocaleDateString()}</span>
+                          </div>
+                          <p className="mt-1">{comment.content}</p>
+                          {comment.rating && (
+                            <div className="flex items-center mt-2">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-4 h-4 ${i < comment.rating! ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    <form onSubmit={handleCommentSubmit} className="space-y-4">
+                      <Textarea
+                        placeholder="Thêm bình luận của bạn..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="w-full"
+                      />
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-6 h-6 cursor-pointer ${i < newRating ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                              onClick={() => setNewRating(i + 1)}
+                            />
+                          ))}
+                        </div>
+                        <Button type="submit" className="flex items-center">
+                          <Send className="w-4 h-4 mr-2" />
+                          Gửi bình luận và đánh giá
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+                  )
+                  }
+                </TabsContent>
+              </Tabs>
             </div>
 
             {/* Navigation Buttons */}
@@ -113,11 +249,7 @@ export default function CourseVideoPlayer() {
                 </Button>
               )}
             </div>
-
-            {/* Lesson Content */}
-            <div className="prose max-w-none">{lesson.content}</div>
           </div>
-
           {/* Sidebar - List of Lessons */}
           <div className="lg:w-1/3">
             <div className="bg-muted rounded-lg p-6 sticky top-6">
@@ -125,9 +257,7 @@ export default function CourseVideoPlayer() {
               <ScrollArea className="h-[calc(100vh-200px)]">
                 {courseInfo.lectures.map((lecture) => (
                   <div key={lecture._id} className="mb-4">
-                    <h4 className="font-medium text-sm text-muted-foreground mb-2">
-                      {lecture.title}
-                    </h4>
+                    <h4 className="font-medium text-sm text-muted-foreground mb-2">{lecture.title}</h4>
                     <ul className="space-y-1">
                       {lecture.lessons.map((lessonItem: TShowLesson) => (
                         <li key={lessonItem._id}>
@@ -153,9 +283,11 @@ export default function CourseVideoPlayer() {
               </ScrollArea>
             </div>
           </div>
+         
         </div>
-      </div>
+     </div>
     </div>
+ 
   )
 }
 

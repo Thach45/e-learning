@@ -112,6 +112,15 @@ type TShowLesson = {
     videoURL: string,
     content: string,
     type: ELessonType,
+    attachments: [
+        {
+            title: string,
+            url: string
+        }
+    ],
+
+    description: string,
+    comments: Schema.Types.ObjectId[],
     course: Schema.Types.ObjectId,
     lecture: Schema.Types.ObjectId,
     deleted: boolean
@@ -138,6 +147,21 @@ type TShowLecture = {
     course: Schema.Types.ObjectId,
     lessons: Schema.Types.ObjectId[],
     
+}
+type TCreateComment = {
+    user: string;
+    content: string;
+    lesson: string;
+    rating: number;
+}
+type TShowComment = {
+    _id: string;
+    user: string;
+    name: string;
+    content: string;
+    lesson: string;
+    rating: number;
+    created_at: Date;
 }
 
 export const ILinkItem
