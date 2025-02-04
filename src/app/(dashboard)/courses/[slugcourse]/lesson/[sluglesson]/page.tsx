@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import { PlayCircle, Loader2, ChevronLeft, ChevronRight, Send, Paperclip, Star } from "lucide-react"
+import { PlayCircle, Loader2, ChevronLeft, ChevronRight, Send, Paperclip, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -15,19 +15,43 @@ import type { TCreateComment, TShowComment, TShowCourse, TShowLesson } from "@/t
 import { createComment, getCommentsByLessonId } from "@/lib/actions/comment.action"
 import { useUser } from "@clerk/nextjs"
 
-// Add a new type for comments
-
-
 type Attachment = {
   id: string
   name: string
   url: string
 }
 
-
+function CommentItem({ comment, onReply }: { comment: TShowComment; onReply: (parentId: string) => void }) {
+  return (
+    <div className="flex space-x-4 border-b pb-4 mb-4">
+      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+       
+        <span className="text-sm font-medium">{comment.name.charAt(0).toUpperCase()}</span>
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center space-x-2">
+          <h4 className="font-semibold">{comment.name}</h4>
+          <span className="text-sm text-muted-foreground">{new Date(comment.created_at).toLocaleDateString()}</span>
+        </div>
+        <p className="mt-1">{comment.content}</p>
+        <Button variant="ghost" size="sm" className="mt-2" onClick={() => onReply(comment._id)}>
+          <MessageCircle className="w-4 h-4 mr-2" />
+          Trả lời
+        </Button>
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="ml-8 mt-4 space-y-4">
+            {comment.replies.map((reply) => (
+              <CommentItem key={reply._id} comment={reply} onReply={onReply} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export default function CourseVideoPlayer() {
-  const {user} = useUser()
+  const { user } = useUser()
   const slug = useParams()
   const [courseInfo, setCourseInfo] = useState<TShowCourse | null>(null)
   const [lesson, setLesson] = useState<TShowLesson | null>(null)
@@ -36,7 +60,7 @@ export default function CourseVideoPlayer() {
   const [comments, setComments] = useState<TShowComment[]>([])
   const [newComment, setNewComment] = useState("")
   const [attachments, setAttachments] = useState<Attachment[]>([])
-  const [newRating, setNewRating] = useState(0)
+  const [replyTo, setReplyTo] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,12 +68,10 @@ export default function CourseVideoPlayer() {
         const [course, lessonData] = await Promise.all([
           getCourseBySlug(slug.slugcourse as string),
           getLessonBySlug(slug.sluglesson as string),
-         
         ])
         setCourseInfo(course)
         setLesson(lessonData || null)
         const commentLesson = await getCommentsByLessonId(lessonData!._id)
-        console.log(commentLesson)
         setComments(commentLesson || [])
         setAttachments([
           { id: "1", name: "Lesson Slides", url: "/attachments/lesson-slides.pdf" },
@@ -66,7 +88,7 @@ export default function CourseVideoPlayer() {
     fetchData()
   }, [slug.slugcourse, slug.sluglesson, isSubmitting])
 
-  const handleCommentSubmit = async  (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     if (newComment.trim()) {
@@ -74,16 +96,20 @@ export default function CourseVideoPlayer() {
         lesson: lesson!._id,
         user: user!.id,
         content: newComment,
-        rating: newRating,
-      };
+        parent: replyTo || undefined,
+      }
+      console.log(comment)
       await createComment(comment)
-      
       setComments([])
       setNewComment("")
-      setNewRating(0)
+      setReplyTo(null)
       setIsSubmitting(false)
-      
     }
+  }
+
+  const handleReply = (parentId: string) => {
+    setReplyTo(parentId)
+  
   }
 
   if (isLoading) {
@@ -144,7 +170,7 @@ export default function CourseVideoPlayer() {
                 </TabsList>
 
                 <TabsContent value="description">
-                  <div className="prose max-w-none">{lesson.description  || "Không có mô tả cho bài học này."}</div>
+                  <div className="prose max-w-none">{lesson.description || "Không có mô tả cho bài học này."}</div>
                 </TabsContent>
 
                 <TabsContent value="attachments">
@@ -171,59 +197,32 @@ export default function CourseVideoPlayer() {
                       <Loader2 className="w-8 h-8 animate-spin" />
                     </div>
                   ) : (
-                    
-                  <div className="space-y-4">
+                    <div className="space-y-4">
                       {comments.map((comment) => (
-                      <div key={comment._id} className="flex space-x-4 border-b pb-4">
-                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-sm font-medium">{comment.name.charAt(0).toUpperCase()}</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
-                            <h4 className="font-semibold">{comment.name}</h4>
-                            <span className="text-sm text-muted-foreground">{new Date(comment.created_at).toLocaleDateString()}</span>
-                          </div>
-                          <p className="mt-1">{comment.content}</p>
-                          {comment.rating && (
-                            <div className="flex items-center mt-2">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`w-4 h-4 ${i < comment.rating! ? "text-yellow-400 fill-current" : "text-gray-300"}`}
-                                />
-                              ))}
-                            </div>
+                        <CommentItem key={comment._id} comment={comment} onReply={handleReply} />
+                      ))}
+
+                      <form onSubmit={handleCommentSubmit} className="space-y-4">
+                        <Textarea
+                          placeholder={replyTo ? "Viết câu trả lời..." : "Thêm bình luận của bạn..."}
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          className="w-full"
+                        />
+                        <div className="flex items-center justify-between">
+                          <Button type="submit" className="flex items-center">
+                            <Send className="w-4 h-4 mr-2" />
+                            {replyTo ? "Gửi trả lời" : "Gửi bình luận và đánh giá"}
+                          </Button>
+                          {replyTo && (
+                            <Button type="button" variant="outline" onClick={() => setReplyTo(null)}>
+                              Hủy trả lời
+                            </Button>
                           )}
                         </div>
-                      </div>
-                    ))}
-
-                    <form onSubmit={handleCommentSubmit} className="space-y-4">
-                      <Textarea
-                        placeholder="Thêm bình luận của bạn..."
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        className="w-full"
-                      />
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-6 h-6 cursor-pointer ${i < newRating ? "text-yellow-400 fill-current" : "text-gray-300"}`}
-                              onClick={() => setNewRating(i + 1)}
-                            />
-                          ))}
-                        </div>
-                        <Button type="submit" className="flex items-center">
-                          <Send className="w-4 h-4 mr-2" />
-                          Gửi bình luận và đánh giá
-                        </Button>
-                      </div>
-                    </form>
-                  </div>
-                  )
-                  }
+                      </form>
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </div>
@@ -283,11 +282,9 @@ export default function CourseVideoPlayer() {
               </ScrollArea>
             </div>
           </div>
-         
         </div>
-     </div>
+      </div>
     </div>
- 
   )
 }
 

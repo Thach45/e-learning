@@ -149,18 +149,20 @@ type TShowLecture = {
     
 }
 type TCreateComment = {
+    parent?: string;
     user: string;
     content: string;
-    lesson: string;
-    rating: number;
+    lesson: string
+    replies?: TShowComment[]
 }
 type TShowComment = {
     _id: string;
     user: string;
+    parent?: string;
+    replies: TShowComment[];
     name: string;
     content: string;
     lesson: string;
-    rating: number;
     created_at: Date;
 }
 

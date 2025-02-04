@@ -6,8 +6,9 @@ export interface TComment extends Document {
     user: string;
     content: string;
     lesson: string;
-    rating: number;
+    parent?: string;
     created_at: Date;
+    replies: TComment[];
 }
 
 
@@ -15,6 +16,10 @@ const commentSchema = new Schema<TComment>({
     user: {
         type:String,
         required: true,
+    },
+    parent: {
+        type: String,
+        required: false,
     },
     content: {
         type: String,
@@ -24,14 +29,15 @@ const commentSchema = new Schema<TComment>({
         type: String,
         required: true,
     },
-    rating: {
-        type: Number,
-        default: 0,
-    },
     created_at: {
         type: Date,
         default: Date.now,
     },
+    replies: {
+        type: [Schema.Types.ObjectId],
+        ref: 'Comment',
+        default: [],
+    }
 })
 
 const Comment = models.Comment || model<TComment>('Comment', commentSchema);
