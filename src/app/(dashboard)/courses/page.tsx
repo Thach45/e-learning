@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { PacmanLoader } from 'react-spinners';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import {  FileSearch, Star, Users2, ChevronDown } from 'lucide-react';
-import { getCourses } from '@/lib/actions/course.action';
+import { getCourseCondition } from '@/lib/actions/course.action';
 import { TCourseInfo, TShowCategory } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,7 @@ import {
 import { getCategories } from '@/lib/actions/categogy.action';
 
 export default function CoursesPage() {
+ 
   const [courses, setCourses] = useState<TCourseInfo[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<TShowCategory[]>([]);
@@ -30,12 +31,14 @@ export default function CoursesPage() {
   const [sortOrder, setSortOrder] = useState('asc');
 
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    
   };
   
 
   const handleSortOrderChange = () => {
+    setLoading(true);
     setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
   };
 
@@ -43,14 +46,16 @@ export default function CoursesPage() {
   useEffect(() => {
     const fetchCourses = async () => {
       
-      const coursesData = await getCourses();
+      const coursesData = await getCourseCondition(searchTerm, sortOrder);
+      
       if (idCategory) {
+       
         const filteredCourses = coursesData!.filter((course) => course.category === idCategory);
         setCourses(filteredCourses);
       }
       else {
 
-        setCourses(coursesData || []);
+        setCourses(coursesData || null);
       }
 
       
@@ -60,10 +65,11 @@ export default function CoursesPage() {
       setLoading(false);
     };
     fetchCourses();
-  }, [idCategory]);
+  }, [idCategory,searchTerm,sortOrder]);
 
   return (
     <>
+     
       {loading ? (
         <div className="flex justify-center items-center h-screen">
           <PacmanLoader />
@@ -111,7 +117,7 @@ export default function CoursesPage() {
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                           {categories.map((category, index) => (
                             <div key={index}   className="cursor-pointer block p-4 border rounded-lg hover:shadow-md transition-shadow"
-                            onClick={() => {
+                              onClick={() => {
                               setLoading(true)
                               setIdCategory(category._id)
                               }}>
@@ -127,7 +133,13 @@ export default function CoursesPage() {
                     <DrawerFooter>
                      
                       <DrawerClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button onClick ={() => {
+                          setLoading(true)
+                          setIdCategory("")
+                        }} variant="outline"
+                        disabled={idCategory === '' ? true: false}
+                       
+                        >Tất cả</Button>
                       </DrawerClose>
                     </DrawerFooter>
                   </div>
@@ -155,7 +167,7 @@ export default function CoursesPage() {
                 </CardHeader>
               </Link > 
                 <CardContent className="flex-grow p-4">
-                  <Link href="#">
+                  <Link href={`/courses/${course.slug}`}>
                     <h2 className="text-xl font-semibold mb-2 dark:text-white">{course.title}</h2>
                   </Link>
                   <p className="text-sm text-gray-600 mb-2  dark:text-white">Instructor: {course.author}</p>

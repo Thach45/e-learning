@@ -35,7 +35,7 @@ const NewCourse = ({course}:props) => {
                 {/* Author section với chiều cao cố định */}
                 <div className="flex items-center space-x-2 h-8">
                   <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-sm dark:text-black font-medium">{item.author.charAt(0).toUpperCase()}</span>
+                    <span className="text-sm dark:text-black font-medium">{item.author && item.author.charAt(0).toUpperCase()}</span>
                   </div>
                     <div className="text-sm dark:text-white text-gray-500">
                         {item.author}
@@ -76,7 +76,7 @@ const NewCourse = ({course}:props) => {
                            0 đ
                         </span>
                         </div>
-                        <Button className="w-32 dark:text-white bg-blue-500">Xem ngay</Button>
+                        <Button onClick={()=>window.location.href=`/courses/${item.slug}`} className="w-32 dark:text-white bg-blue-500">Xem ngay</Button>
                     </div>
                   </div>
                 )}

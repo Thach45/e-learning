@@ -5,6 +5,7 @@ import Lesson from "@/database/lesson.model";
 import User, { TUser } from "@/database/user.model";
 import { connectToData } from "@/lib/mongoose";
 import { TCourseInfo, TCreateCourse, TLesson, TShowCourse } from "@/types";
+import { SortOrder } from "mongoose";
 
 
 
@@ -97,3 +98,38 @@ console.log(course.lectures.map(lecture => lecture.lesson));
         return null;
     }
 }
+
+
+export const getCourseCondition = async (title = "", sort = "asc"): Promise<TCourseInfo[] | undefined> => {
+    try {
+       await connectToData();
+       let courses: TCourseInfo[] = [];
+       if (title) {
+            courses = await Course.find({ title: { $regex: title, $options: "i" } }).sort({sale_price: sort as SortOrder}).lean<TCourseInfo[]>();
+        }
+        else {
+            courses = await Course.find().sort({sale_price: sort as SortOrder}).lean<TCourseInfo[]>();
+        }
+      // Sử dụng Promise.all để xử lý các truy vấn không đồng bộ
+        await Promise.all(courses.map(async (course) => {
+            const author = await User.findById(course.author);
+            if (author) {
+                course.author = author.name;
+            }
+        }));
+
+        const serializedCourses = courses.map(course => ({
+            ...course,
+            _id: course._id.toString(),
+            category:course.category ? course.category.toString() : "",
+            students:course.students ? course.students.map(student => student.toString()) : [],
+        }));
+
+
+
+        return serializedCourses;
+    } catch (error) {
+        console.log("Error fetching courses:", error);
+        return undefined;
+    }
+};

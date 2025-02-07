@@ -8,8 +8,10 @@ import { PacmanLoader } from "react-spinners"
 import Slogan from "@/components/layout/client/Slogan"
 
 
+
 export default function Page() {
-  const [loanding, setLoading] = useState(true)
+  
+  const [loading, setLoading] = useState(true)
   const [data, setData] = useState<TCourseInfo[] | undefined>([])
 
   useEffect(() => {
@@ -28,7 +30,8 @@ export default function Page() {
 
   return (
     <>
-      {loanding ? (
+       
+      {loading ? (
       <div className="flex justify-center items-center h-screen">
         <PacmanLoader />
       </div>
@@ -61,4 +64,5 @@ export default function Page() {
  
   )
 }
+
 
