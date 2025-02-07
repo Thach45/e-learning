@@ -11,12 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 
 import { ECourseLevel, ECourseStatus } from '@/types/enums';
-import { TCreateCourse, TUserInfo } from '@/types';
+import { TCreateCourse, TShowCategory, TUserInfo } from '@/types';
 import { createCourse } from '@/lib/actions/course.action';
 import mongoose from 'mongoose';
 import { getUserRole } from '@/lib/actions/user.actions';
 import { useEffect, useState } from 'react';
 import { PacmanLoader } from 'react-spinners';
+import { getCategories } from '@/lib/actions/categogy.action';
 
 
 const courseSchema = z.object({
@@ -76,12 +77,15 @@ export default function CreateCourseForm() {
     name: "info.qa"
   })
   const [authors, setAuthors] = useState<TUserInfo[] | undefined>([]);
+  const [categories, setCategories] = useState<TShowCategory[] |null |undefined>([]);
   const [image, setImage] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchAuthors = async () => {
       const authors = await getAuthors();
+      const categories = await getCategories();
+      setCategories(categories);
       setAuthors(authors);
     };
   
@@ -132,7 +136,7 @@ export default function CreateCourseForm() {
         status: data.status,
         author: data.author ? new mongoose.Types.ObjectId(data.author) : undefined,
          level: data.level,
-        category: data.category ? new mongoose.Types.ObjectId(data.category) : undefined,
+        category: data.category,
         technology: data.technology,
         info: {
           requirements: data.info.requirements,
@@ -250,8 +254,23 @@ export default function CreateCourseForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category ID</Label>
-              <Input id="category" {...register('category')} />
+              <Label htmlFor="category">Danh mục khoá học</Label>
+              <Controller
+                name="category"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories?.map((category) => (
+                        <SelectItem key={category._id} value={category._id}>{category.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             <div className="space-y-2">

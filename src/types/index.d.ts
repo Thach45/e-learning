@@ -34,7 +34,7 @@ type TCreateCourse = {
     status?: ECourseStatus,
     author?: Schema.Types.ObjectId,
     level: ECourseLevel,
-    category?: Schema.Types.ObjectId,
+    category?: string,
     technology: string[],
     info?: {
       requirements: string[],
@@ -53,13 +53,14 @@ interface TCourseInfo {
     sale_price: number
     status: ECourseStatus
     author: string,
-    category: Schema.Types.ObjectId,
+    category: string,
     chapters?: Chapter[]
     students: Schema.Types.ObjectId[]
     views?: number
     rating?: number[]
     technology: string[]
     level: ECourseLevel
+    created_at: Date
 
   }
 
@@ -127,6 +128,7 @@ type TShowLesson = {
 }
 
 type TShowCourse = {
+    
     _id: string,
     info: {
         requirements: string[],
@@ -165,5 +167,15 @@ type TShowComment = {
     lesson: string;
     created_at: Date;
 }
-
+type TCreateCategory = {
+    title: string;
+    deleted: boolean;
+}
+type TShowCategory = {
+    _id: string;
+    title: string;
+    courses: TShowCourse[];
+    nameCourses: string[];
+    deleted: boolean;
+}
 export const ILinkItem

@@ -42,14 +42,14 @@ const menuItem:TLinkItem[] = [
 
 const menuItemAdmin:TLinkItem[] = [
     {
-        link: "admin/manage/courses",
+        link: "/admin/manage/courses",
         icon: <LayoutDashboard className="h-5 w-5" />,
         title: "Manage Courses"
     },
     {
-        link: "admin/manage/students",
+        link: "/admin/manage/categogy",
         icon: <Users className="h-5 w-5" />,
-        title: "Manage Students"
+        title: "Manage Categories"
     },
     {
         link: "admin/manage/orders",

@@ -4,24 +4,63 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PacmanLoader } from 'react-spinners';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import {  Clock, Star, Users2 } from 'lucide-react';
+import {  FileSearch, Star, Users2, ChevronDown } from 'lucide-react';
 import { getCourses } from '@/lib/actions/course.action';
-import { TCourseInfo } from '@/types';
+import { TCourseInfo, TShowCategory } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import Slogan from '@/components/layout/client/Slogan';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { getCategories } from '@/lib/actions/categogy.action';
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<TCourseInfo[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<TShowCategory[]>([]);
+  const [idCategory, setIdCategory] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortOrder, setSortOrder] = useState('asc');
+
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+  
+
+  const handleSortOrderChange = () => {
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  };
+
 
   useEffect(() => {
     const fetchCourses = async () => {
+      
       const coursesData = await getCourses();
-      setCourses(coursesData || []);
+      if (idCategory) {
+        const filteredCourses = coursesData!.filter((course) => course.category === idCategory);
+        setCourses(filteredCourses);
+      }
+      else {
+
+        setCourses(coursesData || []);
+      }
+
+      
+        
+      const categoriesData = await getCategories();
+      setCategories(categoriesData || []);
       setLoading(false);
     };
     fetchCourses();
-  }, []);
+  }, [idCategory]);
 
   return (
     <>
@@ -30,11 +69,79 @@ export default function CoursesPage() {
           <PacmanLoader />
         </div>
       ) : (
-        <div className="container mx-auto py-8">
-          <h1 className="text-3xl font-bold mb-6">Available Courses</h1>
+        <div className="container mx-auto p-8">
+          {/* {Slogan} */}
+          <Slogan />
+          {/* {Tìm kiếm khoá học} */}
+          <div className="bg-white shadow-md rounded-lg p-6 my-8 flex items-center justify-between">
+             {/* Search */}
+            <div className="flex items-center space-x-2 flex-1">
+              <FileSearch className="text-gray-400" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm khóa học..."
+                className="flex-1 outline-none text-gray-600 dark:bg-white placeholder-gray-400"
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
+
+            {/* Sort */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 cursor-pointer" onClick={handleSortOrderChange}>
+                <span className="text-gray-600">{sortOrder === 'asc' ? 'Giá tăng dần' : 'Giá giảm dần'}</span>
+                <ChevronDown
+                  className={`text-gray-400 transition-transform ${sortOrder === 'asc' ? 'rotate-180' : ''}`}
+                />
+              </div>
+
+              {/* Category */}
+              <Drawer>
+                <DrawerTrigger asChild>
+                  <Button variant="outline">Danh mục</Button>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <div className="mx-auto w-full">
+                    <DrawerHeader>
+                      <DrawerTitle>Danh mục khoá học</DrawerTitle>
+                      
+                    </DrawerHeader>
+                    <section className="py-12 bg-white">
+                      <div className="container mx-auto px-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                          {categories.map((category, index) => (
+                            <div key={index}   className="cursor-pointer block p-4 border rounded-lg hover:shadow-md transition-shadow"
+                            onClick={() => {
+                              setLoading(true)
+                              setIdCategory(category._id)
+                              }}>
+                            
+                              <span className="text-sm font-medium">{category.title}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </section>
+                    
+                     
+                    <DrawerFooter>
+                     
+                      <DrawerClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DrawerClose>
+                    </DrawerFooter>
+                  </div>
+                </DrawerContent>
+              </Drawer>
+              
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {courses && courses.map((course) => (
-              <Card key={course._id} className="flex flex-col">
+              <Card key={course._id} className="flex flex-col "
+              style={{ boxShadow: '0 4px 8px rgba(255, 255, 255, 0.5)' }}
+              >
               <Link href={`/courses/${course.slug}`}>
                 <CardHeader className="p-1">
                   <Image 
@@ -49,24 +156,22 @@ export default function CoursesPage() {
               </Link > 
                 <CardContent className="flex-grow p-4">
                   <Link href="#">
-                    <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
+                    <h2 className="text-xl font-semibold mb-2 dark:text-white">{course.title}</h2>
                   </Link>
-                  <p className="text-sm text-gray-600 mb-2">Instructor: {course.author}</p>
+                  <p className="text-sm text-gray-600 mb-2  dark:text-white">Instructor: {course.author}</p>
                   <div className="flex items-center space-x-2 mb-2">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">200</span>
                     <Users2 className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">{course.students.length} students</span>
+                    <span className="text-sm text-gray-600  dark:text-white">{course.students.length} students</span>
                   </div>
                   <div className="flex items-center mb-2">
                     <Star className="w-4 h-4 text-yellow-400" />
-                    <span className="text-sm text-gray-600 ml-1">{course.rating && course.rating.length > 0
+                    <span className="text-sm text-gray-600 ml-1  dark:text-white">{course.rating && course.rating.length > 0
                           ? (course.rating.reduce((total, value) => total + value, 0) / course.rating.length).toFixed(1)
                           : "Chưa có đánh giá"}</span>
                   </div>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {course.technology.map((tag) => (
-                      <Badge key={tag} variant="secondary">{tag}</Badge>
+                      <Badge key={tag} className=" bg-blue-500" variant="secondary">{tag}</Badge>
                     ))}
                   </div>
                 </CardContent>

@@ -17,7 +17,7 @@ export interface TCourse extends Document {
     views: number;
     level: ECourseLevel;
     rating: number[];
-    category: Schema.Types.ObjectId;
+    category: string;
     technology: string[];
     info: {
         requirements: string[];
@@ -97,8 +97,9 @@ const courseSchema = new Schema<TCourse>({
         default: [0],
     },
     category: {
-        type: Schema.Types.ObjectId,
-        ref: 'category',
+        type: String,
+        default: '',
+
     },
     technology: [{
         type: String,
