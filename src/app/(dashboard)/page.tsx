@@ -10,7 +10,7 @@ import Slogan from "@/components/layout/client/Slogan"
 
 
 export default function Page() {
-  
+  const slogan = "Hãy cùng chúng tôi khám phá tri thức và nâng cao kỹ năng qua những buổi học online linh hoạt, đầy cảm hứng. Chọn chúng tôi, bạn chọn một tương lai tươi sáng và thành công."
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<TCourseInfo[] | undefined>([])
 
@@ -40,7 +40,7 @@ export default function Page() {
         {/* Main Content */}
         <main className="flex-1 p-8">
           {/* Hero Section */}
-          <Slogan />
+          <Slogan text={slogan}/>
     
           {/* Latest Courses */}
           <div className="mb-8">

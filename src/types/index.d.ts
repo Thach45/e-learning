@@ -112,6 +112,7 @@ type TShowLesson = {
     videoType: EVideoType,
     videoURL: string,
     content: string,
+    
     type: ELessonType,
     attachments: [
         {
@@ -139,6 +140,7 @@ type TShowCourse = {
     title: string,
     description: string,
     rating: number[],
+    sale_price: number,
     students: Schema.Types.ObjectId[],
     lectures: Schema.Types.ObjectId[],
 }

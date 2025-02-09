@@ -63,7 +63,12 @@ export default function InfoCourse() {
                     window.location.href="/sign-in"
                     return
                   }
-                  window.location.href=`/courses/${slugCourse.slugcourse}/lesson/${courseInfo?.lectures[0].lessons[0].slug}`
+                  if(courseInfo?.sale_price === 0)
+                    {
+                      window.location.href=`/courses/${slugCourse.slugcourse}/lesson/${courseInfo?.lectures[0].lessons[0].slug}`
+                      return
+                    }
+                  
                   }}>
                   Học ngay
                   <ArrowRight className="ml-2 h-4 w-4" />

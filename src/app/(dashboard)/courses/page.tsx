@@ -22,7 +22,7 @@ import {
 import { getCategories } from '@/lib/actions/categogy.action';
 
 export default function CoursesPage() {
- 
+  const slogan = "Hãy cùng chúng tôi khám phá tri thức và nâng cao kỹ năng qua những buổi học online linh hoạt, đầy cảm hứng. Chọn chúng tôi, bạn chọn một tương lai tươi sáng và thành công.";
   const [courses, setCourses] = useState<TCourseInfo[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<TShowCategory[]>([]);
@@ -77,7 +77,7 @@ export default function CoursesPage() {
       ) : (
         <div className="container mx-auto p-8">
           {/* {Slogan} */}
-          <Slogan />
+          <Slogan text={slogan}/>
           {/* {Tìm kiếm khoá học} */}
           <div className="bg-white shadow-md rounded-lg p-6 my-8 flex items-center justify-between">
              {/* Search */}

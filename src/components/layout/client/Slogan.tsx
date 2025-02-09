@@ -1,8 +1,10 @@
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import React from 'react'
-
-const Slogan = () => {
+type SloganProps = {
+  text: string
+}
+const Slogan = ({text}: SloganProps) => {
   return (
     <div className="bg-gradient-to-r from-indigo-600 to-blue-500 rounded-3xl p-8 mb-8 text-white relative overflow-hidden">
       <div className="max-w-2xl relative z-10">
@@ -10,8 +12,7 @@ const Slogan = () => {
           HÃY HỌC THEO CÁCH RIÊNG CỦA BẠN
         </h1>
         <p className="text-blue-100 mb-6 opacity-0 lg:opacity-100">
-          Hãy cùng chúng tôi khám phá tri thức và nâng cao kỹ năng qua những buổi học online linh hoạt, đầy cảm
-          hứng. Chọn chúng tôi, bạn chọn một tương lai tươi sáng và thành công.
+         {text}
         </p>
         <Button className="bg-white text-indigo-600 hover:bg-blue-50" onClick={() => window.location.href="/courses"}>
           Học ngay
