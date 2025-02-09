@@ -17,10 +17,12 @@ import { ListLesson } from "@/components/layout/client/ListLesson"
 import FeaturesCourse from "@/components/layout/client/FeaturesCourse"
 import CourseInfo from "@/components/layout/client/CourseInfo"
 import { PacmanLoader } from "react-spinners"
+import { useAuth } from "@clerk/nextjs"
 
 
 
 export default function InfoCourse() {
+  const {isSignedIn} = useAuth()
     const slugCourse = useParams()
   const [loading, setLoading] = useState(true)
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
@@ -56,7 +58,13 @@ export default function InfoCourse() {
               </p>
               <div className="flex flex-wrap gap-6">
                 <Button size="lg" className="bg-white text-black hover:bg-gray-100" 
-                onClick={()=>{window.location.href=`/courses/${slugCourse.slugcourse}/lesson/${courseInfo?.lectures[0].lessons[0].slug}`}}>
+                onClick={()=>{
+                  if(!isSignedIn){
+                    window.location.href="/sign-in"
+                    return
+                  }
+                  window.location.href=`/courses/${slugCourse.slugcourse}/lesson/${courseInfo?.lectures[0].lessons[0].slug}`
+                  }}>
                   Học ngay
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
