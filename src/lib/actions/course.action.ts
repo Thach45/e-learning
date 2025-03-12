@@ -1,10 +1,11 @@
 "use server";
+import Category from "@/database/categogy.model";
 import Course, { TCourse } from "@/database/course.model";
 import Lecture, { TLecture } from "@/database/lecture.model";
 import Lesson from "@/database/lesson.model";
 import User, { TUser } from "@/database/user.model";
 import { connectToData } from "@/lib/mongoose";
-import { TCourseInfo, TCreateCourse, TLesson, TShowCourse } from "@/types";
+import { TCourseInfo, TCreateCourse, TEditCourse, TLesson, TShowCourse } from "@/types";
 import { SortOrder } from "mongoose";
 
 
@@ -133,3 +134,31 @@ export const getCourseCondition = async (title = "", sort = "asc"): Promise<TCou
         return undefined;
     }
 };
+
+export const getCourseById = async (id: string): Promise<TEditCourse | null> => {
+    try {
+        await connectToData();
+
+        const course = await Course.findById(id).lean<TEditCourse>();
+        const authorName = await User.findById(course?.author).select('name').lean<TUser>();
+        const categoryName = await Category.findById(id).select('title').lean<TCourse>();
+        course ? course.author = authorName?.name : "";
+        course ? course.category = categoryName?.title : "";
+        console.log(course);
+        return course;
+    } catch (error) {
+        console.log("Error fetching course:", error);
+        return null;
+    }
+}
+
+export const updateCourse = async (id: string, course: TCreateCourse): Promise<TCourse | null> => {
+    try {
+        await connectToData();
+        const updatedCourse = await Course.findByIdAndUpdate(id, course, { new: true });
+        return updatedCourse;
+    } catch (error) {
+        console.log("Error updating course:", error);
+        return null;
+    }
+}

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { Plus, Edit, Trash2, User } from "lucide-react"
 import { getCourses } from "@/lib/actions/course.action"
 import { TCourseInfo, TCreateLecture, TCreateLesson, TLesson, TEditLesson } from "@/types"
 import { createLecture, deleteLecture, getLectures } from "@/lib/actions/lecture.model"
@@ -253,7 +253,10 @@ export default function CourseManagement() {
                   </div>
                 </DialogContent>
               </Dialog>
-              <Button variant="outline" size="sm" onClick={() => window.location.href = `/admin/manage/courses/${course._id}`}>
+              <Button variant="outline" size="sm" onClick={() => window.location.href = `/admin/manage/courses/users/${course._id}`}>
+                <User className="mr-2 h-4 w-4" /> Users
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => window.location.href = `/admin/manage/courses/edit/${course._id}`}>
                 <Edit className="mr-2 h-4 w-4" /> Edit
               </Button>
               <Button variant="destructive" size="sm">

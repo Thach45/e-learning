@@ -22,21 +22,21 @@ const menuItem:TLinkItem[] = [
         icon: <BookOpen className="h-5 w-5" />,
         title: "Courses"
     },
-    {
-        link: "/assignments",
-        icon: <ClipboardList className="h-5 w-5" />,
-        title: "Assignments"
-    },
-    {
-        link: "/quizzes",
-        icon: <GraduationCap className="h-5 w-5" />,
-        title: "Quizzes"
-    },
-    {
-        link: "/messages",
-        icon: <MessageSquare className="h-5 w-5" />,
-        title: "Messages"
-    }
+    // {
+    //     link: "/assignments",
+    //     icon: <ClipboardList className="h-5 w-5" />,
+    //     title: "Assignments"
+    // },
+    // {
+    //     link: "/quizzes",
+    //     icon: <GraduationCap className="h-5 w-5" />,
+    //     title: "Quizzes"
+    // },
+    // {
+    //     link: "/messages",
+    //     icon: <MessageSquare className="h-5 w-5" />,
+    //     title: "Messages"
+    // }
     
 ]
 

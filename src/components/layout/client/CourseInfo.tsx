@@ -4,8 +4,9 @@ import { BookOpen, CheckCircle2, User } from 'lucide-react'
 import React from 'react'
 type props = {
     courseInfo: TShowCourse | null | undefined
+    slugcourse: string
 }
-const CourseInfo = ({courseInfo}:props) => {
+const CourseInfo = ({courseInfo,slugcourse}:props) => {
   return (
     <div className="bg-gray-100 py-16 rounded-lg">
         <div className="max-w-6xl mx-auto px-4">
@@ -45,7 +46,7 @@ const CourseInfo = ({courseInfo}:props) => {
                   <span>Hỗ trợ kỹ thuật</span>
                 </div>
               </div>
-              <Button className="w-full bg-black text-white hover:bg-gray-800">Liên hệ</Button> 
+              <Button className="w-full bg-black text-white hover:bg-gray-800" onClick={()=> window.location.href = `/courses/${slugcourse}/pay`} >Liên hệ</Button> 
             </div>
           </div>
         </div>

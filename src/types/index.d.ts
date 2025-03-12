@@ -24,7 +24,7 @@ type TUserInfo = {
 
 type TCreateCourse = {
     title: string,
-    slug: string,
+    
     thumbnail?: string,
     intro?: string,
     description?: string,
@@ -43,7 +43,28 @@ type TCreateCourse = {
     },
 
 }
+type TEditCourse = {
+    title: string,
+    slug: string,
+    thumbnail?: string,
+    intro?: string,
+    description?: string,
+    price: number,
+    sale_price: number | undefined,
+    status?: ECourseStatus,
+    author?: Schema.Types.ObjectId,
+    level: ECourseLevel,
+    category?: string,
+    technology: string[],
+    info?: {
+      requirements: string[],
+      
+      benefits: string[]
+    },
+    students?: string[]
+ 
 
+}
 interface TCourseInfo {
     _id: string
     title: string
@@ -143,6 +164,9 @@ type TShowCourse = {
     sale_price: number,
     students: Schema.Types.ObjectId[],
     lectures: Schema.Types.ObjectId[],
+    technology: string[],
+    level: ECourseLevel,
+    category: Schema.Types.ObjectId,
 }
 
 type TShowLecture = {
@@ -180,4 +204,9 @@ type TShowCategory = {
     nameCourses: string[];
     deleted: boolean;
 }
+
+type TAddStudent = {
+    
+}
+
 export const ILinkItem

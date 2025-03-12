@@ -59,7 +59,7 @@ const NewCourse = ({course}:props) => {
                             {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.price)}
                         </span>
                         </div>
-                        <Button className="w-32 dark:text-white bg-blue-500">Xem ngay</Button>
+                        <Button onClick={()=>window.location.href=`/courses/${item.slug}`} className="w-32 dark:text-white bg-blue-500">Xem ngay</Button>
                     </div>
                   </div>
                 ) : (

@@ -46,7 +46,7 @@ export default function Page() {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-slate-800 dark:text-white">KHOÁ HỌC MỚI NHẤT</h2>
-              <Button variant="ghost" className="text-indigo-600 dark:text-white">
+              <Button variant="ghost" className="text-indigo-600 dark:text-white" onClick={() => window.location.href = "/courses"}>
                 Xem thêm →
               </Button>
             </div>
