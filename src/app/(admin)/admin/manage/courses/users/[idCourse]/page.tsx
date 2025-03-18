@@ -17,7 +17,7 @@ type TUser = {
   _id: string;
   name: string;
   email: string;
-  courses: string[] | any[]; // Accept both string[] and ObjectId[]
+  courses: string[];
   role: string;
   selected?: boolean;
 };
@@ -46,11 +46,11 @@ function App() {
         const studentInCourse = await getUserByManyId(idStudent?.students as string[])
         const user = await getFullUser()
         // Map database users to our expected type format
-        setUsers(user ? user.map((u: any) => ({
-          _id: u._id.toString(),
+        setUsers(user ? user.map((u) => ({
+          _id: u._id as string,
           name: u.name,
           email: u.email,
-          courses: u.courses.map((c: any) => c.toString()),
+          courses: u.courses ? u.courses.map((c) => c.toString()) : [],
           role: u.role,
           selected: false
         })) : [])
