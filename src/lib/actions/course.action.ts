@@ -142,9 +142,11 @@ export const getCourseById = async (id: string): Promise<TEditCourse | null> => 
         const course = await Course.findById(id).lean<TEditCourse>();
         const authorName = await User.findById(course?.author).select('name').lean<TUser>();
         const categoryName = await Category.findById(id).select('title').lean<TCourse>();
-        course ? course.author = authorName?.name : "";
-        course ? course.category = categoryName?.title : "";
-        console.log(course);
+        if (course) {
+            course.author = authorName?.name || "";
+            course.category = categoryName?.title || "";
+        }
+        
         return course;
     } catch (error) {
         console.log("Error fetching course:", error);
