@@ -17,7 +17,7 @@ type TUser = {
   _id: string;
   name: string;
   email: string;
-  courses: string[];
+  courses: string[] | any[]; // Accept both string[] and ObjectId[]
   role: string;
   selected?: boolean;
 };
@@ -45,7 +45,15 @@ function App() {
         const idStudent = await getCourseById(slug.idCourse as string)
         const studentInCourse = await getUserByManyId(idStudent?.students as string[])
         const user = await getFullUser()
-        setUsers(user as TUser[])
+        // Map database users to our expected type format
+        setUsers(user ? user.map((u: any) => ({
+          _id: u._id.toString(),
+          name: u.name,
+          email: u.email,
+          courses: u.courses.map((c: any) => c.toString()),
+          role: u.role,
+          selected: false
+        })) : [])
         setStudents(studentInCourse!)
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
