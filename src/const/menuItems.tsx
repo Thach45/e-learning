@@ -1,11 +1,8 @@
 import { TLinkItem } from '@/types';
 import {
     BookOpen,
-    GraduationCap,
     Home,
     LayoutDashboard,
-    MessageSquare,
-    ClipboardList,
     Users,
     ShoppingCart,
     MessageCircle,

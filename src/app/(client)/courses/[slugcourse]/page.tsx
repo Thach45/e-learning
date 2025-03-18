@@ -12,9 +12,9 @@ import FeaturesCourse from "@/components/layout/client/FeaturesCourse"
 import CourseInfo from "@/components/layout/client/CourseInfo"
 import { PacmanLoader } from "react-spinners"
 import { useUser } from "@clerk/nextjs"
-import { Types } from "mongoose"
+
 import { getUser } from "@/lib/actions/user.actions"
-import { TUser } from "@/database/user.model"
+
 
 
 export default function InfoCourse() {

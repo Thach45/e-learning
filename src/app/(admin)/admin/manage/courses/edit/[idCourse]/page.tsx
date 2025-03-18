@@ -1,5 +1,5 @@
 'use client';
-import { useForm, useFieldArray, Controller } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Button } from "@/components/ui/button"
@@ -84,10 +84,9 @@ export default function CreateCourseForm() {
         setBenefits(coursesData?.info?.benefits || []);
         setCategories(categories);
         setAuthors(authors);
-        console.log(coursesData);
         
         if (coursesData) {
-          reset(coursesData);
+          reset(course!);
         }
         
         setLoading(false); // Set loading to false after data is fetched
@@ -212,7 +211,6 @@ export default function CreateCourseForm() {
          
         },
       };
-      console.log(dataCreate);
       
       updateCourse(slugCourse as string, dataCreate);
       alert("Cập nhật khóa học thành công!");

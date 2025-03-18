@@ -205,9 +205,4 @@ type TShowCategory = {
     nameCourses: string[];
     deleted: boolean;
 }
-
-type TAddStudent = {
-    
-}
-
 export const ILinkItem
