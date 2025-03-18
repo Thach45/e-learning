@@ -20,6 +20,7 @@ type TUserInfo = {
     name: string,
     email: string,
     role: string
+    courses  : string[]
 }
 
 type TCreateCourse = {

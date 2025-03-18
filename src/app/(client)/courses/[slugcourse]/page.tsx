@@ -6,7 +6,7 @@ import { CheckCircle2, ArrowRight, PlayCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getCourseBySlug } from "@/lib/actions/course.action"
 import { useParams } from "next/navigation"
-import { TShowCourse } from "@/types"
+import { TShowCourse, TUserInfo } from "@/types"
 import { ListLesson } from "@/components/layout/client/ListLesson"
 import FeaturesCourse from "@/components/layout/client/FeaturesCourse"
 import CourseInfo from "@/components/layout/client/CourseInfo"
@@ -14,16 +14,8 @@ import { PacmanLoader } from "react-spinners"
 import { useUser } from "@clerk/nextjs"
 import { Types } from "mongoose"
 import { getUser } from "@/lib/actions/user.actions"
+import { TUser } from "@/database/user.model"
 
-
-type TUser = {
-    _id: string,
-    name: string,
-    email: string,
-    role: string,
-    courses: string[],
-    created_at: Date,
-}
 
 export default function InfoCourse() {
   const { isSignedIn, user } = useUser()
@@ -33,7 +25,7 @@ export default function InfoCourse() {
   const [loading, setLoading] = useState(true)
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
   const [courseInfo, setCourseInfo] = useState<TShowCourse | null>(null)
-  const [userData, setUserData] = useState<TUser | null>(null)
+  const [userData, setUserData] = useState<TUserInfo | null>(null)
  
   useEffect(() => {
     

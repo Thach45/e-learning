@@ -17,11 +17,11 @@ export const createUser = async (user: TCreateUser) => {
 
 };
 
-export const getUser= async (userId : string): Promise<TUser | null | undefined> => {
+export const getUser= async (userId : string): Promise<TUserInfo | null | undefined> => {
     try {
         connectToData();
         
-        const info = await User.findOne({ clerkId: userId }).select('-clerkId').lean<TUser>().exec();
+        const info = await User.findOne({ clerkId: userId }).select('-clerkId').lean<TUserInfo>().exec();
         
         return info 
     } catch (error) {
