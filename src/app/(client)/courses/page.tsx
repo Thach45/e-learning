@@ -79,14 +79,14 @@ export default function CoursesPage() {
           {/* {Slogan} */}
           <Slogan text={slogan}/>
           {/* {Tìm kiếm khoá học} */}
-          <div className="bg-white shadow-md rounded-lg p-6 my-8 flex items-center justify-between">
+          <div className="bg-white shadow-md dark:bg-blue-500 rounded-lg p-6 my-8 flex items-center justify-between">
              {/* Search */}
             <div className="flex items-center space-x-2 flex-1">
-              <FileSearch className="text-gray-400" />
+              <FileSearch className="text-gray-400 dark:text-white" />
               <input
                 type="text"
                 placeholder="Tìm kiếm khóa học..."
-                className="flex-1 outline-none text-gray-600 dark:bg-white placeholder-gray-400"
+                className="flex-1 outline-none text-gray-600 dark:bg-blue-500 dark:text-white dark:placeholder-white"
                 value={searchTerm}
                 onChange={handleSearch}
               />
@@ -95,16 +95,16 @@ export default function CoursesPage() {
             {/* Sort */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 cursor-pointer" onClick={handleSortOrderChange}>
-                <span className="text-gray-600">{sortOrder === 'asc' ? 'Giá tăng dần' : 'Giá giảm dần'}</span>
+                <span className="text-gray-600 dark:text-white">{sortOrder === 'asc' ? 'Giá tăng dần' : 'Giá giảm dần'}</span>
                 <ChevronDown
-                  className={`text-gray-400 transition-transform ${sortOrder === 'asc' ? 'rotate-180' : ''}`}
+                  className={`text-gray-400 dark:text-white transition-transform ${sortOrder === 'asc' ? 'rotate-180' : ''}`}
                 />
               </div>
 
               {/* Category */}
               <Drawer>
                 <DrawerTrigger asChild>
-                  <Button variant="outline">Danh mục</Button>
+                  <Button variant="outline" className="bg-blue-500  dark:bg-blue-800 text-white">Danh mục</Button>
                 </DrawerTrigger>
                 <DrawerContent>
                   <div className="mx-auto w-full">
@@ -170,10 +170,10 @@ export default function CoursesPage() {
                   <Link href={`/courses/${course.slug}`}>
                     <h2 className="text-xl font-semibold mb-2 dark:text-white">{course.title}</h2>
                   </Link>
-                  <p className="text-sm text-gray-600 mb-2  dark:text-white">Instructor: {course.author}</p>
+                  <p className="text-sm text-gray-600 mb-2  dark:text-white">Người dạy: {course.author}</p>
                   <div className="flex items-center space-x-2 mb-2">
                     <Users2 className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm text-gray-600  dark:text-white">{course.students.length} students</span>
+                    <span className="text-sm text-gray-600  dark:text-white">{course.students.length} học viên</span>
                   </div>
                   <div className="flex items-center mb-2">
                     <Star className="w-4 h-4 text-yellow-400" />
@@ -183,7 +183,7 @@ export default function CoursesPage() {
                   </div>
                   <div className="flex flex-wrap gap-2 mb-2">
                     {course.technology.map((tag) => (
-                      <Badge key={tag} className=" bg-blue-500" variant="secondary">{tag}</Badge>
+                      <Badge key={tag} className=" bg-blue-500 dark:bg-blue-800 text-white" variant="secondary">{tag}</Badge>
                     ))}
                   </div>
                 </CardContent>
@@ -191,7 +191,7 @@ export default function CoursesPage() {
               <CardFooter className="p-4 bg-gray-50 rounded-b-lg  dark:bg-black">
                 <div className="flex items-center justify-between w-full">
                   <span className="text-lg font-bold">${course.sale_price}</span>
-                  <Button>Enroll Now</Button>
+                  <Button className="bg-blue-500  dark:bg-blue-800 text-white" onClick={() =>  window.location.href = `/courses/${course.slug}/pay`}>Đăng kí</Button>
                 </div>
               </CardFooter >
             </Card>

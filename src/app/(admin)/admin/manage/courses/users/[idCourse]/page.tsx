@@ -108,7 +108,6 @@ function App() {
       setIsAddingStudents(false);
     }
   };
-
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
     student.email.toLowerCase().includes(studentSearch.toLowerCase())
@@ -367,6 +366,7 @@ function App() {
                           <td className="p-4 text-gray-600">{user.email}</td>
                           <td className="p-4 text-gray-600">
                             {slug.idCourse && user.courses.includes(slug.idCourse as string) ? (
+                              
                               <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
                                 Đã tham gia
                               </span>

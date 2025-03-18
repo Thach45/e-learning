@@ -95,7 +95,7 @@ export const removeCourseFromUser = async (courseId: string, userIds: string[]) 
             { _id: { $in: userIds } },
             { $pull: { courses: courseId } }
         ).exec();
-        console.log("step1")
+        console.log(userIds, courseId)
         await Course.updateOne(
             { _id: courseId },
             { $pull: { students: { $in: userIds } } }
