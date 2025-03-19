@@ -193,7 +193,7 @@ export const deleteCommentInCourse = async (courseId: string, commentId: string)
         }
 
         // Xóa comment khỏi khóa học
-        const updatedCourse = await Course.findByIdAndUpdate(
+        await Course.findByIdAndUpdate(
             courseId,
             { $pull: { comments: commentId } },
             { new: true }
