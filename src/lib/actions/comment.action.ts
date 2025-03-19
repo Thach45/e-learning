@@ -66,3 +66,14 @@ export const getCommentsByLessonId = async (lessonId: string): Promise<TShowComm
         return null;
     }
 };
+
+export const getAllComments = async (): Promise<TShowComment[] | null> => {
+    try {
+        await connectToData();
+        const allComments = await Comment.find().lean<TShowComment[]>();
+        return allComments;
+    } catch (error) {
+        console.log("Error:", error);
+        return null;
+    }
+};

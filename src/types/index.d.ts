@@ -178,6 +178,8 @@ type TShowLecture = {
     
 }
 type TCreateComment = {
+    _id?: string;
+    name: string | null;
     parent?: string;
     user: string;
     content: string;

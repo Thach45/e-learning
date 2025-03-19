@@ -4,6 +4,7 @@ import { Document, model, models, Schema } from 'mongoose';
 export interface TComment extends Document {
     _id: string;
     user: string;
+    name: string;
     content: string;
     lesson: string;
     parent?: string;
@@ -20,6 +21,9 @@ const commentSchema = new Schema<TComment>({
     parent: {
         type: String,
         required: false,
+    },
+    name: {
+        type: String
     },
     content: {
         type: String,

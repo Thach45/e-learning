@@ -1,11 +1,16 @@
 "use server";
 import Category from "@/database/categogy.model";
+import Comment from "@/database/comment.model";
 import Course, { TCourse } from "@/database/course.model";
 import Lecture, { TLecture } from "@/database/lecture.model";
 import Lesson from "@/database/lesson.model";
 import User, { TUser } from "@/database/user.model";
 import { connectToData } from "@/lib/mongoose";
-import { TCourseInfo, TCreateCourse, TEditCourse, TLesson, TShowCourse } from "@/types";
+import { TCourseInfo, TCreateCourse, TEditCourse, TLesson, TShowCourse, TShowComment } from "@/types";
+
+type TCourseWithComments = TCourseInfo & {
+  comments: TShowComment[];
+};
 import { SortOrder } from "mongoose";
 
 
@@ -153,6 +158,58 @@ export const getCourseById = async (id: string): Promise<TEditCourse | null> => 
         return null;
     }
 }
+
+export const getCoursesWithComments = async (): Promise<TCourseWithComments[] | null> => {
+    try {
+        await connectToData();
+
+        const courses = await Course.find().lean<TCourseInfo[]>();
+
+        const coursesWithComments = await Promise.all(
+            courses.map(async (course) => {
+                const lessons = await Lesson.find({ course: course._id }).lean();
+                const comments = await Comment.find({ lesson: { $in: lessons.map((lesson) => lesson._id) } }).lean<TShowComment[]>();
+
+                return {
+                    ...course,
+                    comments,
+                };
+            })
+        );
+
+        return coursesWithComments;
+    } catch (error) {
+        console.log("Error fetching courses with comments:", error);
+        return null;
+    }
+};
+
+export const deleteCommentInCourse = async (courseId: string, commentId: string): Promise<TShowComment | null> => {
+    try {
+        await connectToData();
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return null;
+        }
+
+        // Xóa comment khỏi khóa học
+        const updatedCourse = await Course.findByIdAndUpdate(
+            courseId,
+            { $pull: { comments: commentId } },
+            { new: true }
+        );
+
+        // Xóa comment khỏi cơ sở dữ liệu
+        const deletedComment = await Comment.findByIdAndDelete(commentId);
+
+        return deletedComment;
+    }
+    catch (error) {
+        console.log("Error deleting comment:", error);
+        return null;
+    }
+}
+
 
 export const updateCourse = async (id: string, course: TCreateCourse): Promise<TCourse | null> => {
     try {

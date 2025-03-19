@@ -93,6 +93,7 @@ export default function CourseVideoPlayer() {
     setIsSubmitting(true)
     if (newComment.trim()) {
       const comment: TCreateComment = {
+        name: user!.username,
         lesson: lesson!._id,
         user: user!.id,
         content: newComment,
