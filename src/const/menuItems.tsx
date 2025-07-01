@@ -6,24 +6,25 @@ import {
     Users,
     ShoppingCart,
     MessageCircle,
+    List,
   } from 'lucide-react';
 
 const menuItem:TLinkItem[] = [
     {
         link: "/",
         icon: <Home className="h-5 w-5" />,
-        title: "Home"
+        title: "Trang chủ"
     },
     {
         link: "/courses",
         icon: <BookOpen className="h-5 w-5" />,
-        title: "Courses"
+        title: "Khóa học"
     },
-    // {
-    //     link: "/assignments",
-    //     icon: <ClipboardList className="h-5 w-5" />,
-    //     title: "Assignments"
-    // },
+    {
+        link: "/categories",
+        icon: <List className="h-5 w-5" />,
+        title: "Danh mục"
+    },
     // {
     //     link: "/quizzes",
     //     icon: <GraduationCap className="h-5 w-5" />,
