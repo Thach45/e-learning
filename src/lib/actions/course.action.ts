@@ -106,17 +106,35 @@ console.log(course.lectures.map(lecture => lecture.lesson));
 }
 
 
-export const getCourseCondition = async (title = "", sort = "asc"): Promise<TCourseInfo[] | undefined> => {
+export const getCourseCondition = async (
+    title = "", 
+    sort = "asc", 
+    page = 1, 
+    limit = 2
+): Promise<{ courses: TCourseInfo[], totalPages: number } | undefined> => {
     try {
-       await connectToData();
-       let courses: TCourseInfo[] = [];
-       if (title) {
-            courses = await Course.find({ title: { $regex: title, $options: "i" } }).sort({sale_price: sort as SortOrder}).lean<TCourseInfo[]>();
-        }
-        else {
-            courses = await Course.find().sort({sale_price: sort as SortOrder}).lean<TCourseInfo[]>();
-        }
-      // Sử dụng Promise.all để xử lý các truy vấn không đồng bộ
+        await connectToData();
+        
+        // Build the query
+        const query = title 
+            ? { title: { $regex: title, $options: "i" } }
+            : {};
+
+        // Calculate skip value for pagination
+        const skip = (page - 1) * limit;
+
+        // Get total count for pagination
+        const totalCourses = await Course.countDocuments(query);
+        const totalPages = Math.ceil(totalCourses / limit);
+
+        // Get paginated courses
+        let courses = await Course.find(query)
+            .sort({ sale_price: sort as SortOrder })
+            .skip(skip)
+            .limit(limit)
+            .lean<TCourseInfo[]>();
+
+        // Fetch author names
         await Promise.all(courses.map(async (course) => {
             const author = await User.findById(course.author);
             if (author) {
@@ -124,16 +142,18 @@ export const getCourseCondition = async (title = "", sort = "asc"): Promise<TCou
             }
         }));
 
+        // Serialize the courses
         const serializedCourses = courses.map(course => ({
             ...course,
             _id: course._id.toString(),
-            category:course.category ? course.category.toString() : "",
-            students:course.students ? course.students.map(student => student.toString()) : [],
+            category: course.category ? course.category.toString() : "",
+            students: course.students ? course.students.map(student => student.toString()) : [],
         }));
 
-
-
-        return serializedCourses;
+        return {
+            courses: serializedCourses,
+            totalPages
+        };
     } catch (error) {
         console.log("Error fetching courses:", error);
         return undefined;
