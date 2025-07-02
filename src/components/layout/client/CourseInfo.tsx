@@ -8,7 +8,7 @@ type props = {
 }
 const CourseInfo = ({courseInfo,slugcourse}:props) => {
   return (
-    <div className="bg-gray-100 py-16 rounded-lg">
+    <div className="bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-blue-950 py-16">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12">
           <div>
@@ -46,7 +46,7 @@ const CourseInfo = ({courseInfo,slugcourse}:props) => {
                   <span>Hỗ trợ kỹ thuật</span>
                 </div>
               </div>
-              <Button className="w-full bg-black text-white hover:bg-gray-800" onClick={()=> window.location.href = `/courses/${slugcourse}/pay`} >Liên hệ</Button> 
+              <Button className="w-full text-white hover:bg-gray-800" onClick={()=> window.location.href = `/courses/${slugcourse}/pay`} >Liên hệ</Button> 
             </div>
           </div>
         </div>
