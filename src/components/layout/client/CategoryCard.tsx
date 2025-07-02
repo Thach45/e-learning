@@ -29,11 +29,7 @@ export default function CategoryCard({ category, courseCount = 0 }: CategoryCard
               </div>
             </div>
           </div>
-          {category.description && (
-            <p className="mt-4 text-gray-600 dark:text-gray-300 text-sm">
-              {category.description}
-            </p>
-          )}
+         
         </CardContent>
       </Card>
     </Link>
