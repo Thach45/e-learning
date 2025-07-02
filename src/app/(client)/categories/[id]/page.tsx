@@ -80,11 +80,7 @@ export default function CategoryDetailPage() {
         <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4">
           {category.title}
         </h1>
-        {category.description && (
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
-            {category.description}
-          </p>
-        )}
+        
         <p className="text-gray-500 dark:text-gray-400">
           {courses.length} khóa học trong danh mục này
         </p>
