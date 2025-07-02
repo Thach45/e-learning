@@ -128,7 +128,7 @@ export const getCourseCondition = async (
         const totalPages = Math.ceil(totalCourses / limit);
 
         // Get paginated courses
-        let courses = await Course.find(query)
+        const courses = await Course.find(query)
             .sort({ sale_price: sort as SortOrder })
             .skip(skip)
             .limit(limit)
