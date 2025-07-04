@@ -37,7 +37,7 @@ export default function CreateCourseForm() {
   
     fetchData();
   }, []);
-
+  
   const handleSubmit = async (data: any) => {
     const result = await onSubmit(data);
     if (result.success) {
