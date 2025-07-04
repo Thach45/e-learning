@@ -1,42 +1,55 @@
-import { Card } from '@/components/ui/card'
-import { Clock, Trophy, Users } from 'lucide-react'
-import React from 'react'
+"use client"
+import { BookOpen, Clock, MonitorPlay, Trophy } from "lucide-react"
 
-const FeaturesCourse = () => {
+export default function FeaturesCourse() {
+  const features = [
+    {
+      icon: <MonitorPlay className="w-6 h-6 text-blue-600" />,
+      title: "Video chất lượng cao",
+      description: "Học qua video HD với phụ đề rõ ràng"
+    },
+    {
+      icon: <BookOpen className="w-6 h-6 text-blue-600" />,
+      title: "Tài liệu chi tiết",
+      description: "Tài liệu được cập nhật thường xuyên"
+    },
+    {
+      icon: <Clock className="w-6 h-6 text-blue-600" />,
+      title: "Học mọi lúc mọi nơi",
+      description: "Truy cập và học tập không giới hạn"
+    },
+    {
+      icon: <Trophy className="w-6 h-6 text-blue-600" />,
+      title: "Chứng chỉ hoàn thành",
+      description: "Nhận chứng chỉ sau khi hoàn thành"
+    }
+  ]
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Tại sao chọn khóa học này?</h2>
-          <p className="text-gray-600">Những gì bạn sẽ nhận được từ khóa học</p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            {
-              icon: <Clock  className="w-8 h-8" />,
-              title: "Học theo tốc độ của bạn",
-              description: "Truy cập không giới hạn và học mọi lúc mọi nơi",
-            },
-            {
-              icon: <Trophy className="w-8 h-8" />,
-              title: "Dự án thực tế",
-              description: "Xây dựng portfolio với các dự án thực tế",
-            },
-            {
-              icon: <Users className="w-8 h-8" />,
-              title: "Hỗ trợ 1-1",
-              description: "Được mentor hỗ trợ trực tiếp khi gặp khó khăn",
-            },
-          ].map((feature, index) => (
-            <Card key={index} className="bg-white border border-gray-200 p-6">
-              <div className="text-black mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
-            </Card>
-          ))}
-        </div>
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+      <h2 className="text-2xl font-bold mb-6">
+        Tính năng khóa học
+      </h2>
+      <div className="grid sm:grid-cols-2 gap-6">
+        {features.map((feature, index) => (
+          <div 
+            key={index}
+            className="flex items-start gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50"
+          >
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              {feature.icon}
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                {feature.title}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                {feature.description}
+              </p>
+            </div>
+          </div>
+        ))}
       </div>
+    </div>
   )
 }
-
-export default FeaturesCourse

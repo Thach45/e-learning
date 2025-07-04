@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { ELessonType, EVideoType } from "@/types/enums";
 import { TEditLesson } from "@/types";
 import { updateLesson } from "@/lib/actions/lesson.action";
+import LessonAttachmentUpload from "@/components/feature/LessonAttachmentUpload";
 
 interface EditLessonDialogProps {
   editLesson: boolean;
   lesson: TEditLesson | null;
   onClose: () => void;
-  
 }
 
 const EditLessonDialog: React.FC<EditLessonDialogProps> = ({ editLesson, lesson, onClose }) => {
@@ -23,12 +23,12 @@ const EditLessonDialog: React.FC<EditLessonDialogProps> = ({ editLesson, lesson,
         videoURL: "",
         content: "",
         type: ELessonType.TEXT,
-        deleted: false
+        deleted: false,
+        attachments: []
     };
-    
 
   const [lessonType, setLessonType] = useState<ELessonType>(initialData.type);
-  
+  const [attachments, setAttachments] = useState(initialData.attachments || []);
 
   const { control, handleSubmit, register, formState: { errors }, reset } = useForm<TEditLesson>({
     defaultValues: initialData,
@@ -39,10 +39,16 @@ const EditLessonDialog: React.FC<EditLessonDialogProps> = ({ editLesson, lesson,
   }, [lesson, reset]);
 
   const onSubmit = async (data: TEditLesson) => {
-    
-    await updateLesson(data._id, data);
-    
-    onClose();
+    try {
+      const updatedData = {
+        ...data,
+        attachments
+      };
+      await updateLesson(data._id, updatedData);
+      onClose();
+    } catch (error) {
+      console.error("Error updating lesson:", error);
+    }
   };
 
   return (
@@ -100,7 +106,6 @@ const EditLessonDialog: React.FC<EditLessonDialogProps> = ({ editLesson, lesson,
                 <select
                   className="w-full p-2 border rounded"
                   {...register("videoType", { required: "Please select a video type" })}
-                  
                 >
                   <option value={EVideoType.DRIVE}>Google Drive</option>
                   <option value={EVideoType.YOUTUBE}>Youtube Video</option>
@@ -110,7 +115,6 @@ const EditLessonDialog: React.FC<EditLessonDialogProps> = ({ editLesson, lesson,
                 )}
               </div>
 
-              
               <div>
                 <Input
                   placeholder="Google Drive Video URL"
@@ -120,10 +124,6 @@ const EditLessonDialog: React.FC<EditLessonDialogProps> = ({ editLesson, lesson,
                   <p className="text-red-500 text-sm">{errors.videoURL.message}</p>
                 )}
               </div>
-            
-
-             
-            
             </>
           )}
 
@@ -139,6 +139,14 @@ const EditLessonDialog: React.FC<EditLessonDialogProps> = ({ editLesson, lesson,
               )}
             </div>
           )}
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Tài liệu đính kèm:</label>
+            <LessonAttachmentUpload
+              defaultValue={attachments}
+              onUploadSuccess={(data) => setAttachments(data)}
+            />
+          </div>
 
           <div className="flex items-center space-x-2">
             <label>Mark as Deleted:</label>

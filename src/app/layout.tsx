@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/mode/theme-provider";
+import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
   title: "E-LearnHub",
@@ -26,6 +27,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster />
           </ThemeProvider>
         </body>
       </html>

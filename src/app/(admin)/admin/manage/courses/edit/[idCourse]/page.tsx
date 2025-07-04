@@ -27,7 +27,6 @@ import { X } from 'lucide-react';
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   thumbnail: z.string().url('Invalid URL').optional(),
-  intro: z.string().optional(),
   description: z.string().optional(),
   price: z.number().min(0, 'Price must be non-negative'),
   sale_price: z.number().min(0, 'Sale price must be non-negative'),
@@ -195,7 +194,6 @@ export default function CreateCourseForm() {
         title: data.title,
        
         thumbnail: imageUrl,
-        intro: data.intro,
         description: data.description,
         price: data.price,
         sale_price: data.sale_price,
@@ -257,11 +255,6 @@ export default function CreateCourseForm() {
                 <img src={image} alt="Current Thumbnail" width={200} className="mt-2" />
               ) : null}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="intro">Introduction</Label>
-            <Textarea id="intro" {...register('intro')} />
           </div>
 
           <div className="space-y-2">

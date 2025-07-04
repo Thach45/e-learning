@@ -27,7 +27,6 @@ type TCreateCourse = {
     title: string,
     
     thumbnail?: string,
-    intro?: string,
     description?: string,
     price: number,
     sale_price: number | undefined,
@@ -48,7 +47,6 @@ type TEditCourse = {
     title: string,
     slug: string,
     thumbnail?: string,
-    intro?: string,
     description?: string,
     price: number,
     sale_price: number | undefined,
@@ -99,6 +97,15 @@ type TCreateLesson = {
     course: Schema.Types.ObjectId,
     lecture: Schema.Types.ObjectId,
     order: number,
+    videoType?: EVideoType,
+    videoURL?: string,
+    content?: string,
+    type?: ELessonType,
+    description?: string,
+    attachments?: {
+        title: string,
+        url: string
+    }[],
     deleted: boolean
 }
 type TLesson = {
@@ -109,11 +116,13 @@ type TLesson = {
     videoURL: string,
     content: string,
     type: ELessonType,
-    
+    attachments: {
+        title: string,
+        url: string
+    }[],
     order: number,
     course: Schema.Types.ObjectId,
     lecture: Schema.Types.ObjectId,
-    
 }
 type TEditLesson = {
     _id: string,
@@ -124,7 +133,11 @@ type TEditLesson = {
     videoURL: string,
     content: string,
     type: ELessonType,
-    deleted: boolean
+    deleted: boolean,
+    attachments?: {
+        title: string,
+        url: string
+    }[]
 }
 type TShowLesson = {
     _id: string,
@@ -134,15 +147,11 @@ type TShowLesson = {
     videoType: EVideoType,
     videoURL: string,
     content: string,
-    
     type: ELessonType,
-    attachments: [
-        {
-            title: string,
-            url: string
-        }
-    ],
-
+    attachments: {
+        title: string,
+        url: string
+    }[],
     description: string,
     comments: Schema.Types.ObjectId[],
     course: Schema.Types.ObjectId,
@@ -151,7 +160,6 @@ type TShowLesson = {
 }
 
 type TShowCourse = {
-    
     _id: string,
     info: {
         requirements: string[],
@@ -161,7 +169,11 @@ type TShowCourse = {
     thumbnail: string,
     title: string,
     description: string,
-    rating: number[],
+    ratings: {
+        userId: string;
+        rating: number;
+        created_at: Date;
+    }[],
     sale_price: number,
     students: Schema.Types.ObjectId[],
     lectures: Schema.Types.ObjectId[],

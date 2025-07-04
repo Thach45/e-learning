@@ -31,13 +31,17 @@ export default function CourseHero({
     }
   }
 
+  const averageRating = courseInfo?.ratings && courseInfo.ratings.length > 0
+    ? (courseInfo.ratings.reduce((total: number, r: { rating: number }) => total + r.rating, 0) / courseInfo.ratings.length).toFixed(1)
+    : "Chưa có đánh giá"
+
   return (
     <div className="bg-gradient-to-br from-blue-900 to-black text-white">
       <div className="max-w-6xl mx-auto px-4 py-16">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <div className="inline-block bg-blue-500/20 px-4 py-2 rounded-full">
-              🔥 Khóa học hot nhất 2024
+              🔥 Khóa học hot nhất {new Date().getFullYear()}
             </div>
             <h1 className="text-4xl md:text-5xl font-bold leading-tight">
               {courseInfo?.title}
@@ -52,15 +56,7 @@ export default function CourseHero({
                 Học ngay
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-2 border-white hover:bg-white/10"
-                onClick={onPlayVideo}
-              >
-                <PlayCircle className="mr-2 h-5 w-5" />
-                Xem giới thiệu
-              </Button>
+              
             </div>
             <div className="flex gap-8 pt-4">
               <div className="text-center">
@@ -71,9 +67,7 @@ export default function CourseHero({
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold">
-                  {courseInfo?.rating && courseInfo.rating.length > 0
-                    ? (courseInfo.rating.reduce((total, value) => total + value, 0) / courseInfo.rating.length).toFixed(1)
-                    : "Chưa có đánh giá"}
+                  {averageRating}
                 </div>
                 <div className="text-sm opacity-80">Đánh giá</div>
               </div>
@@ -95,11 +89,6 @@ export default function CourseHero({
               height={400}
               className="rounded-lg shadow-xl transform transition-transform group-hover:scale-105"
             />
-            <div className="absolute inset-0 flex items-center justify-center cursor-pointer group-hover:bg-black/20 transition-colors rounded-lg">
-              <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center transform transition-transform group-hover:scale-110">
-                <PlayCircle className="w-12 h-12 text-white" />
-              </div>
-            </div>
           </div>
         </div>
       </div>

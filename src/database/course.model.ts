@@ -5,7 +5,6 @@ export interface TCourse extends Document {
     _id: string;
     title: string;
     thumbnail: string;
-    intro: string;
     description: string;
     price: number;
     sale_price: number;
@@ -16,7 +15,11 @@ export interface TCourse extends Document {
     students: Schema.Types.ObjectId[];
     views: number;
     level: ECourseLevel;
-    rating: number[];
+    ratings: {
+        userId: Schema.Types.ObjectId;
+        rating: number;
+        created_at: Date;
+    }[];
     category: string;
     technology: string[];
     info: {
@@ -29,11 +32,7 @@ export interface TCourse extends Document {
     }
     lectures: Schema.Types.ObjectId[];
     deleted: boolean;
-
-
-
 }
-
 
 const courseSchema = new Schema<TCourse>({
     title: {
@@ -43,15 +42,9 @@ const courseSchema = new Schema<TCourse>({
     },
     thumbnail: {
         type: String,
-        
-    },
-    intro: {
-        type: String,
-        
     },
     description: {
         type: String,
-        
     },
     price: {
         type: Number,
@@ -92,14 +85,26 @@ const courseSchema = new Schema<TCourse>({
         enum: Object.values(ECourseLevel),
         default: ECourseLevel.BEGINNER,
     },
-    rating: {
-        type: [Number],
-        default: [0],
-    },
+    ratings: [{
+        userId: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        rating: {
+            type: Number,
+            required: true,
+            min: 1,
+            max: 5
+        },
+        created_at: {
+            type: Date,
+            default: Date.now
+        }
+    }],
     category: {
         type: String,
         default: '',
-
     },
     technology: [{
         type: String,
@@ -128,8 +133,6 @@ const courseSchema = new Schema<TCourse>({
         type: Boolean,
         default: false,
     },
-
-    
 })
 
 const Course = models.Course || model<TCourse>('Course', courseSchema);

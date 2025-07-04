@@ -38,48 +38,70 @@ export default function CourseManagement() {
 
   useEffect(() => {
     const fetchData = async () => {
-      
-      const course = await getCourses()
-      const chapter = await getChapter(selectedCourse)
-      const lesson = await getLessons(selectedChapter!, selectedCourse)
-      setLoading(false)
-      setLoadingPage(false)
-      // setLoadingCourse(false)
-      setLessons(lesson || [])
-      setChapters(chapter || [])
-      setCourses(course || [])
-    }
-    fetchData()
-  }, [refreshTrigger, selectedCourse])
+      try {
+        const course = await getCourses();
+        setCourses(course || []);
+
+        if (selectedCourse) {
+          const chapter = await getChapter(selectedCourse);
+          setChapters(chapter || []);
+
+          if (selectedChapter) {
+            const lesson = await getLessons(selectedChapter, selectedCourse);
+            setLessons(lesson || []);
+          } else {
+            setLessons([]);
+          }
+        }
+
+        setLoading(false);
+        setLoadingPage(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+        setLoadingPage(false);
+      }
+    };
+    fetchData();
+  }, [refreshTrigger, selectedCourse, selectedChapter]);
 
   const addChapter = async () => {
     try {
+      if (!selectedCourse || !newChapterTitle.trim()) {
+        console.error("Missing required data");
+        return;
+      }
+
       const data: TCreateLecture = {
         title: newChapterTitle,
         course: new mongoose.Types.ObjectId(selectedCourse),
         deleted: false
-      }
+      };
 
-      await createLecture(data)
-      setLoading(true)
-      
-      setRefreshTrigger(prev => prev + 1) // Trigger re-fetch
-      setNewChapterTitle("") // Optional: Clear input
+      await createLecture(data);
+      setLoading(true);
+      setRefreshTrigger(prev => prev + 1);
+      setNewChapterTitle("");
     }
     catch (error) {
-      console.log("lỗi nè", error)
+      console.error("Error adding chapter:", error);
     }
-  }
+  };
 
   const getChapter = async (selectedCourse: string) => {
     try {
-      const chapter = await getLectures(selectedCourse)
-      return chapter
+      if (!selectedCourse) {
+        console.error("No course selected");
+        return [];
+      }
+      const chapter = await getLectures(selectedCourse);
+      return chapter;
     }
     catch (error) {
-      console.log("lỗi nè", error)
+      console.error("Error getting chapters:", error);
+      return [];
     }
-  }
+  };
 
   const handleDeleteLecture = async (id: string) => {
     await deleteLecture(id)

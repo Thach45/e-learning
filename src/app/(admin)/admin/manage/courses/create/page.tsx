@@ -23,7 +23,6 @@ import { getCategories } from '@/lib/actions/categogy.action';
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   thumbnail: z.string().url('Invalid URL').optional(),
-  intro: z.string().optional(),
   description: z.string().optional(),
   price: z.number().min(0, 'Price must be non-negative'),
   sale_price: z.number().min(0, 'Sale price must be non-negative'),
@@ -40,7 +39,7 @@ const courseSchema = z.object({
       answer: z.string()
     })),
     benefits: z.array(z.string())
-  }),
+  }).optional(),
   deleted: z.boolean()
 })
 
@@ -128,7 +127,6 @@ export default function CreateCourseForm() {
     const dataCreate: TCreateCourse = {
         title: data.title,
         thumbnail: res.url,
-        intro: data.intro,
         description: data.description,
         price: data.price,
         sale_price: data.sale_price,
@@ -176,11 +174,6 @@ export default function CreateCourseForm() {
             </div>
 
           
-            <div className="space-y-2">
-              <Label htmlFor="intro">Introduction</Label>
-              <Textarea id="intro" {...register('intro')} />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea id="description" {...register('description')} />

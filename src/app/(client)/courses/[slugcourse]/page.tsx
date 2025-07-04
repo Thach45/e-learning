@@ -7,6 +7,8 @@ import { PacmanLoader } from "react-spinners"
 import { getCourseBySlug } from "@/lib/actions/course.action"
 import { getUser } from "@/lib/actions/user.actions"
 import { TShowCourse, TUserInfo } from "@/types"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 // Components
 import CourseHero from "@/components/layout/client/CourseHero"
@@ -14,6 +16,7 @@ import FeaturesCourse from "@/components/layout/client/FeaturesCourse"
 import CourseBenefits from "@/components/layout/client/CourseBenefits"
 import CourseCurriculum from "@/components/layout/client/CourseCurriculum"
 import CourseInfo from "@/components/layout/client/CourseInfo"
+import CourseRating from "@/components/layout/client/CourseRating"
 
 export default function InfoCourse() {
   const { isSignedIn, user } = useUser()
@@ -70,7 +73,7 @@ export default function InfoCourse() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
       <CourseHero
         courseInfo={courseInfo}
         userData={userData}
@@ -79,25 +82,82 @@ export default function InfoCourse() {
         onPlayVideo={() => setIsVideoPlaying(true)}
       />
 
-      <div className="space-y-1">
-        <FeaturesCourse />
-        <CourseBenefits courseInfo={courseInfo} />
-        <CourseCurriculum courseInfo={courseInfo} />
-        <CourseInfo courseInfo={courseInfo} slugcourse={slugcourse as string} />
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="w-full justify-start mb-8 bg-white dark:bg-gray-800 p-1 rounded-lg">
+                <TabsTrigger value="overview" className="flex-1">
+                  Tổng quan
+                </TabsTrigger>
+                <TabsTrigger value="curriculum" className="flex-1">
+                  Nội dung
+                </TabsTrigger>
+                <TabsTrigger value="reviews" className="flex-1">
+                  Đánh giá
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="overview" className="space-y-8">
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+                  <h2 className="text-2xl font-bold mb-4">Giới thiệu khóa học</h2>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {courseInfo.description}
+                  </p>
+                </div>
+                
+                <FeaturesCourse />
+                <CourseBenefits courseInfo={courseInfo} />
+              </TabsContent>
+
+              <TabsContent value="curriculum">
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+                  <CourseCurriculum courseInfo={courseInfo} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="reviews">
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+                  <CourseRating
+                    courseInfo={courseInfo}
+                    userData={userData}
+                    isSignedIn={isSignedIn || false}
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            <div className="sticky top-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+                <div className="p-6">
+                  <CourseInfo 
+                    courseInfo={courseInfo} 
+                    slugcourse={slugcourse as string} 
+                    isEnrolled={userData?.courses?.includes(courseInfo._id)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Video Modal */}
       {isVideoPlaying && (
-        <div className="fixed inset-0 bg-blue-950/90 flex items-center justify-center z-50">
-          <div className="relative w-full max-w-4xl mx-4">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="relative w-full max-w-5xl mx-4">
             <button
-              className="absolute -top-10 right-0 text-blue-100 hover:text-blue-300 transition-colors"
+              className="absolute -top-12 right-0 text-white hover:text-blue-400 transition-colors text-lg font-semibold"
               onClick={() => setIsVideoPlaying(false)}
             >
               Đóng
             </button>
-            <div className="aspect-video bg-blue-900 rounded-lg border border-blue-700">
-              <div className="flex items-center justify-center h-full text-blue-100">
+            <div className="aspect-video bg-gray-900 rounded-2xl border border-gray-700 shadow-2xl">
+              <div className="flex items-center justify-center h-full text-gray-400">
                 Video đang được phát triển
               </div>
             </div>

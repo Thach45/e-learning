@@ -1,4 +1,3 @@
-
 import { ELessonType, EVideoType } from '@/types/enums';
 import { Document, model, models, Schema } from 'mongoose';
 
@@ -12,24 +11,19 @@ export interface TLesson extends Document {
     duration: number;
     videoType: EVideoType;
     videoURL: string;
-    attachment: {
+    content: string;
+    type: ELessonType;
+    attachments: {
         title: string;
         url: string;
-    }
-    content: string;
+    }[];
     description: string;
-    comment: Schema.Types.ObjectId[];
-    type: ELessonType;
+    comments: Schema.Types.ObjectId[];
     created_at: Date;
     deleted: boolean;
-
-
-
 }
 
-
 const lessonSchema = new Schema<TLesson>({
-
     title: {
         type: String,
         required: true,
@@ -42,16 +36,6 @@ const lessonSchema = new Schema<TLesson>({
         type: Schema.Types.ObjectId,
         ref: 'Course',
         required: true,
-    },
-    attachment: {
-        title: {
-            type: String,
-            default: '',
-        },
-        url: {
-            type: String,
-            default: '',
-        },
     },
     lecture: {
         type: Schema.Types.ObjectId,
@@ -66,7 +50,6 @@ const lessonSchema = new Schema<TLesson>({
         type: Number,
         default: 0,
         required: true,
-        
     },
     videoType: {
         type: String,
@@ -76,23 +59,9 @@ const lessonSchema = new Schema<TLesson>({
     },
     videoURL: {
         type: String,
-        
         default: '',
     },
     content: {
-        type: String,
-        
-        default: '',
-        
-    },
-    comment: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'Comment',
-        },
-    ],
-
-    description: {
         type: String,
         default: '',
     },
@@ -101,6 +70,15 @@ const lessonSchema = new Schema<TLesson>({
         enum: Object.values(ELessonType),
         default: ELessonType.VIDEO,
     },
+    attachments: [{
+        title: { type: String },
+        url: { type: String }
+    }],
+    description: {
+        type: String,
+        default: '',
+    },
+    comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
     created_at: {
         type: Date,
         default: Date.now,
@@ -109,9 +87,7 @@ const lessonSchema = new Schema<TLesson>({
         type: Boolean,
         default: false,
     },
-    
-    
-})
+});
 
 const Lesson = models.Lesson || model<TLesson>('Lesson', lessonSchema);
 

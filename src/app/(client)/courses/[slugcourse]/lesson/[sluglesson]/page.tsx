@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import { PlayCircle, Loader2, ChevronLeft, ChevronRight, Send, Paperclip, MessageCircle } from "lucide-react"
+import { PlayCircle, Loader2, ChevronLeft, ChevronRight, Send, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
+import LessonAttachment from "@/components/client/LessonAttachment"
 
 import { getCourseBySlug } from "@/lib/actions/course.action"
 import { getLessonBySlug } from "@/lib/actions/lesson.action"
@@ -15,17 +16,10 @@ import type { TCreateComment, TShowComment, TShowCourse, TShowLesson } from "@/t
 import { createComment, getCommentsByLessonId } from "@/lib/actions/comment.action"
 import { useUser } from "@clerk/nextjs"
 
-type Attachment = {
-  id: string
-  name: string
-  url: string
-}
-
 function CommentItem({ comment, onReply }: { comment: TShowComment; onReply: (parentId: string) => void }) {
   return (
     <div className="flex space-x-4 border-b pb-4 mb-4">
       <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-       
         <span className="text-sm font-medium">{comment.name.charAt(0).toUpperCase()}</span>
       </div>
       <div className="flex-1">
@@ -59,7 +53,6 @@ export default function CourseVideoPlayer() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [comments, setComments] = useState<TShowComment[]>([])
   const [newComment, setNewComment] = useState("")
-  const [attachments, setAttachments] = useState<Attachment[]>([])
   const [replyTo, setReplyTo] = useState<string | null>(null)
 
   useEffect(() => {
@@ -73,10 +66,6 @@ export default function CourseVideoPlayer() {
         setLesson(lessonData || null)
         const commentLesson = await getCommentsByLessonId(lessonData!._id)
         setComments(commentLesson || [])
-        setAttachments([
-          { id: "1", name: "Lesson Slides", url: "/attachments/lesson-slides.pdf" },
-          { id: "2", name: "Exercise Sheet", url: "/attachments/exercise-sheet.docx" },
-        ])
       } catch (error) {
         console.error("Error fetching data:", error)
       } finally {
@@ -110,7 +99,6 @@ export default function CourseVideoPlayer() {
 
   const handleReply = (parentId: string) => {
     setReplyTo(parentId)
-  
   }
 
   if (isLoading) {
@@ -175,21 +163,11 @@ export default function CourseVideoPlayer() {
                 </TabsContent>
 
                 <TabsContent value="attachments">
-                  <ul className="space-y-2">
-                    {attachments.map((attachment) => (
-                      <li key={attachment.id}>
-                        <a
-                          href={attachment.url}
-                          className="flex items-center space-x-2 text-blue-600 hover:underline"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Paperclip className="w-4 h-4" />
-                          <span>{attachment.name}</span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                  {lesson.attachments && lesson.attachments.length > 0 ? (
+                    <LessonAttachment attachments={lesson.attachments} />
+                  ) : (
+                    <p className="text-muted-foreground">Không có tài liệu đính kèm cho bài học này.</p>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="discussion">
@@ -250,36 +228,36 @@ export default function CourseVideoPlayer() {
               )}
             </div>
           </div>
-          {/* Sidebar - List of Lessons */}
+
+          {/* Sidebar */}
           <div className="lg:w-1/3">
-            <div className="bg-muted rounded-lg p-6 sticky top-6">
-              <h3 className="text-xl font-semibold mb-4">Danh sách bài học</h3>
-              <ScrollArea className="h-[calc(100vh-200px)]">
-                {courseInfo.lectures.map((lecture) => (
-                  <div key={lecture._id} className="mb-4">
-                    <h4 className="font-medium text-sm text-muted-foreground mb-2">{lecture.title}</h4>
-                    <ul className="space-y-1">
-                      {lecture.lessons.map((lessonItem: TShowLesson) => (
-                        <li key={lessonItem._id}>
-                          <Link
-                            href={`/courses/${slug.slugcourse}/lesson/${lessonItem.slug}`}
-                            className={`
-                              flex items-center p-2 rounded text-sm
-                              ${
-                                lesson.slug === lessonItem.slug
-                                  ? "bg-primary text-primary-foreground"
-                                  : "hover:bg-muted-foreground/10"
-                              }
-                            `}
-                          >
-                            <PlayCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-                            <span className="line-clamp-2">{lessonItem.title}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
+            <div className="bg-card rounded-lg p-6">
+              <h3 className="text-xl font-semibold mb-4">Nội dung khóa học</h3>
+              <ScrollArea className="h-[60vh]">
+                <div className="space-y-6">
+                  {courseInfo.lectures.map((lecture, lectureIndex) => (
+                    <div key={lecture._id}>
+                      <h4 className="font-medium mb-2">
+                        Chương {lectureIndex + 1}: {lecture.title}
+                      </h4>
+                      <ul className="space-y-2">
+                        {lecture.lessons.map((lessonItem: TShowLesson) => (
+                          <li key={lessonItem._id}>
+                            <Link
+                              href={`/courses/${slug.slugcourse}/lesson/${lessonItem.slug}`}
+                              className={`flex items-center p-2 rounded hover:bg-accent ${
+                                lesson.slug === lessonItem.slug ? "bg-accent" : ""
+                              }`}
+                            >
+                              <PlayCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+                              <span className="text-sm">{lessonItem.title}</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
               </ScrollArea>
             </div>
           </div>

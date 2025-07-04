@@ -7,6 +7,7 @@ import Lesson from "@/database/lesson.model";
 import User, { TUser } from "@/database/user.model";
 import { connectToData } from "@/lib/mongoose";
 import { TCourseInfo, TCreateCourse, TEditCourse, TLesson, TShowCourse, TShowComment } from "@/types";
+import { Schema } from "mongoose";
 
 type TCourseWithComments = TCourseInfo & {
   comments: TShowComment[];
@@ -239,5 +240,70 @@ export const updateCourse = async (id: string, course: TCreateCourse): Promise<T
     } catch (error) {
         console.log("Error updating course:", error);
         return null;
+    }
+}
+
+export const rateCourse = async (courseId: string, rating: number, userId: string): Promise<{ success: boolean; message: string }> => {
+    try {
+        await connectToData();
+
+        if (!courseId || !rating || rating < 1 || rating > 5 || !userId) {
+            return {
+                success: false,
+                message: "Dữ liệu đánh giá không hợp lệ"
+            };
+        }
+
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return {
+                success: false,
+                message: "Không tìm thấy khóa học"
+            };
+        }
+
+        // Check if user is enrolled in the course
+        if (!course.students.includes(userId)) {
+            return {
+                success: false,
+                message: "Bạn cần tham gia khóa học để đánh giá"
+            };
+        }
+
+        // Initialize ratings array if it doesn't exist
+        if (!course.ratings) {
+            course.ratings = [];
+        }
+
+        // Check if user has already rated
+        const existingRating = course.ratings.find((r: { userId: Schema.Types.ObjectId }) => 
+            r.userId.toString() === userId
+        );
+        
+        if (existingRating) {
+            // Update existing rating
+            existingRating.rating = rating;
+            existingRating.created_at = new Date();
+        } else {
+            // Add new rating
+            course.ratings.push({
+                userId,
+                rating,
+                created_at: new Date()
+            });
+        }
+
+        await course.save();
+
+        return {
+            success: true,
+            message: existingRating ? "Cập nhật đánh giá thành công" : "Đánh giá thành công"
+        };
+    } catch (error) {
+        console.error("Error in rating course:", error);
+        return {
+            success: false,
+            message: "Có lỗi xảy ra khi đánh giá khóa học"
+        };
     }
 }
