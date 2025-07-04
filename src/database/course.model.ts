@@ -24,10 +24,6 @@ export interface TCourse extends Document {
     technology: string[];
     info: {
         requirements: string[];
-        qa: {
-            questions: string;
-            answers: string;
-        }[];
         benefits: string[];
     }
     lectures: Schema.Types.ObjectId[];
@@ -112,14 +108,6 @@ const courseSchema = new Schema<TCourse>({
     info: {
         requirements: [{
             type: String,
-        }],
-        qa: [{
-            questions: {
-                type: String,
-            },
-            answers: {
-                type: String,
-            },
         }],
         benefits: [{
             type: String,

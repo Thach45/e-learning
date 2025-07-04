@@ -7,7 +7,7 @@ import Lesson from "@/database/lesson.model";
 import User, { TUser } from "@/database/user.model";
 import { connectToData } from "@/lib/mongoose";
 import { TCourseInfo, TCreateCourse, TEditCourse, TLesson, TShowCourse, TShowComment } from "@/types";
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 type TCourseWithComments = TCourseInfo & {
   comments: TShowComment[];
@@ -16,15 +16,34 @@ import { SortOrder } from "mongoose";
 
 
 
-export const createCourse = async (course: TCreateCourse):Promise<TCourse | null | undefined> => {
+export const createCourse = async (course: TCreateCourse) => {
     try {
         await connectToData();
-        const newCourse = await Course.create(course);
-        return await newCourse.save();
-    } catch (error) {
-        console.log("lỗi nè",error);
-    }
+        // Convert string IDs to ObjectIds
+        const courseData = {
+            ...course,
+            author: course.author ? new mongoose.Types.ObjectId(course.author) : undefined,
+            category: course.category ? new mongoose.Types.ObjectId(course.category) : undefined
+        };
+        const newCourse = await Course.create(courseData);
+        const savedCourse = await newCourse.save();
+        
+        // Convert to plain object and transform ObjectIds to strings
+        const plainCourse = {
+            ...savedCourse.toObject(),
+            _id: savedCourse._id.toString(),
+            author: savedCourse.author?.toString(),
+            category: savedCourse.category?.toString(),
+        };
 
+        return { success: true, course: plainCourse };
+    } catch (error) {
+        console.log("Error creating course:", error);
+        return { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Failed to create course' 
+        };
+    }
 };
 
 export const getCourses = async (): Promise<TCourseInfo[] | undefined> => {
@@ -97,7 +116,7 @@ export const getCourseBySlug = async (slug: string): Promise<TShowCourse | null>
         course.lectures = lectures;
         course.students = students;
         course.author = author;
-console.log(course.lectures.map(lecture => lecture.lesson));
+        console.log("course", course)
         return course;
     } 
     catch (error) {

@@ -35,12 +35,14 @@ export default function InfoCourse() {
         const [course, userInfo] = await Promise.all([
           getCourseBySlug(slugcourse as string),
           userId ? getUser(userId) : null
+          
         ])
 
         setCourseInfo(course || null)
         if (userInfo) {
           setUserData(userInfo)
         }
+        console.log("courseInfo", course)
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error)
       } finally {
