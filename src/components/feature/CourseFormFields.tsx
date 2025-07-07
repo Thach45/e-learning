@@ -3,16 +3,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { ECourseLevel, ECourseStatus } from '@/types/enums'
-import { TShowCategory, TUserInfo } from '@/types'
+import { ECourseLevel } from '@/types/enums'
+import { TShowCategory } from '@/types'
 import { UseFormReturn } from 'react-hook-form'
 import { CourseFormData } from '@/hooks/use-course-form'
 import { Controller } from 'react-hook-form'
 
 interface CourseFormFieldsProps {
   form: UseFormReturn<CourseFormData>;
-  authors?: TUserInfo[];
   categories?: TShowCategory[];
   preview: string | null;
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -20,7 +18,6 @@ interface CourseFormFieldsProps {
 
 export function CourseFormFields({ 
   form, 
-  authors, 
   categories,
   preview,
   onFileChange
@@ -83,51 +80,6 @@ export function CourseFormFields({
         <Label htmlFor="slug">Slug</Label>
         <Input id="slug" {...register('slug')} />
         {errors.slug && <p className="text-red-500 text-sm">{errors.slug.message}</p>}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="status">Status</Label>
-        <Controller
-          name="status"
-          control={control}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.values(ECourseStatus).map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="author">Author</Label>
-        <Controller
-          name="author"
-          control={control}
-          render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value || ''}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select author" />
-              </SelectTrigger>
-              <SelectContent>
-                {authors?.map((author) => (
-                  <SelectItem key={author._id} value={author._id}>
-                    {author.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        />
-        {errors.author && <p className="text-red-500 text-sm">{errors.author.message}</p>}
       </div>
 
       <div className="space-y-2">
@@ -210,11 +162,6 @@ export function CourseFormFields({
         <Button type="button" variant="outline" onClick={() => addField('info.benefits')}>
           Add Benefit
         </Button>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox id="deleted" {...register('deleted')} />
-        <Label htmlFor="deleted">Deleted</Label>
       </div>
     </div>
   );

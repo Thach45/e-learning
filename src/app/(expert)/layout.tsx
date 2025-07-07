@@ -1,6 +1,5 @@
-
 import Sidebar from '@/components/layout/Sidebar';
-import { menuItemAdmin } from '@/const/menuItems';
+import {  menuItemExpert } from '@/const/menuItems';
 import { getUser } from '@/lib/actions/user.actions';
 import { EUserRole } from '@/types/enums';
 
@@ -19,7 +18,7 @@ const Layout = async ({
   const {userId} = await auth();
   if(userId) {
     const user = await getUser(userId);
-    if(user?.role !== EUserRole.ADMIN) {
+    if(user?.role !== EUserRole.EXPERT) {
       return redirect("/sign-in");
     }
   } else {
@@ -33,7 +32,7 @@ const Layout = async ({
     <div className="wrapper flex relative">
       <div className={`flex h-screen flex-col justify-between bg-white border-r fixed dark:bg-black dark:text-white 
         `}>
-        <Sidebar menuItem={menuItemAdmin} isOpen={false} />
+        <Sidebar menuItem={menuItemExpert} isOpen={false} />
        
       </div>
       <main className="flex-grow p-4  ml-[250px]">

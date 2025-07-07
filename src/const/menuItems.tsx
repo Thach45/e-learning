@@ -7,6 +7,7 @@ import {
     ShoppingCart,
     MessageCircle,
     List,
+    BarChart,
   } from 'lucide-react';
 
 const menuItem:TLinkItem[] = [
@@ -61,4 +62,17 @@ const menuItemAdmin:TLinkItem[] = [
     },
 ]
 
-export { menuItem, menuItemAdmin }
+const menuItemExpert:TLinkItem[] = [
+    {
+        link: "/expert/manage/courses",
+        icon: <LayoutDashboard className="h-5 w-5" />,
+        title: "Quản lý khóa học"
+    },
+    {
+        link: "/expert/manage/dashboard",
+        icon: <BarChart className="h-5 w-5" />,
+        title: "Bảng điều khiển"
+    },
+]
+
+export { menuItem, menuItemAdmin, menuItemExpert }

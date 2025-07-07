@@ -55,6 +55,10 @@ type TEditCourse = {
     level: ECourseLevel,
     category?: string,
     technology: string[],
+    deleted: boolean,
+    rating?: number[],
+    lessons?: TLesson[],
+    lectures?: TLecture[],
     info?: {
       requirements: string[],
       

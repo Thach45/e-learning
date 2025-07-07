@@ -11,8 +11,8 @@ const Items = ({
   title
 }: TLinkItem) => {
   const pathName = usePathname();
-  const isActive = pathName === link;
-  
+  const isActive = pathName.includes(link);
+  console.log(pathName, link, isActive);
 
   return (
     <li>

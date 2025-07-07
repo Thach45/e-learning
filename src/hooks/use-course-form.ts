@@ -5,17 +5,18 @@ import * as z from 'zod';
 import { ECourseLevel, ECourseStatus } from '@/types/enums';
 import { TCreateCourse } from '@/types';
 import { createCourse } from '@/lib/actions/course.action';
-import React from 'react'; // Added missing import
+import React from 'react';
+import { getUser } from '@/lib/actions/user.actions';
 
 const slugify = (text: string) => {
   return text
     .toLowerCase()
-    .normalize('NFD') // Chuyển các ký tự có dấu thành không dấu
+    .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[đĐ]/g, 'd')
-    .replace(/[^a-z0-9]+/g, '-') // Thay thế ký tự không phải chữ và số bằng dấu gạch ngang
-    .replace(/^-+|-+$/g, '') // Xóa dấu gạch ngang ở đầu và cuối
-    .replace(/-+/g, '-'); // Thay thế nhiều dấu gạch ngang liên tiếp bằng một dấu
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-+/g, '-');
 };
 
 const courseSchema = z.object({
@@ -25,8 +26,6 @@ const courseSchema = z.object({
   price: z.number().min(0, 'Price must be non-negative'),
   sale_price: z.number().min(0, 'Sale price must be non-negative'),
   slug: z.string().optional(),
-  status: z.nativeEnum(ECourseStatus),
-  author: z.string().min(1, 'Author is required'),
   level: z.nativeEnum(ECourseLevel),
   category: z.string().min(1, 'Category is required'),
   technology: z.array(z.string()),
@@ -34,7 +33,6 @@ const courseSchema = z.object({
     requirements: z.array(z.string()),
     benefits: z.array(z.string())
   }).optional(),
-  deleted: z.boolean()
 });
 
 export type CourseFormData = z.infer<typeof courseSchema>;
@@ -47,21 +45,17 @@ export const useCourseForm = () => {
   const form = useForm<CourseFormData>({
     resolver: zodResolver(courseSchema),
     defaultValues: {
-      status: ECourseStatus.PENDING,
       level: ECourseLevel.BEGINNER,
       technology: [''],
       info: {
         requirements: [''],
         benefits: ['']
-      },
-      deleted: false
+      }
     }
   });
 
-  // Watch title field for auto-generating slug
   const title = form.watch('title');
   
-  // Auto-generate slug when title changes
   React.useEffect(() => {
     if (title) {
       const generatedSlug = slugify(title);
@@ -94,11 +88,17 @@ export const useCourseForm = () => {
     return data.url;
   };
 
-  const onSubmit = async (data: CourseFormData) => {
+  const onSubmit = async (data: CourseFormData, userId: string) => {
     try {
       setLoading(true);
       if (!imageFile) {
         throw new Error('Please select an image');
+      }
+
+      // Lấy thông tin user từ database
+      const user = await getUser(userId);
+      if (!user) {
+        throw new Error('User not found');
       }
 
       const imageUrl = await uploadImage(imageFile);
@@ -109,9 +109,9 @@ export const useCourseForm = () => {
         description: data.description,
         price: data.price,
         sale_price: data.sale_price,
-        slug: slugify(data.title), // Ensure slug is generated from title
-        status: data.status,
-        author: data.author,
+        slug: slugify(data.title),
+        status: ECourseStatus.PENDING, // Luôn set status là PENDING khi tạo mới
+        author: user._id,
         level: data.level,
         category: data.category,
         technology: data.technology.filter(Boolean),

@@ -13,6 +13,7 @@ type TCourseWithComments = TCourseInfo & {
   comments: TShowComment[];
 };
 import { SortOrder } from "mongoose";
+import { getUser } from "./user.actions";
 
 
 
@@ -254,13 +255,57 @@ export const deleteCommentInCourse = async (courseId: string, commentId: string)
 export const updateCourse = async (id: string, course: TCreateCourse): Promise<TCourse | null> => {
     try {
         await connectToData();
-        const updatedCourse = await Course.findByIdAndUpdate(id, course, { new: true });
-        return updatedCourse;
+        
+        // Get the existing course first
+        const existingCourse = await Course.findById(id);
+        if (!existingCourse) {
+            return null;
+        }
+
+        // Prepare the update data while preserving existing fields
+        const updateData = {
+            title: course.title,
+            description: course.description,
+            price: course.price,
+            sale_price: course.sale_price,
+            slug: course.slug,
+            status: course.status || existingCourse.status,
+            level: course.level,
+            category: course.category,
+            thumbnail: course.thumbnail || existingCourse.thumbnail,
+            technology: course.technology || existingCourse.technology,
+            info: {
+                requirements: course.info?.requirements || existingCourse.info?.requirements || [],
+                benefits: course.info?.benefits || existingCourse.info?.benefits || []
+            },
+            author: existingCourse.author // Preserve the original author
+        };
+
+        // Update the course
+        const updatedCourse = await Course.findByIdAndUpdate(
+            id,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedCourse) {
+            return null;
+        }
+
+        // Convert to plain object and transform ObjectIds to strings
+        const plainCourse = updatedCourse.toObject();
+        return {
+            ...plainCourse,
+            _id: plainCourse._id.toString(),
+            author: plainCourse.author?.toString(),
+            category: plainCourse.category?.toString(),
+            students: plainCourse.students?.map((id: mongoose.Types.ObjectId) => id.toString())
+        };
     } catch (error) {
-        console.log("Error updating course:", error);
+        console.error("Error updating course:", error);
         return null;
     }
-}
+};
 
 export const rateCourse = async (courseId: string, rating: number, userId: string): Promise<{ success: boolean; message: string }> => {
     try {
@@ -326,3 +371,34 @@ export const rateCourse = async (courseId: string, rating: number, userId: strin
         };
     }
 }
+
+export const getExpertCourses = async (expertId: string): Promise<TCourseInfo[] | undefined> => {
+    try {
+        await connectToData();
+        const user = await getUser(expertId);
+        if (!user) {
+            return undefined;
+        }
+        const courses = await Course.find({ author: user._id }).lean<TCourseInfo[]>();
+
+        // Sử dụng Promise.all để xử lý các truy vấn không đồng bộ
+        await Promise.all(courses.map(async (course) => {
+            const author = await User.findById(course.author);
+            if (author) {
+                course.author = author.name;
+            }
+        }));
+
+        const serializedCourses = courses.map(course => ({
+            ...course,
+            _id: course._id.toString(),
+            category: course.category ? course.category.toString() : "",
+            students: course.students ? course.students.map(student => student.toString()) : [],
+        }));
+
+        return serializedCourses;
+    } catch (error) {
+        console.log("Error fetching expert courses:", error);
+        return undefined;
+    }
+};
