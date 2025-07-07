@@ -200,20 +200,36 @@ export const getCourseById = async (id: string): Promise<TEditCourse | null> => 
     }
 }
 
-export const getCoursesWithComments = async (): Promise<TCourseWithComments[] | null> => {
+export const getCoursesWithComments = async (expertId: string): Promise<TCourseWithComments[] | null> => {
     try {
         await connectToData();
 
-        const courses = await Course.find().lean<TCourseInfo[]>();
+        // Only get courses owned by the expert
+        const courses = await Course.find({ author: expertId }).lean<TCourseInfo[]>();
 
         const coursesWithComments = await Promise.all(
             courses.map(async (course) => {
                 const lessons = await Lesson.find({ course: course._id }).lean();
-                const comments = await Comment.find({ lesson: { $in: lessons.map((lesson) => lesson._id) } }).lean<TShowComment[]>();
+                const comments = await Comment.find({ 
+                    lesson: { $in: lessons.map((lesson) => lesson._id) } 
+                })
+                .sort({ created_at: -1 }) // Sort by date, newest first
+                .lean<TShowComment[]>();
+
+                // Get all user IDs from comments
+                const userIds = [...new Set(comments.map(comment => comment.user))];
+                const users = await User.find({ clerkId: { $in: userIds } }).lean();
+                const userMap = Object.fromEntries(users.map(user => [user.clerkId, user.name]));
+
+                // Add user names to comments
+                const commentsWithNames = comments.map(comment => ({
+                    ...comment,
+                    name: userMap[comment.user] || "Unknown"
+                }));
 
                 return {
                     ...course,
-                    comments,
+                    comments: commentsWithNames,
                 };
             })
         );

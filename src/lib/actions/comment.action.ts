@@ -5,6 +5,7 @@ import User from "@/database/user.model";
 import { connectToData } from "@/lib/mongoose";
 import { TCreateComment, TShowComment } from "@/types";
 import mongoose from "mongoose";
+import Course from "@/database/course.model";
 
 export const createComment = async (comment: TCreateComment): Promise<TCreateComment | null | undefined> => {
     try {
@@ -74,6 +75,47 @@ export const getAllComments = async (): Promise<TShowComment[] | null> => {
         return allComments;
     } catch (error) {
         console.log("Error:", error);
+        return null;
+    }
+};
+
+export const getExpertComments = async (expertId: string): Promise<TShowComment[] | null> => {
+    try {
+        await connectToData();
+        
+        // Get all courses of the expert
+        const expertCourses = await Course.find({ author: expertId }).lean();
+        if (!expertCourses || expertCourses.length === 0) {
+            return [];
+        }
+
+        // Get all lessons from expert's courses
+        const lessons = await Lesson.find({ 
+            course: { $in: expertCourses.map(course => course._id) }
+        }).lean();
+        if (!lessons || lessons.length === 0) {
+            return [];
+        }
+
+        // Get all comments from these lessons
+        const allComments = await Comment.find({ 
+            lesson: { $in: lessons.map(lesson => lesson._id) }
+        }).lean<TShowComment[]>();
+        
+        // Get all userIds from comments
+        const userIds = [...new Set(allComments.map(comment => comment.user))];
+        const users = await User.find({ clerkId: { $in: userIds } }).lean();
+        const userMap = Object.fromEntries(users.map(user => [user.clerkId, user.name]));
+
+        // Add user names to comments
+        const commentsWithNames = allComments.map(comment => ({
+            ...comment,
+            name: userMap[comment.user] || "Unknown"
+        }));
+
+        return commentsWithNames;
+    } catch (error) {
+        console.log("Error getting expert comments:", error);
         return null;
     }
 };

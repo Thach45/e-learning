@@ -210,6 +210,7 @@ type TShowComment = {
     name: string;
     content: string;
     lesson: string;
+    course: string;
     created_at: Date;
 }
 type TCreateCategory = {

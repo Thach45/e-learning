@@ -6,24 +6,33 @@ import { getCourseById } from "@/lib/actions/course.action"
 import { TEditCourse, TLesson } from "@/types"
 import { useParams } from "next/navigation"
 import { PacmanLoader } from "react-spinners"
-import { Users, Clock, TrendingUp, Star, BookOpen, MessageSquare } from "lucide-react"
+import { Users, TrendingUp, Star, MessageSquare } from "lucide-react"
 import { getLessons } from "@/lib/actions/lesson.action"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Progress } from "@/components/ui/progress"
-import { calculateCourseCompletionRate } from "@/lib/actions/progress.action";
+import { calculateCourseCompletionRate, getLessonCompletionStats } from "@/lib/actions/progress.action";
+
+interface LessonStats {
+  lessonId: string;
+  title: string;
+  type: string;
+  completionRate: number;
+  completedCount: number;
+  totalStudents: number;
+  avgWatchTime: number;
+}
 
 export default function CourseDashboard() {
   const { courseId } = useParams();
   const [course, setCourse] = useState<TEditCourse | null>(null)
-  const [lessons, setLessons] = useState<TLesson[]>([])
+  const [lessons, setLessons] = useState<LessonStats[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
     totalStudents: 0,
     completionRate: 0,
     averageRating: 0,
     totalRevenue: 0,
-    averageCompletionTime: 0,
-    totalViews: 0
+    averageStudyTime: 0
   })
 
   useEffect(() => {
@@ -33,51 +42,52 @@ export default function CourseDashboard() {
         setCourse(courseData);
 
         if (courseData) {
-          // Tính toán các chỉ số
+          // Lấy danh sách bài học và thống kê
+          const allLessons: TLesson[] = [];
+          if (courseData.lectures) {
+            for (const lectureId of courseData.lectures) {
+              const lectureLessons = await getLessons(lectureId.toString(), courseId as string);
+              if (lectureLessons) {
+                allLessons.push(...lectureLessons);
+              }
+            }
+          }
+
+          // Lấy thống kê học tập cho từng bài học
+          const lessonStats: LessonStats[] = await Promise.all(
+            allLessons.map(async (lesson) => {
+              const stats = await getLessonCompletionStats(courseId as string, lesson._id);
+              const totalStudents = courseData.students?.length || 0;
+
+              return {
+                lessonId: lesson._id,
+                title: lesson.title,
+                type: lesson.type,
+                completionRate: (stats.completedCount / totalStudents) * 100,
+                completedCount: stats.completedCount,
+                totalStudents,
+                avgWatchTime: stats.avgWatchTime
+              };
+            })
+          );
+
+          setLessons(lessonStats);
+
+          // Tính toán các chỉ số tổng quan
           const totalStudents = courseData.students?.length || 0;
           const totalRevenue = totalStudents * courseData.price;
           const totalRating = courseData.rating?.reduce((sum, r) => sum + r, 0) || 0;
           const totalRatings = courseData.rating?.length || 0;
           const averageRating = totalRatings > 0 ? totalRating / totalRatings : 0;
-
-          // Tính tổng số bài học
-          let totalLessons = 0;
-          if (courseData.lectures) {
-            for (const lectureId of courseData.lectures) {
-              const lectureLessons = await getLessons(lectureId.toString(), courseId as string);
-              if (lectureLessons) {
-                totalLessons += lectureLessons.length;
-              }
-            }
-          }
-
-          // Lấy tỷ lệ hoàn thành thực tế
-          const completionRate = await calculateCourseCompletionRate(courseId as string, totalLessons);
-
-          // Giả lập một số chỉ số khác (có thể thêm vào database sau)
-          const averageCompletionTime = Math.floor(Math.random() * 30);
-          const totalViews = totalStudents * Math.floor(Math.random() * 10);
+          const completionRate = await calculateCourseCompletionRate(courseId as string, allLessons.length);
 
           setStats({
             totalStudents,
             completionRate,
             averageRating,
             totalRevenue,
-            averageCompletionTime,
-            totalViews
+            averageStudyTime: 0
           });
-        }
-
-        // Lấy danh sách bài học
-        if (courseData?.lectures) {
-          const allLessons: TLesson[] = [];
-          for (const lectureId of courseData.lectures) {
-            const lectureLessons = await getLessons(lectureId.toString(), courseId as string);
-            if (lectureLessons) {
-              allLessons.push(...lectureLessons);
-            }
-          }
-          setLessons(allLessons);
         }
 
         setLoading(false);
@@ -100,6 +110,17 @@ export default function CourseDashboard() {
   // Format number with dots
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('vi-VN').format(num);
+  }
+
+  // Format time (seconds to hours and minutes)
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   }
 
   if (loading || !course) {
@@ -134,26 +155,7 @@ export default function CourseDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatNumber(stats.totalStudents)}</div>
-            <Progress value={stats.completionRate} className="mt-2" />
-            <p className="text-xs text-muted-foreground mt-2">
-              {stats.completionRate}% đã hoàn thành khóa học
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Thời gian hoàn thành */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Thời gian hoàn thành trung bình
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.averageCompletionTime} ngày</div>
-            <p className="text-xs text-muted-foreground">
-              Tính từ ngày bắt đầu học
-            </p>
+            
           </CardContent>
         </Card>
 
@@ -189,22 +191,6 @@ export default function CourseDashboard() {
           </CardContent>
         </Card>
 
-        {/* Lượt xem */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Tổng lượt xem
-            </CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatNumber(stats.totalViews)}</div>
-            <p className="text-xs text-muted-foreground">
-              Trung bình {formatNumber(Math.floor(stats.totalViews / stats.totalStudents))} lượt/học viên
-            </p>
-          </CardContent>
-        </Card>
-
         {/* Bình luận */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -227,14 +213,14 @@ export default function CourseDashboard() {
         <CardHeader>
           <CardTitle>Thống kê bài học</CardTitle>
           <CardDescription>
-            Danh sách bài học và số lượt xem
+            Chi tiết về số học viên và thời gian học trung bình của từng bài
           </CardDescription>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[300px]">
             <div className="space-y-4">
-              {lessons.map((lesson, index) => (
-                <div key={lesson._id} className="flex items-center justify-between">
+              {lessons.map((lesson) => (
+                <div key={lesson.lessonId} className="flex items-center justify-between">
                   <div className="space-y-1">
                     <p className="text-sm font-medium leading-none">{lesson.title}</p>
                     <p className="text-sm text-muted-foreground">
@@ -242,10 +228,25 @@ export default function CourseDashboard() {
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <div className="text-sm text-muted-foreground">
-                      {formatNumber(Math.floor(Math.random() * 1000))} lượt xem
+                    <div className="flex flex-col items-end gap-1">
+                      <div className="text-sm text-muted-foreground">
+                        {formatNumber(lesson.completedCount)}/{formatNumber(lesson.totalStudents)} học viên
+                      </div>
+                      {lesson.type === 'VIDEO' && (
+                        <div className="text-xs text-muted-foreground">
+                          Thời gian xem TB: {formatTime(lesson.avgWatchTime)}
+                        </div>
+                      )}
                     </div>
-                    <Progress value={Math.floor(Math.random() * 100)} className="w-[100px]" />
+                    <div className="flex flex-col items-end">
+                      <Progress 
+                        value={lesson.completionRate} 
+                        className="w-[100px]" 
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {lesson.completionRate.toFixed(1)}% hoàn thành
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}
