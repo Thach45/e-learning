@@ -10,6 +10,7 @@ import { Users, Clock, TrendingUp, Star, BookOpen, MessageSquare } from "lucide-
 import { getLessons } from "@/lib/actions/lesson.action"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Progress } from "@/components/ui/progress"
+import { calculateCourseCompletionRate } from "@/lib/actions/progress.action";
 
 export default function CourseDashboard() {
   const { courseId } = useParams();
@@ -39,8 +40,21 @@ export default function CourseDashboard() {
           const totalRatings = courseData.rating?.length || 0;
           const averageRating = totalRatings > 0 ? totalRating / totalRatings : 0;
 
-          // Giả lập một số chỉ số (trong thực tế sẽ lấy từ database)
-          const completionRate = Math.floor(Math.random() * 100);
+          // Tính tổng số bài học
+          let totalLessons = 0;
+          if (courseData.lectures) {
+            for (const lectureId of courseData.lectures) {
+              const lectureLessons = await getLessons(lectureId.toString(), courseId as string);
+              if (lectureLessons) {
+                totalLessons += lectureLessons.length;
+              }
+            }
+          }
+
+          // Lấy tỷ lệ hoàn thành thực tế
+          const completionRate = await calculateCourseCompletionRate(courseId as string, totalLessons);
+
+          // Giả lập một số chỉ số khác (có thể thêm vào database sau)
           const averageCompletionTime = Math.floor(Math.random() * 30);
           const totalViews = totalStudents * Math.floor(Math.random() * 10);
 

@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 let isConnect: boolean = false;
 
-
 export const connectToData = async () => {
   if(!process.env.mongoURL) {
     console.error('MONGO_URL is not set');

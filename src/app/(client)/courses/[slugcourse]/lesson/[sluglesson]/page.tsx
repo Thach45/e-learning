@@ -10,11 +10,16 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import LessonAttachment from "@/components/client/LessonAttachment"
 
+
+
 import { getCourseBySlug } from "@/lib/actions/course.action"
 import { getLessonBySlug } from "@/lib/actions/lesson.action"
 import type { TCreateComment, TShowComment, TShowCourse, TShowLesson } from "@/types"
 import { createComment, getCommentsByLessonId } from "@/lib/actions/comment.action"
 import { useUser } from "@clerk/nextjs"
+
+// Import thêm VideoPlayer
+import VideoPlayer from "@/components/client/VideoPlayer";
 
 function CommentItem({ comment, onReply }: { comment: TShowComment; onReply: (parentId: string) => void }) {
   return (
@@ -45,7 +50,7 @@ function CommentItem({ comment, onReply }: { comment: TShowComment; onReply: (pa
 }
 
 export default function CourseVideoPlayer() {
-  const { user } = useUser()
+  const { user, isLoaded } = useUser(); // Add isLoaded check
   const slug = useParams()
   const [courseInfo, setCourseInfo] = useState<TShowCourse | null>(null)
   const [lesson, setLesson] = useState<TShowLesson | null>(null)
@@ -130,27 +135,19 @@ export default function CourseVideoPlayer() {
           {/* Main Content */}
           <div className="lg:w-2/3">
             {/* Video Player */}
-            <div className="aspect-video bg-black mb-6">
-              {lesson.videoType === "DRIVE" ? (
-                <iframe
-                  src={`https://drive.google.com/file/d/${lesson.videoURL}/preview`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full"
-                />
-              ) : (
-                <iframe
-                  src={`https://www.youtube.com/embed/${lesson.videoURL}?rel=0`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full"
-                />
-              )}
-            </div>
+            {lesson && courseInfo && (
+              <VideoPlayer
+                videoType={lesson.videoType}
+                videoURL={lesson.videoURL}
+                courseId={courseInfo._id}
+                lessonId={lesson._id}
+                userId={isLoaded ? user?.id : undefined}
+              />
+            )}
 
             {/* Video Description */}
             <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-2">{lesson.title}</h2>
+              <h2 className="text-2xl font-semibold mb-2">{lesson?.title}</h2>
               <Tabs defaultValue="description" className="mb-6">
                 <TabsList>
                   <TabsTrigger value="description">Mô tả</TabsTrigger>
