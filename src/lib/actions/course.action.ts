@@ -1,6 +1,6 @@
 "use server";
 import Category from "@/database/categogy.model";
-import Comment from "@/database/comment.model";
+import Comment, { TComment } from "@/database/comment.model";
 import Course, { TCourse } from "@/database/course.model";
 import Lecture, { TLecture } from "@/database/lecture.model";
 import Lesson from "@/database/lesson.model";
@@ -208,28 +208,59 @@ export const getCoursesWithComments = async (expertId: string): Promise<TCourseW
         const courses = await Course.find({ author: expertId }).lean<TCourseInfo[]>();
 
         const coursesWithComments = await Promise.all(
-            courses.map(async (course) => {
+            courses.map(async (course: any) => {
                 const lessons = await Lesson.find({ course: course._id }).lean();
                 const comments = await Comment.find({ 
                     lesson: { $in: lessons.map((lesson) => lesson._id) } 
                 })
-                .sort({ created_at: -1 }) // Sort by date, newest first
-                .lean<TShowComment[]>();
+                .sort({ created_at: -1 })
+                .lean<TComment[]>();
 
                 // Get all user IDs from comments
                 const userIds = [...new Set(comments.map(comment => comment.user))];
                 const users = await User.find({ clerkId: { $in: userIds } }).lean();
                 const userMap = Object.fromEntries(users.map(user => [user.clerkId, user.name]));
 
-                // Add user names to comments
-                const commentsWithNames = comments.map(comment => ({
-                    ...comment,
-                    name: userMap[comment.user] || "Unknown"
+                // Add user names to comments and convert to plain objects
+                const commentsWithNames: TShowComment[] = comments.map(comment => ({
+                    _id: comment._id.toString(),
+                    user: comment.user,
+                    name: userMap[comment.user] || "Unknown",
+                    content: comment.content,
+                    lesson: comment.lesson.toString(),
+                    course: course._id.toString(),
+                    parent: comment.parent?.toString(),
+                    replies: (comment.replies || []).map((reply: any) => ({
+                        _id: typeof reply === 'object' ? reply.toString() : reply,
+                        user: "",
+                        name: "",
+                        content: "",
+                        lesson: comment.lesson.toString(),
+                        course: course._id.toString(),
+                        replies: [],
+                        created_at: new Date()
+                    })),
+                    created_at: new Date(comment.created_at)
                 }));
 
+                // Convert course to TCourseWithComments format
                 return {
-                    ...course,
-                    comments: commentsWithNames,
+                    _id: course._id.toString(),
+                    title: course.title,
+                    slug: course.slug,
+                    thumbnail: course.thumbnail,
+                    price: course.price,
+                    sale_price: course.sale_price,
+                    status: course.status,
+                    author: course.author.toString(),
+                    category: course.category?.toString() || "",
+                    students: (course.students || []).map((id: any) => id.toString()),
+                    views: course.views || 0,
+                    rating: course.rating || [],
+                    technology: course.technology || [],
+                    level: course.level,
+                    created_at: course.created_at,
+                    comments: commentsWithNames
                 };
             })
         );
@@ -241,31 +272,56 @@ export const getCoursesWithComments = async (expertId: string): Promise<TCourseW
     }
 };
 
-export const deleteCommentInCourse = async (courseId: string, commentId: string): Promise<TShowComment | null> => {
+export const deleteCommentInCourse = async (courseId: string, commentId: string): Promise<{ success: boolean; message: string }> => {
     try {
         await connectToData();
-        const course = await Course.findById(courseId);
-        if (!course) {
-            return null;
+        
+        // Tìm comment để lấy lesson ID
+        const comment = await Comment.findById(commentId).lean<TComment>();
+        if (!comment) {
+            return {
+                success: false,
+                message: "Không tìm thấy bình luận"
+            };
         }
 
-        // Xóa comment khỏi khóa học
-        await Course.findByIdAndUpdate(
-            courseId,
-            { $pull: { comments: commentId } },
-            { new: true }
+        // Xóa comment khỏi lesson
+        await Lesson.findByIdAndUpdate(
+            comment.lesson,
+            { $pull: { comments: commentId } }
         );
 
-        // Xóa comment khỏi cơ sở dữ liệu
-        const deletedComment = await Comment.findByIdAndDelete(commentId);
+        // Xóa các replies của comment này (nếu có)
+        if (comment.replies && comment.replies.length > 0) {
+            await Comment.deleteMany({ 
+                _id: { $in: comment.replies } 
+            });
+        }
 
-        return deletedComment;
+        // Xóa comment khỏi cơ sở dữ liệu
+        await Comment.findByIdAndDelete(commentId);
+
+        // Nếu comment là reply, cập nhật parent comment
+        if (comment.parent) {
+            await Comment.findByIdAndUpdate(
+                comment.parent,
+                { $pull: { replies: commentId } }
+            );
+        }
+
+        return {
+            success: true,
+            message: "Đã xóa bình luận thành công"
+        };
     }
     catch (error) {
         console.log("Error deleting comment:", error);
-        return null;
+        return {
+            success: false,
+            message: "Có lỗi xảy ra khi xóa bình luận"
+        };
     }
-}
+};
 
 
 export const updateCourse = async (id: string, course: TCreateCourse): Promise<TCourse | null> => {

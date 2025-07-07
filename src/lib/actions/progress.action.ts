@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { connectToData } from "@/lib/mongoose";
 import Progress from "@/database/progress.model";
 import Course from "@/database/course.model";
+import User from '@/database/user.model';
 
 // Interface cho kết quả trả về sau khi dùng lean()
 interface IProgressDoc {
@@ -230,54 +231,102 @@ interface OverallStats {
 interface CourseDocument {
   _id: mongoose.Types.ObjectId;
   title: string;
-  lessons?: any[];
+  lectures: {
+    _id: mongoose.Types.ObjectId;
+    lesson: mongoose.Types.ObjectId[];
+  }[];
 }
 
-export async function getUserCourseStatistics(userId: string): Promise<CourseStats[]> {
+interface UserDocument {
+  _id: mongoose.Types.ObjectId;
+  clerkId: string;
+  courses: {
+    _id: mongoose.Types.ObjectId;
+    title: string;
+    lectures: {
+      _id: mongoose.Types.ObjectId;
+      lesson: mongoose.Types.ObjectId[];
+    }[];
+  }[];
+}
+
+export async function getUserCourseStatistics(clerkId: string): Promise<CourseStats[]> {
   try {
-    connectToData();
+    await connectToData();
 
-    // Lấy tất cả tiến độ của user
-    const progresses = await Progress.find({ userId }).lean() as unknown as IProgressDoc[];
-
-    // Nhóm theo khóa học
-    const courseStats = new Map<string, CourseStats>();
-
-    for (const progress of progresses) {
-      const courseId = progress.courseId.toString();
-      
-      if (!courseStats.has(courseId)) {
-        const course = await Course.findById(courseId).lean() as unknown as CourseDocument;
-        courseStats.set(courseId, {
-          courseId,
-          courseName: course?.title || 'Unknown Course',
-          totalLessons: course?.lessons?.length || 0,
-          completedLessons: 0,
-          totalStudyTime: 0,
-          lastStudyDate: progress.updatedAt,
-          watchTime: 0,
-          watchedPercent: 0,
-          completed: false
-        });
+    // Lấy user và populate tất cả khóa học đã đăng ký
+    const user = await User.findOne({ clerkId }).populate({
+      path: 'courses',
+      populate: {
+        path: 'lectures',
+        populate: {
+          path: 'lesson'
+        }
       }
+    }).lean() as unknown as UserDocument;
 
-      const stats = courseStats.get(courseId)!;
-
-      // Cập nhật thống kê
-      if (progress.completed) {
-        stats.completedLessons++;
-        stats.completed = true;
-      }
-      stats.totalStudyTime += progress.watchTime || 0;
-      stats.watchTime = (stats.watchTime || 0) + (progress.watchTime || 0);
-      stats.watchedPercent = (stats.watchedPercent || 0) + (progress.watchedPercent || 0);
-      
-      if (progress.updatedAt > stats.lastStudyDate) {
-        stats.lastStudyDate = progress.updatedAt;
-      }
+    if (!user) {
+      throw new Error('User not found');
     }
 
-    return Array.from(courseStats.values());
+    // Lấy tất cả tiến độ của user
+    const progresses = await Progress.find({ userId: clerkId }).lean() as unknown as IProgressDoc[];
+    const progressMap = new Map<string, IProgressDoc[]>();
+    
+    // Nhóm các progress theo courseId
+    progresses.forEach(progress => {
+      const courseId = progress.courseId.toString();
+      if (!progressMap.has(courseId)) {
+        progressMap.set(courseId, []);
+      }
+      progressMap.get(courseId)!.push(progress);
+    });
+
+    // Tạo stats cho mỗi khóa học đã đăng ký
+    const courseStats: CourseStats[] = user.courses.map((course) => {
+      const courseId = course._id.toString();
+      const courseProgresses = progressMap.get(courseId) || [];
+
+      // Tính tổng số bài học trong khóa học
+      const totalLessons = course.lectures.reduce((total: number, lecture) => {
+        return total + (lecture.lesson?.length || 0);
+      }, 0);
+
+      // Tính các thống kê từ progresses
+      const stats = courseProgresses.reduce((acc: any, progress) => {
+        if (progress.completed) {
+          acc.completedLessons++;
+        }
+        acc.totalStudyTime += progress.watchTime || 0;
+        acc.watchTime += progress.watchTime || 0;
+        acc.watchedPercent += progress.watchedPercent || 0;
+        
+        if (!acc.lastStudyDate || progress.updatedAt > acc.lastStudyDate) {
+          acc.lastStudyDate = progress.updatedAt;
+        }
+        return acc;
+      }, {
+        completedLessons: 0,
+        totalStudyTime: 0,
+        watchTime: 0,
+        watchedPercent: 0,
+        lastStudyDate: null
+      });
+
+      return {
+        courseId,
+        courseName: course.title,
+        totalLessons,
+        completedLessons: stats.completedLessons,
+        totalStudyTime: stats.totalStudyTime,
+        lastStudyDate: stats.lastStudyDate || new Date(),
+        watchTime: stats.watchTime,
+        watchedPercent: stats.watchedPercent,
+        completed: stats.completedLessons > 0
+      };
+    });
+
+    return courseStats;
   } catch (error) {
     console.error("Error getting user course statistics:", error);
     throw error;

@@ -26,6 +26,11 @@ const menuItem:TLinkItem[] = [
         icon: <List className="h-5 w-5" />,
         title: "Danh mục"
     },
+    {
+        link: "/dashboard",
+        icon: <BarChart className="h-5 w-5" />,
+        title: "Bảng điều khiển"
+    }
     // {
     //     link: "/quizzes",
     //     icon: <GraduationCap className="h-5 w-5" />,
@@ -54,12 +59,8 @@ const menuItemAdmin:TLinkItem[] = [
         link: "admin/manage/orders",
         icon: <ShoppingCart className="h-5 w-5" />,
         title: "Manage Orders"
-    },
-    {
-        link: "admin/manage/comment",
-        icon: <MessageCircle className="h-5 w-5" />,
-        title: "Manage Comments"
-    },
+    }
+    
 ]
 
 const menuItemExpert:TLinkItem[] = [
@@ -73,6 +74,11 @@ const menuItemExpert:TLinkItem[] = [
         icon: <BarChart className="h-5 w-5" />,
         title: "Bảng điều khiển"
     },
+    {
+        link: "/expert/manage/comments",
+        icon: <MessageCircle className="h-5 w-5" />,
+        title: "Quản lý bình luận"
+    }
 ]
 
 export { menuItem, menuItemAdmin, menuItemExpert }

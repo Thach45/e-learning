@@ -35,11 +35,19 @@ export const createLesson = async (lesson: TCreateLesson) => {
         const les = await Lesson.create(newData);
         console.log("Created lesson:", les);
 
-        await Lecture.findByIdAndUpdate(
+        // Update lecture with the new lesson ID
+        const updatedLecture = await Lecture.findByIdAndUpdate(
             lesson.lecture, 
-            { $push: { lessons: les._id } }
+            { $push: { lesson: les._id } },
+            { new: true }
         ).exec();
         
+        console.log("Updated lecture:", updatedLecture);
+
+        if (!updatedLecture) {
+            throw new Error('Failed to update lecture with new lesson');
+        }
+
         return les;
     }
     catch (error) {
