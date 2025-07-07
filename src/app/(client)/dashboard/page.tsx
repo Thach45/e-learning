@@ -10,6 +10,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
+
 
 interface CourseProgress {
   courseId: string;
@@ -104,7 +106,17 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchProgress = async () => {
-      if (!user?.id) return;
+      if (!user?.id){
+        toast({
+          title: "Vui lòng đăng nhập để truy cập trang này",
+          description: "Vui lòng đăng nhập để truy cập trang này",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/sign-in";
+        }, 3000);
+        return;
+      }
       
       try {
         setError(null);
