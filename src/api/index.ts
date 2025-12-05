@@ -4,5 +4,6 @@ export * from './courses';
 export * from './orders';
 export * from './instructor';
 export * from './categories';
+export * from './courseDetail';
 export { default as apiClient } from './axios';
 

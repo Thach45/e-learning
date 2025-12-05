@@ -1,15 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, AlertCircle, Save } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, Save, FileText, Info } from 'lucide-react';
 import { useInstructorCourse, useUpdateInstructorCourse } from '../../hooks/useInstructorCourses';
 import { useCategories } from '../../hooks/useCategories';
+import { useCourseDetail, useCreateCourseDetail, useUpdateCourseDetail } from '../../hooks/useCourseDetail';
 import type { CourseLevel } from '../../api/instructor';
 
 const EditCoursePage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const [activeTab, setActiveTab] = useState<'basic' | 'detail'>('basic');
+  
   const { data: course, isLoading: courseLoading, error: courseError } = useInstructorCourse(id || '');
+  const { data: courseDetail, isLoading: detailLoading } = useCourseDetail(id || '');
   const updateMutation = useUpdateInstructorCourse();
+  const createDetailMutation = useCreateCourseDetail();
+  const updateDetailMutation = useUpdateCourseDetail();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
 
   const [formData, setFormData] = useState({
@@ -23,7 +29,18 @@ const EditCoursePage = () => {
     categoryId: '',
   });
 
+  const [detailData, setDetailData] = useState({
+    description: '',
+    content: '',
+    objectives: '',
+    requirements: '',
+    targetAudience: '',
+    benefits: '',
+    relatedCourses: [] as string[],
+  });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [detailErrors, setDetailErrors] = useState<Record<string, string>>({});
 
   // Load course data when available
   useEffect(() => {
@@ -40,6 +57,21 @@ const EditCoursePage = () => {
       });
     }
   }, [course]);
+
+  // Load course detail data when available
+  useEffect(() => {
+    if (courseDetail) {
+      setDetailData({
+        description: courseDetail.description || '',
+        content: courseDetail.content || '',
+        objectives: courseDetail.objectives || '',
+        requirements: courseDetail.requirements || '',
+        targetAudience: courseDetail.targetAudience || '',
+        benefits: courseDetail.benefits || '',
+        relatedCourses: courseDetail.relatedCourses || [],
+      });
+    }
+  }, [courseDetail]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +126,57 @@ const EditCoursePage = () => {
     );
   };
 
+  const handleDetailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDetailErrors({});
+
+    if (!id) return;
+
+    // Nếu chưa có courseDetail, tạo mới; nếu có rồi thì update
+    if (courseDetail) {
+      updateDetailMutation.mutate(
+        {
+          courseId: id,
+          body: {
+            description: detailData.description || null,
+            content: detailData.content || null,
+            objectives: detailData.objectives || null,
+            requirements: detailData.requirements || null,
+            targetAudience: detailData.targetAudience || null,
+            benefits: detailData.benefits || null,
+            relatedCourses: detailData.relatedCourses,
+          },
+        },
+        {
+          onError: (error: any) => {
+            setDetailErrors({ general: error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật chi tiết' });
+          },
+        }
+      );
+    } else {
+      createDetailMutation.mutate(
+        {
+          courseId: id,
+          body: {
+            courseId: id,
+            description: detailData.description || undefined,
+            content: detailData.content || undefined,
+            objectives: detailData.objectives || undefined,
+            requirements: detailData.requirements || undefined,
+            targetAudience: detailData.targetAudience || undefined,
+            benefits: detailData.benefits || undefined,
+            relatedCourses: detailData.relatedCourses,
+          },
+        },
+        {
+          onError: (error: any) => {
+            setDetailErrors({ general: error.response?.data?.message || 'Có lỗi xảy ra khi tạo chi tiết' });
+          },
+        }
+      );
+    }
+  };
+
   if (courseLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -138,8 +221,38 @@ const EditCoursePage = () => {
         </div>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 p-6 space-y-6">
+      {/* Tabs */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        <div className="flex border-b border-slate-200">
+          <button
+            type="button"
+            onClick={() => setActiveTab('basic')}
+            className={`flex-1 px-6 py-4 font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${
+              activeTab === 'basic'
+                ? 'bg-purple-50 text-purple-600 border-b-2 border-purple-600'
+                : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <Info size={18} />
+            Thông tin cơ bản
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('detail')}
+            className={`flex-1 px-6 py-4 font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${
+              activeTab === 'detail'
+                ? 'bg-purple-50 text-purple-600 border-b-2 border-purple-600'
+                : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            <FileText size={18} />
+            Chi tiết khóa học
+          </button>
+        </div>
+
+        {/* Basic Info Tab */}
+        {activeTab === 'basic' && (
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
         {errors.general && (
           <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-3">
             <AlertCircle className="text-rose-600" size={20} />
@@ -314,30 +427,166 @@ const EditCoursePage = () => {
           </span>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-100">
-          <button
-            type="button"
-            onClick={() => navigate('/instructor/courses')}
-            className="px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors"
-          >
-            Hủy
-          </button>
-          <button
-            type="submit"
-            disabled={updateMutation.isPending}
-            className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            {updateMutation.isPending && <Loader2 size={18} className="animate-spin" />}
-            {updateMutation.isPending ? 'Đang lưu...' : (
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => navigate('/instructor/courses')}
+                className="px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                disabled={updateMutation.isPending}
+                className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {updateMutation.isPending && <Loader2 size={18} className="animate-spin" />}
+                {updateMutation.isPending ? 'Đang lưu...' : (
+                  <>
+                    <Save size={18} />
+                    Lưu thay đổi
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* Course Detail Tab */}
+        {activeTab === 'detail' && (
+          <form onSubmit={handleDetailSubmit} className="p-6 space-y-6">
+            {detailLoading && (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
+              </div>
+            )}
+
+            {detailErrors.general && (
+              <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-3">
+                <AlertCircle className="text-rose-600" size={20} />
+                <p className="text-rose-700 text-sm">{detailErrors.general}</p>
+              </div>
+            )}
+
+            {!detailLoading && (
               <>
-                <Save size={18} />
-                Lưu thay đổi
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Mô tả khóa học
+                  </label>
+                  <textarea
+                    value={detailData.description}
+                    onChange={(e) => setDetailData({ ...detailData, description: e.target.value })}
+                    rows={6}
+                    className="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all resize-none"
+                    placeholder="Mô tả chi tiết về khóa học..."
+                  />
+                </div>
+
+                {/* Content */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Nội dung khóa học
+                  </label>
+                  <textarea
+                    value={detailData.content}
+                    onChange={(e) => setDetailData({ ...detailData, content: e.target.value })}
+                    rows={8}
+                    className="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all resize-none"
+                    placeholder="Nội dung chi tiết của khóa học..."
+                  />
+                </div>
+
+                {/* Objectives */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Mục tiêu học tập
+                  </label>
+                  <textarea
+                    value={detailData.objectives}
+                    onChange={(e) => setDetailData({ ...detailData, objectives: e.target.value })}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all resize-none"
+                    placeholder="Sau khi hoàn thành khóa học, học viên sẽ có thể..."
+                  />
+                </div>
+
+                {/* Requirements */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Yêu cầu
+                  </label>
+                  <textarea
+                    value={detailData.requirements}
+                    onChange={(e) => setDetailData({ ...detailData, requirements: e.target.value })}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all resize-none"
+                    placeholder="Yêu cầu về kiến thức, công cụ, phần mềm..."
+                  />
+                </div>
+
+                {/* Target Audience */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Đối tượng học viên
+                  </label>
+                  <textarea
+                    value={detailData.targetAudience}
+                    onChange={(e) => setDetailData({ ...detailData, targetAudience: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all resize-none"
+                    placeholder="Khóa học phù hợp cho..."
+                  />
+                </div>
+
+                {/* Benefits */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Lợi ích
+                  </label>
+                  <textarea
+                    value={detailData.benefits}
+                    onChange={(e) => setDetailData({ ...detailData, benefits: e.target.value })}
+                    rows={4}
+                    className="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all resize-none"
+                    placeholder="Những lợi ích học viên sẽ nhận được..."
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-4 pt-4 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/instructor/courses')}
+                    className="px-6 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={createDetailMutation.isPending || updateDetailMutation.isPending}
+                    className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {(createDetailMutation.isPending || updateDetailMutation.isPending) && (
+                      <Loader2 size={18} className="animate-spin" />
+                    )}
+                    {createDetailMutation.isPending || updateDetailMutation.isPending
+                      ? 'Đang lưu...'
+                      : (
+                        <>
+                          <Save size={18} />
+                          {courseDetail ? 'Cập nhật chi tiết' : 'Tạo chi tiết'}
+                        </>
+                      )}
+                  </button>
+                </div>
               </>
             )}
-          </button>
-        </div>
-      </form>
+          </form>
+        )}
+      </div>
     </div>
   );
 };

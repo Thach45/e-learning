@@ -21,7 +21,7 @@ const InstructorLayout = () => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/instructor' },
     { icon: BookOpen, label: 'Khóa học của tôi', path: '/instructor/courses' },
-    { icon: Plus, label: 'Tạo khóa học', path: '/instructor/courses/new' },
+   
     { icon: Users, label: 'Học viên', path: '/instructor/students' },
     { icon: MessageSquare, label: 'Đánh giá', path: '/instructor/reviews' },
     { icon: BarChart3, label: 'Thống kê', path: '/instructor/analytics' },

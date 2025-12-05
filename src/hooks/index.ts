@@ -4,4 +4,5 @@ export * from './useCourses';
 export * from './useOrders';
 export * from './useInstructorCourses';
 export * from './useCategories';
+export * from './useCourseDetail';
 
