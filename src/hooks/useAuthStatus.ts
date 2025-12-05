@@ -34,6 +34,7 @@ export const useAuthStatus = () => {
     queryKey: ['auth', 'me'],
     queryFn: async () => {
       const data = await authApi.getMe();
+      console.log(data);
       return {
         ...data,
         roles: (data.roles || []) as UserRole[],

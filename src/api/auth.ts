@@ -136,7 +136,8 @@ export const authApi = {
   // Get current user info
   getMe: async (): Promise<UserWithRolesResponse> => {
     const response = await apiClient.get('/auth/me');
-    return response.data;
+    console.log("getMe response", response);
+    return response.data.data;
   },
 };
 

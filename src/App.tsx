@@ -120,7 +120,7 @@ const AppContent = () => {
         <Route
           path="/instructor"
           element={
-            <ProtectedRoute requiredRoles={['INSTRUCTOR']}>
+            <ProtectedRoute requiredRoles={['ADMIN']}>
               <InstructorLayout />
             </ProtectedRoute>
           }

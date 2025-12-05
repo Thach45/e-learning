@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { Search, Menu, X, Bell, ShoppingCart, ChevronDown, Receipt } from 'lucide-react';
-import {  useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { Search, Menu, X, Bell, ShoppingCart, ChevronDown, Receipt, LogOut, User, Settings, BookOpen } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuthStatus } from '../../hooks/useAuthStatus';
+import { useLogout } from '../../hooks/useAuth';
 
 type HeaderProps = {
   cartCount?: number;
@@ -8,7 +10,31 @@ type HeaderProps = {
 
 const HomeHeader = ({ cartCount = 0 }: HeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const { user, isAuthenticated } = useAuthStatus();
+  const logoutMutation = useLogout();
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
+
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,10 +80,108 @@ const HomeHeader = ({ cartCount = 0 }: HeaderProps) => {
 
             <div className="h-8 w-px bg-slate-200"></div>
 
-            <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
-              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="User" className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-100" />
-              <ChevronDown size={16} className="text-slate-400 hidden xl:block" />
-            </div>
+            {/* User Menu */}
+            {isAuthenticated && user ? (
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  <img 
+                    src={user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'} 
+                    alt={user.name} 
+                    className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-100" 
+                  />
+                  <ChevronDown size={16} className={`text-slate-400 hidden xl:block transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-50">
+                    {/* User Info Header */}
+                    <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-slate-100">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'} 
+                          alt={user.name} 
+                          className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-sm" 
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-slate-800 truncate">{user.name}</p>
+                          <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                          {user.roles && user.roles.length > 0 && (
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full">
+                              {user.roles[0] === 'ADMIN' ? 'Quản trị viên' : 
+                               user.roles[0] === 'INSTRUCTOR' ? 'Giảng viên' : 'Học viên'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div className="py-2">
+                      <Link
+                        to="/my-courses"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700"
+                      >
+                        <BookOpen size={18} className="text-indigo-600" />
+                        <span className="font-medium">Khóa học của tôi</span>
+                      </Link>
+                      <Link
+                        to="/account/orders"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700"
+                      >
+                        <Receipt size={18} className="text-indigo-600" />
+                        <span className="font-medium">Đơn hàng của tôi</span>
+                      </Link>
+                      {user.roles?.includes('ADMIN') && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700"
+                        >
+                          <Settings size={18} className="text-indigo-600" />
+                          <span className="font-medium">Admin Panel</span>
+                        </Link>
+                      )}
+                      {user.roles?.includes('INSTRUCTOR') && (
+                        <Link
+                          to="/instructor"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-slate-700"
+                        >
+                          <User size={18} className="text-indigo-600" />
+                          <span className="font-medium">Instructor Dashboard</span>
+                        </Link>
+                      )}
+                    </div>
+
+                    {/* Divider */}
+                    <div className="border-t border-slate-100"></div>
+
+                    {/* Logout */}
+                    <button
+                      onClick={handleLogout}
+                      disabled={logoutMutation.isPending}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-rose-50 transition-colors text-rose-600 font-medium disabled:opacity-50"
+                    >
+                      <LogOut size={18} />
+                      <span>{logoutMutation.isPending ? 'Đang đăng xuất...' : 'Đăng xuất'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/auth/login"
+                className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-500 transition-colors text-sm"
+              >
+                Đăng nhập
+              </Link>
+            )}
           </div>
 
           <button
@@ -100,13 +224,47 @@ const HomeHeader = ({ cartCount = 0 }: HeaderProps) => {
               <a href="#" className="p-2 font-semibold text-slate-600 hover:bg-slate-50 rounded-lg">Khóa học của tôi</a>
               <a href="#" className="p-2 font-semibold text-slate-600 hover:bg-slate-50 rounded-lg">Cộng đồng</a>
             </div>
-            <div className="pt-4 border-t border-slate-100 flex items-center gap-3">
-              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" alt="User" className="w-10 h-10 rounded-full" />
-              <div>
-                <p className="font-bold text-sm">Học viên Mới</p>
-                <button className="text-xs text-red-500 font-semibold">Đăng xuất</button>
+            {isAuthenticated && user ? (
+              <div className="pt-4 border-t border-slate-100">
+                <div className="flex items-center gap-3 mb-3">
+                  <img 
+                    src={user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'} 
+                    alt={user.name} 
+                    className="w-10 h-10 rounded-full object-cover" 
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm truncate">{user.name}</p>
+                    <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Link to="/my-courses" className="p-2 font-semibold text-slate-600 hover:bg-slate-50 rounded-lg text-sm">Khóa học của tôi</Link>
+                  <Link to="/account/orders" className="p-2 font-semibold text-slate-600 hover:bg-slate-50 rounded-lg text-sm">Đơn hàng của tôi</Link>
+                  {user.roles?.includes('ADMIN') && (
+                    <Link to="/admin" className="p-2 font-semibold text-slate-600 hover:bg-slate-50 rounded-lg text-sm">Admin Panel</Link>
+                  )}
+                  {user.roles?.includes('INSTRUCTOR') && (
+                    <Link to="/instructor" className="p-2 font-semibold text-slate-600 hover:bg-slate-50 rounded-lg text-sm">Instructor Dashboard</Link>
+                  )}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  disabled={logoutMutation.isPending}
+                  className="w-full mt-3 p-2 text-xs text-red-500 font-semibold hover:bg-rose-50 rounded-lg disabled:opacity-50"
+                >
+                  {logoutMutation.isPending ? 'Đang đăng xuất...' : 'Đăng xuất'}
+                </button>
               </div>
-            </div>
+            ) : (
+              <div className="pt-4 border-t border-slate-100">
+                <Link
+                  to="/auth/login"
+                  className="block w-full p-2 text-center bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-500 transition-colors text-sm"
+                >
+                  Đăng nhập
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
