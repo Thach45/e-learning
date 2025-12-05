@@ -1,18 +1,24 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { useLogin, useGoogleLogin } from '../../hooks/useAuth';
 
 const LoginPage = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
-  const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Get redirect path from location state (set by ProtectedRoute)
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/';
+
+  const loginMutation = useLogin(from);
+  const googleLoginMutation = useGoogleLogin();
 
   useEffect(() => {
     const registered = searchParams.get('registered');
@@ -31,53 +37,20 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-    setIsLoading(true);
 
-    try {
-      // TODO: Replace with actual API call
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (data.field === 'password') {
-          setErrors({ password: data.message || 'Mật khẩu không đúng' });
+    loginMutation.mutate(formData, {
+      onError: (error: any) => {
+        if (error.response?.data?.field === 'password') {
+          setErrors({ password: error.response.data.message || 'Mật khẩu không đúng' });
         } else {
-          setErrors({ general: data.message || 'Đăng nhập thất bại' });
+          setErrors({ general: error.response?.data?.message || 'Đăng nhập thất bại' });
         }
-        return;
-      }
-
-      // Store tokens
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
-
-      // Redirect to home
-      navigate('/');
-    } catch (error) {
-      setErrors({ general: 'Có lỗi xảy ra. Vui lòng thử lại.' });
-    } finally {
-      setIsLoading(false);
-    }
+      },
+    });
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      // TODO: Replace with actual API call
-      const response = await fetch('/api/auth/google-link', {
-        method: 'GET',
-      });
-      const data = await response.json();
-      if (data.link) {
-        window.location.href = data.link;
-      }
-    } catch (error) {
-      setErrors({ general: 'Không thể kết nối với Google' });
-    }
+  const handleGoogleLogin = () => {
+    googleLoginMutation.mutate();
   };
 
   return (
@@ -166,10 +139,10 @@ const LoginPage = () => {
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={loginMutation.isPending}
           className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+          {loginMutation.isPending ? 'Đang đăng nhập...' : 'Đăng nhập'}
         </button>
       </form>
 

@@ -1,9 +1,12 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, CheckCircle } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import Cookies from 'js-cookie';
 
 const GoogleCallbackPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const accessToken = searchParams.get('accessToken');
   const refreshToken = searchParams.get('refreshToken');
@@ -21,14 +24,21 @@ const GoogleCallbackPage = () => {
     if (accessToken && refreshToken) {
       // Store tokens
       localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      Cookies.set('refreshToken', refreshToken, {
+        expires: 7, // 7 days
+        secure: true,
+        sameSite: 'strict',
+      });
+
+      // Invalidate và refetch user info sau khi login bằng Google
+      queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
 
       // Redirect to home
       setTimeout(() => {
         navigate('/');
       }, 1500);
     }
-  }, [accessToken, refreshToken, error, navigate]);
+  }, [accessToken, refreshToken, error, navigate, queryClient]);
 
   if (error) {
     return (

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
+import { useSendOtp, useRegister } from '../../hooks/useAuth';
 
 const RegisterPage = () => {
-  const navigate = useNavigate();
   const [step, setStep] = useState<'otp' | 'register'>('otp');
   const [email, setEmail] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -17,37 +17,26 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
+
+  const sendOtpMutation = useSendOtp();
+  const registerMutation = useRegister();
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-    setIsLoading(true);
 
-    try {
-      const response = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          type: 'REGISTER',
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrors({ general: data.message || 'Không thể gửi OTP. Vui lòng thử lại.' });
-        return;
+    sendOtpMutation.mutate(
+      { email, type: 'REGISTER' },
+      {
+        onSuccess: () => {
+          setOtpSent(true);
+          setStep('register');
+        },
+        onError: (error: any) => {
+          setErrors({ general: error.response?.data?.message || 'Không thể gửi OTP. Vui lòng thử lại.' });
+        },
       }
-
-      setOtpSent(true);
-      setStep('register');
-    } catch (error) {
-      setErrors({ general: 'Có lỗi xảy ra. Vui lòng thử lại.' });
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -60,36 +49,18 @@ const RegisterPage = () => {
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          ...formData,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (data.field === 'otp') {
-          setErrors({ otp: data.message || 'OTP không hợp lệ hoặc đã hết hạn' });
-        } else {
-          setErrors({ general: data.message || 'Đăng ký thất bại' });
-        }
-        return;
+    registerMutation.mutate(
+      { email, ...formData },
+      {
+        onError: (error: any) => {
+          if (error.response?.data?.field === 'otp') {
+            setErrors({ otp: error.response.data.message || 'OTP không hợp lệ hoặc đã hết hạn' });
+          } else {
+            setErrors({ general: error.response?.data?.message || 'Đăng ký thất bại' });
+          }
+        },
       }
-
-      // Redirect to login
-      navigate('/auth/login?registered=true');
-    } catch (error) {
-      setErrors({ general: 'Có lỗi xảy ra. Vui lòng thử lại.' });
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
 
   if (step === 'otp') {
@@ -130,10 +101,10 @@ const RegisterPage = () => {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={sendOtpMutation.isPending}
             className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Đang gửi OTP...' : 'Gửi mã OTP'}
+            {sendOtpMutation.isPending ? 'Đang gửi OTP...' : 'Gửi mã OTP'}
           </button>
         </form>
 
@@ -303,10 +274,10 @@ const RegisterPage = () => {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={registerMutation.isPending}
           className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Đang đăng ký...' : 'Đăng ký'}
+          {registerMutation.isPending ? 'Đang đăng ký...' : 'Đăng ký'}
         </button>
       </form>
     </div>

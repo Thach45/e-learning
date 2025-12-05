@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 import InstructorLayout from './layouts/InstructorLayout';
@@ -28,30 +28,85 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import GoogleCallbackPage from './pages/auth/GoogleCallbackPage';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import { navigationUtils } from './utils/navigation';
 import './App.css';
 import LearningPage from './pages/LearningSection';
 
-const App: React.FC = () => {
+// Component để setup navigation
+const AppContent = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigationUtils.setNavigate(navigate);
+  }, [navigate]);
+
   return (
-    <Router>
-      <Routes>
+    <Routes>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="courses" element={<CoursesPage />} />
           <Route path="courses/:id" element={<CourseDetailPage />} />
-          <Route path="my-courses" element={<MyCoursesPage />} />
-          <Route path="account/orders" element={<MyOrdersPage />} />
-          <Route path="cart" element={<CartPage />} />
-          <Route path="checkout" element={<CheckoutPage />} />
-          <Route path="learn/course/:courseId" element={<LearningPage />} />
+          
+          {/* Protected routes - require authentication */}
+          <Route
+            path="my-courses"
+            element={
+              <ProtectedRoute>
+                <MyCoursesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="account/orders"
+            element={
+              <ProtectedRoute>
+                <MyOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="cart"
+            element={
+              <ProtectedRoute>
+                <CartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="checkout"
+            element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="learn/course/:courseId"
+            element={
+              <ProtectedRoute>
+                <LearningPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
+        {/* Google OAuth callback - route ở root level để match với backend redirect */}
+        <Route path="/google/callback" element={<GoogleCallbackPage />} />
+        
         <Route path="/auth" element={<AuthLayout />}>
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="google/callback" element={<GoogleCallbackPage />} />
         </Route>
-        <Route path="/admin" element={<AdminLayout />}>
+        {/* Admin routes - require ADMIN role */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requiredRoles={['ADMIN']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="courses" element={<AdminCoursesPage />} />
@@ -61,14 +116,29 @@ const App: React.FC = () => {
           <Route path="reviews" element={<AdminReviewsPage />} />
           <Route path="permissions" element={<AdminPermissionsPage />} />
         </Route>
-        <Route path="/instructor" element={<InstructorLayout />}>
+        {/* Instructor routes - require INSTRUCTOR role */}
+        <Route
+          path="/instructor"
+          element={
+            <ProtectedRoute requiredRoles={['INSTRUCTOR']}>
+              <InstructorLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<InstructorDashboard />} />
           <Route path="courses" element={<InstructorCoursesPage />} />
           <Route path="students" element={<InstructorStudentsPage />} />
           <Route path="reviews" element={<InstructorReviewsPage />} />
           <Route path="analytics" element={<InstructorAnalyticsPage />} />
         </Route>
-      </Routes>
+    </Routes>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 };

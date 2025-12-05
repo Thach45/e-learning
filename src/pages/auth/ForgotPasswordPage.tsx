@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle, ArrowLeft } from 'lucide-react';
+import { useSendOtp, useForgotPassword } from '../../hooks/useAuth';
 
 const ForgotPasswordPage = () => {
-  const navigate = useNavigate();
   const [step, setStep] = useState<'email' | 'reset'>('email');
   const [email, setEmail] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -15,37 +15,26 @@ const ForgotPasswordPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
+
+  const sendOtpMutation = useSendOtp();
+  const forgotPasswordMutation = useForgotPassword();
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
-    setIsLoading(true);
 
-    try {
-      const response = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          type: 'FORGOT_PASSWORD',
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setErrors({ general: data.message || 'Không thể gửi OTP. Vui lòng thử lại.' });
-        return;
+    sendOtpMutation.mutate(
+      { email, type: 'FORGOT_PASSWORD' },
+      {
+        onSuccess: () => {
+          setOtpSent(true);
+          setStep('reset');
+        },
+        onError: (error: any) => {
+          setErrors({ general: error.response?.data?.message || 'Không thể gửi OTP. Vui lòng thử lại.' });
+        },
       }
-
-      setOtpSent(true);
-      setStep('reset');
-    } catch (error) {
-      setErrors({ general: 'Có lỗi xảy ra. Vui lòng thử lại.' });
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -58,36 +47,18 @@ const ForgotPasswordPage = () => {
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          ...formData,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (data.field === 'otp') {
-          setErrors({ code: data.message || 'OTP không hợp lệ hoặc đã hết hạn' });
-        } else {
-          setErrors({ general: data.message || 'Đặt lại mật khẩu thất bại' });
-        }
-        return;
+    forgotPasswordMutation.mutate(
+      { email, ...formData },
+      {
+        onError: (error: any) => {
+          if (error.response?.data?.field === 'otp') {
+            setErrors({ code: error.response.data.message || 'OTP không hợp lệ hoặc đã hết hạn' });
+          } else {
+            setErrors({ general: error.response?.data?.message || 'Đặt lại mật khẩu thất bại' });
+          }
+        },
       }
-
-      // Redirect to login
-      navigate('/auth/login?passwordReset=true');
-    } catch (error) {
-      setErrors({ general: 'Có lỗi xảy ra. Vui lòng thử lại.' });
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
 
   if (step === 'email') {
@@ -128,10 +99,10 @@ const ForgotPasswordPage = () => {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={sendOtpMutation.isPending}
             className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Đang gửi OTP...' : 'Gửi mã OTP'}
+            {sendOtpMutation.isPending ? 'Đang gửi OTP...' : 'Gửi mã OTP'}
           </button>
         </form>
 
@@ -262,10 +233,10 @@ const ForgotPasswordPage = () => {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={forgotPasswordMutation.isPending}
           className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Đang đặt lại...' : 'Đặt lại mật khẩu'}
+          {forgotPasswordMutation.isPending ? 'Đang đặt lại...' : 'Đặt lại mật khẩu'}
         </button>
       </form>
     </div>
