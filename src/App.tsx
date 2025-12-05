@@ -23,6 +23,7 @@ import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import InstructorCoursesPage from './pages/instructor/InstructorCoursesPage';
 import CreateCoursePage from './pages/instructor/CreateCoursePage';
 import EditCoursePage from './pages/instructor/EditCoursePage';
+import CourseContentPage from './pages/instructor/CourseContentPage';
 import InstructorStudentsPage from './pages/instructor/InstructorStudentsPage';
 import InstructorReviewsPage from './pages/instructor/InstructorReviewsPage';
 import InstructorAnalyticsPage from './pages/instructor/InstructorAnalyticsPage';
@@ -131,6 +132,8 @@ const AppContent = () => {
           <Route path="courses" element={<InstructorCoursesPage />} />
           <Route path="courses/new" element={<CreateCoursePage />} />
           <Route path="courses/:id/edit" element={<EditCoursePage />} />
+          <Route path="courses/:id/content" element={<CourseContentPage />} />
+          <Route path="courses/:id" element={<CourseDetailPage />} />
           <Route path="students" element={<InstructorStudentsPage />} />
           <Route path="reviews" element={<InstructorReviewsPage />} />
           <Route path="analytics" element={<InstructorAnalyticsPage />} />

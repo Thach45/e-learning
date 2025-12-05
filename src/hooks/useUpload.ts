@@ -8,3 +8,11 @@ export const useUploadImage = () => {
   });
 };
 
+// Upload video mutation
+export const useUploadVideo = () => {
+  return useMutation({
+    mutationFn: ({ file, onProgress }: { file: File; onProgress?: (progress: number) => void }) =>
+      uploadApi.uploadVideo(file, onProgress),
+  });
+};
+

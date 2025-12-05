@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, AlertCircle, Save, FileText, Info } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, Save, FileText, Info, BookOpen } from 'lucide-react';
 import { useInstructorCourse, useUpdateInstructorCourse } from '../../hooks/useInstructorCourses';
 import { useCategories } from '../../hooks/useCategories';
 import { useCourseDetail, useCreateCourseDetail, useUpdateCourseDetail } from '../../hooks/useCourseDetail';
@@ -209,17 +209,26 @@ const EditCoursePage = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => navigate('/instructor/courses')}
-          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800">Chỉnh sửa khóa học</h1>
-          <p className="text-slate-500 mt-1">Cập nhật thông tin khóa học</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => navigate('/instructor/courses')}
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800">Chỉnh sửa khóa học</h1>
+            <p className="text-slate-500 mt-1">Cập nhật thông tin khóa học</p>
+          </div>
         </div>
+        <button
+          onClick={() => navigate(`/instructor/courses/${id}/content`)}
+          className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-500 transition-colors flex items-center gap-2"
+        >
+          <BookOpen size={18} />
+          Quản lý nội dung
+        </button>
       </div>
 
       {/* Tabs */}
@@ -571,6 +580,7 @@ const EditCoursePage = () => {
             )}
           </form>
         )}
+
       </div>
     </div>
   );
