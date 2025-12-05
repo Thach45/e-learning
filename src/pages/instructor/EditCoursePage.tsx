@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, AlertCircle, Save, FileText, Info } from 'lucide-re
 import { useInstructorCourse, useUpdateInstructorCourse } from '../../hooks/useInstructorCourses';
 import { useCategories } from '../../hooks/useCategories';
 import { useCourseDetail, useCreateCourseDetail, useUpdateCourseDetail } from '../../hooks/useCourseDetail';
+import ImageUpload from '../../components/common/ImageUpload';
 import type { CourseLevel } from '../../api/instructor';
 
 const EditCoursePage = () => {
@@ -360,28 +361,12 @@ const EditCoursePage = () => {
         </div>
 
         {/* Thumbnail */}
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-2">
-            Link hình ảnh thumbnail <span className="text-slate-400 text-xs">(tùy chọn)</span>
-          </label>
-          <input
-            type="url"
-            value={formData.thumbnail}
-            onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-            className="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all"
-            placeholder="https://example.com/image.jpg"
-          />
-          {formData.thumbnail && (
-            <img
-              src={formData.thumbnail}
-              alt="Preview"
-              className="mt-3 w-full h-48 object-cover rounded-xl border border-slate-200"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          )}
-        </div>
+        <ImageUpload
+          value={formData.thumbnail}
+          onChange={(url) => setFormData({ ...formData, thumbnail: url })}
+          label="Hình ảnh thumbnail"
+          required={false}
+        />
 
         {/* Intro Video */}
         <div>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Search, Mail, Calendar, Loader2, AlertCircle } from 'lucide-react';
-import { useInstructorStudents } from '../../hooks/useInstructorStudents';
+import { Search, Mail, Calendar, Loader2, AlertCircle, Trash2 } from 'lucide-react';
+import { useInstructorStudents, useRemoveStudent } from '../../hooks/useInstructorStudents';
 
 const InstructorStudentsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,7 +10,15 @@ const InstructorStudentsPage = () => {
     limit: 50,
   });
 
+  const removeStudentMutation = useRemoveStudent();
+
   const students = data?.data || [];
+
+  const handleRemoveStudent = (enrollmentId: string, studentName: string) => {
+    if (window.confirm(`Bạn có chắc chắn muốn xóa học viên "${studentName}" khỏi khóa học này?`)) {
+      removeStudentMutation.mutate(enrollmentId);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -77,6 +85,7 @@ const InstructorStudentsPage = () => {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Ngày ghi danh</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Tiến độ</th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Truy cập gần nhất</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -126,6 +135,16 @@ const InstructorStudentsPage = () => {
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-500">
                         {student.lastAccessed ? formatDate(student.lastAccessed) : formatDate(student.enrolledAt)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleRemoveStudent(student.id, student.user?.name || '')}
+                          disabled={removeStudentMutation.isPending}
+                          className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Xóa học viên khỏi khóa học"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </td>
                     </tr>
                   ))}

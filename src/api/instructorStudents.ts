@@ -45,5 +45,10 @@ export const instructorStudentsApi = {
     const response = await apiClient.get('/instructor/students', { params });
     return response.data.data;
   },
+
+  // Remove student from course (delete enrollment)
+  removeStudent: async (enrollmentId: string): Promise<void> => {
+    await apiClient.delete(`/instructor/enrollments/${enrollmentId}`);
+  },
 };
 

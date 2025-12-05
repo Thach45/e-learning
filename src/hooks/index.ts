@@ -6,4 +6,5 @@ export * from './useInstructorCourses';
 export * from './useCategories';
 export * from './useCourseDetail';
 export * from './useInstructorStudents';
+export * from './useUpload';
 
