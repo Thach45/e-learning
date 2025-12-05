@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 import InstructorLayout from './layouts/InstructorLayout';
+import AuthLayout from './layouts/AuthLayout';
 import HomePage from './pages/HomePage';
 import CoursesPage from './pages/CoursesPage';
 import CourseDetailPage from './pages/CourseDetailPage';
@@ -23,6 +24,10 @@ import InstructorCoursesPage from './pages/instructor/InstructorCoursesPage';
 import InstructorStudentsPage from './pages/instructor/InstructorStudentsPage';
 import InstructorReviewsPage from './pages/instructor/InstructorReviewsPage';
 import InstructorAnalyticsPage from './pages/instructor/InstructorAnalyticsPage';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import GoogleCallbackPage from './pages/auth/GoogleCallbackPage';
 import './App.css';
 import LearningPage from './pages/LearningSection';
 
@@ -39,8 +44,12 @@ const App: React.FC = () => {
           <Route path="cart" element={<CartPage />} />
           <Route path="checkout" element={<CheckoutPage />} />
           <Route path="learn/course/:courseId" element={<LearningPage />} />
-
-          {/* Add Auth routes later */}
+        </Route>
+        <Route path="/auth" element={<AuthLayout />}>
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="google/callback" element={<GoogleCallbackPage />} />
         </Route>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
