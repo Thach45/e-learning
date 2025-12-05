@@ -21,6 +21,8 @@ import AdminReviewsPage from './pages/admin/AdminReviewsPage';
 import AdminPermissionsPage from './pages/admin/AdminPermissionsPage';
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import InstructorCoursesPage from './pages/instructor/InstructorCoursesPage';
+import CreateCoursePage from './pages/instructor/CreateCoursePage';
+import EditCoursePage from './pages/instructor/EditCoursePage';
 import InstructorStudentsPage from './pages/instructor/InstructorStudentsPage';
 import InstructorReviewsPage from './pages/instructor/InstructorReviewsPage';
 import InstructorAnalyticsPage from './pages/instructor/InstructorAnalyticsPage';
@@ -127,6 +129,8 @@ const AppContent = () => {
         >
           <Route index element={<InstructorDashboard />} />
           <Route path="courses" element={<InstructorCoursesPage />} />
+          <Route path="courses/new" element={<CreateCoursePage />} />
+          <Route path="courses/:id/edit" element={<EditCoursePage />} />
           <Route path="students" element={<InstructorStudentsPage />} />
           <Route path="reviews" element={<InstructorReviewsPage />} />
           <Route path="analytics" element={<InstructorAnalyticsPage />} />

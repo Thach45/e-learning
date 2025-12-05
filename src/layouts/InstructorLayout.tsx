@@ -29,7 +29,7 @@ const InstructorLayout = () => {
     { icon: Settings, label: 'Cài đặt', path: '/instructor/settings' },
   ];
 
-  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <div className="min-h-screen bg-slate-50">

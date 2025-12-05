@@ -2,4 +2,6 @@
 export * from './useAuth';
 export * from './useCourses';
 export * from './useOrders';
+export * from './useInstructorCourses';
+export * from './useCategories';
 
