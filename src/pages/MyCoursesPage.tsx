@@ -16,6 +16,7 @@ import {
   Layout,
   Filter
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // --- MOCK DATA (Dựa trên Schema Enrollment & LearningProgress) ---
 
@@ -101,7 +102,10 @@ const ProgressBar = ({ percent }: { percent: number }) => (
 const LearningCard = ({ course }: { course: any }) => {
   const isCompleted = course.progress === 100;
 
+  
+
   return (
+   <a href={`/learn/course/${course.id}`}>  
     <div className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full overflow-hidden">
       {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden bg-slate-100">
@@ -159,6 +163,7 @@ const LearningCard = ({ course }: { course: any }) => {
         </div>
       </div>
     </div>
+   </a>
   );
 };
 
