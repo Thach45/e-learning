@@ -1,14 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  Menu, 
   X, 
   ChevronLeft, 
   ChevronRight, 
   PlayCircle, 
-  CheckCircle2, 
   FileText, 
   MessageSquare, 
-  MoreVertical,
   Download,
   ThumbsUp,
   Share2,
@@ -21,136 +19,141 @@ import {
   ChevronDown,
   Lock
 } from 'lucide-react';
-
-// --- MOCK DATA ---
-
-const COURSE_CONTENT = [
-  {
-    id: 'sec1',
-    title: 'Chương 1: Giới thiệu & Cài đặt',
-    duration: '30p',
-    lessons: [
-      { id: 'l1', title: '1. Giới thiệu lộ trình khóa học', type: 'VIDEO', duration: '05:00', isCompleted: true, isCurrent: false },
-      { id: 'l2', title: '2. Cài đặt VS Code & Extensions', type: 'VIDEO', duration: '15:00', isCompleted: true, isCurrent: false },
-      { id: 'l3', title: '3. Tài liệu khóa học', type: 'DOC', duration: '10:00', isCompleted: true, isCurrent: false },
-    ]
-  },
-  {
-    id: 'sec2',
-    title: 'Chương 2: Kiến thức nền tảng HTML5',
-    duration: '1h 20p',
-    lessons: [
-      { id: 'l4', title: '4. Cấu trúc DOM và các thẻ cơ bản', type: 'VIDEO', duration: '15:00', isCompleted: true, isCurrent: false },
-      { id: 'l5', title: '5. Làm việc với Forms và Validation', type: 'VIDEO', duration: '20:00', isCompleted: false, isCurrent: true }, // Current Lesson
-      { id: 'l6', title: '6. Semantic HTML & SEO Basics', type: 'VIDEO', duration: '12:00', isCompleted: false, isCurrent: false },
-      { id: 'l7', title: '7. Bài tập thực hành số 1', type: 'QUIZ', duration: '30:00', isCompleted: false, isCurrent: false },
-    ]
-  },
-  {
-    id: 'sec3',
-    title: 'Chương 3: CSS3 Cơ bản đến Nâng cao',
-    duration: '2h 15p',
-    lessons: [
-      { id: 'l8', title: '8. Box Model & Layout', type: 'VIDEO', duration: '25:00', isCompleted: false, isCurrent: false, isLocked: true },
-      { id: 'l9', title: '9. Flexbox Froggy Game', type: 'GAME', duration: '30:00', isCompleted: false, isCurrent: false, isLocked: true },
-      { id: 'l10', title: '10. Grid Garden', type: 'VIDEO', duration: '40:00', isCompleted: false, isCurrent: false, isLocked: true },
-    ]
-  }
-];
-
-const CURRENT_LESSON_DATA = {
-  id: 'l5',
-  title: '5. Làm việc với Forms và Validation',
-  videoUrl: 'https://www.youtube.com/watch?v=placeholder', // Mock
-  description: `Trong bài học này, chúng ta sẽ tìm hiểu sâu về thẻ <form>, các loại <input> mới trong HTML5 và cách thực hiện validation (kiểm tra dữ liệu) ngay trên trình duyệt mà không cần Javascript.`,
-  resources: [
-    { name: 'Source Code bài 5', size: '2.5 MB', type: 'ZIP' },
-    { name: 'Slide bài giảng', size: '1.2 MB', type: 'PDF' }
-  ],
-  comments: [
-    { id: 1, user: 'Minh Tuấn', avatar: 'https://i.pravatar.cc/150?u=10', content: 'Phần regex cho email validation thầy giải thích rất dễ hiểu ạ.', time: '2 giờ trước', likes: 5 },
-    { id: 2, user: 'Lan Anh', avatar: 'https://i.pravatar.cc/150?u=20', content: 'Thầy ơi cho em hỏi thẻ <datalist> dùng khi nào thì hợp lý?', time: '1 ngày trước', likes: 2 }
-  ]
-};
+import { useCourseContents, useLessonDetail } from '../hooks/useEnrollments';
+import type { CourseContentSection, LessonItem } from '../api/enrollments';
 
 // --- COMPONENTS ---
 
-const VideoPlayer = () => {
+const VideoPlayer = ({ videoUrl, storageType }: { videoUrl?: string | null; storageType?: string }) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Parse YouTube URL to embed format
+  const getYouTubeEmbedUrl = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    const videoId = (match && match[2].length === 11) ? match[2] : null;
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  };
+
+  const getVideoUrl = () => {
+    if (!videoUrl) return null;
+    if (storageType === 'YOUTUBE') {
+      return getYouTubeEmbedUrl(videoUrl);
+    }
+    return videoUrl;
+  };
+
+  const embedUrl = getVideoUrl();
+
   return (
-    <div className="relative aspect-video bg-black group cursor-pointer" onClick={() => setIsPlaying(!isPlaying)}>
-      {/* Mock Video Placeholder */}
-      <img 
-        src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-        alt="Video Thumbnail" 
-        className="w-full h-full object-cover opacity-60"
-      />
-      
-      {/* Play Button Overlay */}
-      {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-transform hover:scale-110">
-             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
-                <Play size={32} className="text-indigo-600 fill-indigo-600 ml-1" />
+    <div className="relative aspect-video bg-black group">
+      {embedUrl && isPlaying ? (
+        <iframe
+          src={embedUrl}
+          className="w-full h-full"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      ) : (
+        <>
+          <img 
+            src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+            alt="Video Thumbnail" 
+            className="w-full h-full object-cover opacity-60"
+          />
+          
+          {/* Play Button Overlay */}
+          {!isPlaying && (
+            <div 
+              className="absolute inset-0 flex items-center justify-center cursor-pointer"
+              onClick={() => setIsPlaying(true)}
+            >
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-transform hover:scale-110">
+                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <Play size={32} className="text-indigo-600 fill-indigo-600 ml-1" />
+                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Controls Bar (Mock) */}
+          <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-black/80 to-transparent px-4 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+             <button className="text-white hover:text-indigo-400">
+                {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+             </button>
+             
+             <div className="flex-1 h-1.5 bg-white/30 rounded-full cursor-pointer group/timeline relative">
+                <div className="absolute h-full bg-indigo-500 w-1/3 rounded-full"></div>
+                <div className="absolute h-3 w-3 bg-white rounded-full top-1/2 -translate-y-1/2 left-1/3 shadow-sm scale-0 group-hover/timeline:scale-100 transition-transform"></div>
+             </div>
+             
+             <span className="text-xs text-white font-medium">05:23 / 20:00</span>
+             
+             <div className="flex items-center gap-3 text-white">
+                <Volume2 size={20} />
+                <Settings size={20} />
+                <Maximize size={20} />
              </div>
           </div>
-        </div>
+        </>
       )}
-
-      {/* Controls Bar (Mock) */}
-      <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-black/80 to-transparent px-4 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-         <button className="text-white hover:text-indigo-400">
-            {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-         </button>
-         
-         <div className="flex-1 h-1.5 bg-white/30 rounded-full cursor-pointer group/timeline relative">
-            <div className="absolute h-full bg-indigo-500 w-1/3 rounded-full"></div>
-            <div className="absolute h-3 w-3 bg-white rounded-full top-1/2 -translate-y-1/2 left-1/3 shadow-sm scale-0 group-hover/timeline:scale-100 transition-transform"></div>
-         </div>
-         
-         <span className="text-xs text-white font-medium">05:23 / 20:00</span>
-         
-         <div className="flex items-center gap-3 text-white">
-            <Volume2 size={20} />
-            <Settings size={20} />
-            <Maximize size={20} />
-         </div>
-      </div>
     </div>
   );
 };
 
-const LessonItem = ({ lesson }: { lesson: any }) => {
+const LessonItemComponent = ({ 
+  lesson, 
+  isCurrent, 
+  onClick 
+}: { 
+  lesson: LessonItem; 
+  isCurrent: boolean;
+  onClick: () => void;
+}) => {
   return (
-    <div className={`flex items-center gap-3 p-3 text-sm cursor-pointer transition-colors ${
-      lesson.isCurrent ? 'bg-indigo-50 border-l-4 border-indigo-600' : 'hover:bg-slate-50 border-l-4 border-transparent'
-    } ${lesson.isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}>
+    <div 
+      className={`flex items-center gap-3 p-3 text-sm cursor-pointer transition-colors ${
+        isCurrent ? 'bg-indigo-50 border-l-4 border-indigo-600' : 'hover:bg-slate-50 border-l-4 border-transparent'
+      } ${lesson.isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+      onClick={lesson.isLocked ? undefined : onClick}
+    >
       
       <div className="flex-shrink-0">
-         {lesson.isCompleted ? (
-            <CheckCircle2 size={18} className="text-emerald-500 fill-emerald-50" />
-         ) : lesson.isLocked ? (
+         {lesson.isLocked ? (
             <Lock size={18} className="text-slate-400" />
          ) : (
-            <PlayCircle size={18} className={`text-slate-400 ${lesson.isCurrent ? 'text-indigo-600' : ''}`} />
+            <PlayCircle size={18} className={`text-slate-400 ${isCurrent ? 'text-indigo-600' : ''}`} />
          )}
       </div>
       
       <div className="flex-1">
-         <p className={`font-medium ${lesson.isCurrent ? 'text-indigo-700' : 'text-slate-700'}`}>{lesson.title}</p>
+         <p className={`font-medium ${isCurrent ? 'text-indigo-700' : 'text-slate-700'}`}>{lesson.title}</p>
          <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
             {lesson.type === 'VIDEO' && <span className="flex items-center gap-1"><PlayCircle size={10} /> Video</span>}
-            {lesson.type === 'DOC' && <span className="flex items-center gap-1"><FileText size={10} /> Bài đọc</span>}
-            <span>• {lesson.duration}</span>
+            {lesson.type === 'TEXT' && <span className="flex items-center gap-1"><FileText size={10} /> Bài đọc</span>}
+            {lesson.type === 'QUIZ' && <span className="flex items-center gap-1"><FileText size={10} /> Quiz</span>}
+            {lesson.type === 'GAME' && <span className="flex items-center gap-1"><PlayCircle size={10} /> Game</span>}
+            {lesson.duration && <span>• {lesson.duration}</span>}
          </div>
       </div>
     </div>
   );
 };
 
-const CourseSidebar = ({ content, isOpen, onClose }: { content: any[], isOpen: boolean, onClose: () => void }) => {
-  const [openSections, setOpenSections] = useState<string[]>(['sec1', 'sec2']);
+const CourseSidebar = ({ 
+  content, 
+  isOpen, 
+  onClose, 
+  currentLessonId,
+  onLessonClick 
+}: { 
+  content: CourseContentSection[]; 
+  isOpen: boolean; 
+  onClose: () => void;
+  currentLessonId?: string;
+  onLessonClick: (lessonId: string) => void;
+}) => {
+  const [openSections, setOpenSections] = useState<string[]>(content.map(s => s.id));
 
   const toggleSection = (id: string) => {
     setOpenSections(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
@@ -172,15 +175,20 @@ const CourseSidebar = ({ content, isOpen, onClose }: { content: any[], isOpen: b
                 >
                    <div className="text-left">
                       <h4 className="font-bold text-sm text-slate-800 mb-0.5">{section.title}</h4>
-                      <p className="text-xs text-slate-500">{section.lessons.length} bài học • {section.duration}</p>
+                      <p className="text-xs text-slate-500">{section.lessons.length} bài học {section.duration && `• ${section.duration}`}</p>
                    </div>
                    <ChevronDown size={16} className={`text-slate-400 transition-transform ${openSections.includes(section.id) ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {openSections.includes(section.id) && (
                    <div className="bg-white">
-                      {section.lessons.map((lesson: any) => (
-                         <LessonItem key={lesson.id} lesson={lesson} />
+                      {section.lessons.map((lesson) => (
+                         <LessonItemComponent 
+                           key={lesson.id} 
+                           lesson={lesson}
+                           isCurrent={lesson.id === currentLessonId}
+                           onClick={() => onLessonClick(lesson.id)}
+                         />
                       ))}
                    </div>
                 )}
@@ -194,8 +202,54 @@ const CourseSidebar = ({ content, isOpen, onClose }: { content: any[], isOpen: b
 // --- MAIN PAGE ---
 
 const LearningPage = () => {
+  const { courseId, lessonId } = useParams<{ courseId: string; lessonId?: string }>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'QNA' | 'NOTES'>('OVERVIEW');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Fetch course contents
+  const { data: contentsData, isLoading: contentsLoading } = useCourseContents(courseId || '');
+  
+  // Get first lesson if no lessonId provided
+  const firstLessonId = contentsData?.contents[0]?.lessons[0]?.id;
+  const currentLessonId = lessonId || firstLessonId;
+
+  // Fetch lesson detail
+  const { data: lessonData, isLoading: lessonLoading } = useLessonDetail(
+    courseId || '',
+    currentLessonId || ''
+  );
+
+  const handleLessonClick = (lessonId: string) => {
+    navigate(`/learn/course/${courseId}/lesson/${lessonId}`);
+  };
+
+  if (!courseId) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-slate-500">Course ID is required</p>
+      </div>
+    );
+  }
+
+  if (contentsLoading || lessonLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          <p className="mt-4 text-slate-500">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!contentsData || !lessonData) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-slate-500">Không tìm thấy dữ liệu</p>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 font-sans text-slate-600 overflow-hidden">
@@ -237,7 +291,10 @@ const LearningPage = () => {
             {/* VIDEO AREA */}
             <div className="bg-black w-full">
                <div className="max-w-5xl mx-auto">
-                  <VideoPlayer />
+                  <VideoPlayer 
+                    videoUrl={lessonData.storageUrl} 
+                    storageType={lessonData.storageType}
+                  />
                </div>
             </div>
 
@@ -268,33 +325,45 @@ const LearningPage = () => {
                   {activeTab === 'OVERVIEW' && (
                      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
                         <div>
-                           <h2 className="text-2xl font-bold text-slate-900 mb-2">{CURRENT_LESSON_DATA.title}</h2>
-                           <p className="text-sm text-slate-500">Cập nhật lần cuối: 20/05/2025</p>
+                           <h2 className="text-2xl font-bold text-slate-900 mb-2">{lessonData.title}</h2>
+                           {lessonData.description && (
+                              <p className="text-sm text-slate-500">{lessonData.description}</p>
+                           )}
                         </div>
 
-                        <div className="prose prose-sm prose-slate max-w-none text-slate-700">
-                           <p>{CURRENT_LESSON_DATA.description}</p>
-                        </div>
+                        {lessonData.contentText && (
+                           <div className="prose prose-sm prose-slate max-w-none text-slate-700">
+                              <p>{lessonData.contentText}</p>
+                           </div>
+                        )}
 
                         {/* Resources */}
-                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                           <h3 className="text-sm font-bold text-slate-900 mb-3 uppercase tracking-wider">Tài liệu đính kèm</h3>
-                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              {CURRENT_LESSON_DATA.resources.map((res, i) => (
-                                 <div key={i} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-indigo-300 transition-colors cursor-pointer group">
-                                    <div className="flex items-center gap-3">
-                                       <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded flex items-center justify-center">
-                                          <Download size={16} />
+                        {lessonData.resources && lessonData.resources.length > 0 && (
+                           <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                              <h3 className="text-sm font-bold text-slate-900 mb-3 uppercase tracking-wider">Tài liệu đính kèm</h3>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                 {lessonData.resources.map((res, i) => (
+                                    <a
+                                       key={i}
+                                       href={res.url}
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:border-indigo-300 transition-colors cursor-pointer group"
+                                    >
+                                       <div className="flex items-center gap-3">
+                                          <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded flex items-center justify-center">
+                                             <Download size={16} />
+                                          </div>
+                                          <div>
+                                             <p className="text-sm font-medium text-slate-800 group-hover:text-indigo-700">{res.name}</p>
+                                             <p className="text-xs text-slate-400">{res.type} {res.size && `• ${res.size}`}</p>
+                                          </div>
                                        </div>
-                                       <div>
-                                          <p className="text-sm font-medium text-slate-800 group-hover:text-indigo-700">{res.name}</p>
-                                          <p className="text-xs text-slate-400">{res.type} • {res.size}</p>
-                                       </div>
-                                    </div>
-                                 </div>
-                              ))}
+                                    </a>
+                                 ))}
+                              </div>
                            </div>
-                        </div>
+                        )}
 
                         {/* Actions */}
                         <div className="flex gap-4 pt-4 border-t border-slate-100">
@@ -310,7 +379,7 @@ const LearningPage = () => {
                         </div>
                      </div>
                   )}
-
+                  {/* comming soon */}
                   {activeTab === 'QNA' && (
                      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
                         <div className="flex gap-4 mb-6">
@@ -327,22 +396,7 @@ const LearningPage = () => {
                         </div>
 
                         <div className="space-y-6">
-                           {CURRENT_LESSON_DATA.comments.map(comment => (
-                              <div key={comment.id} className="flex gap-4">
-                                 <img src={comment.avatar} alt={comment.user} className="w-10 h-10 rounded-full" />
-                                 <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                       <span className="font-bold text-sm text-slate-900">{comment.user}</span>
-                                       <span className="text-xs text-slate-400">• {comment.time}</span>
-                                    </div>
-                                    <p className="text-sm text-slate-700 leading-relaxed mb-2">{comment.content}</p>
-                                    <div className="flex items-center gap-4">
-                                       <button className="flex items-center gap-1 text-xs text-slate-500 hover:text-indigo-600 font-medium"><ThumbsUp size={12} /> {comment.likes} Thích</button>
-                                       <button className="text-xs text-slate-500 hover:text-indigo-600 font-medium">Trả lời</button>
-                                    </div>
-                                 </div>
-                              </div>
-                           ))}
+                           <p className="text-sm text-slate-500 text-center py-8">Tính năng hỏi đáp sẽ được implement sau</p>
                         </div>
                      </div>
                   )}
@@ -361,7 +415,13 @@ const LearningPage = () => {
          </div>
 
          {/* RIGHT: CURRICULUM SIDEBAR */}
-         <CourseSidebar content={COURSE_CONTENT} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+         <CourseSidebar 
+            content={contentsData.contents} 
+            isOpen={isSidebarOpen} 
+            onClose={() => setIsSidebarOpen(false)}
+            currentLessonId={currentLessonId}
+            onLessonClick={handleLessonClick}
+         />
 
       </div>
     </div>

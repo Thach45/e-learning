@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Search, 
-  Menu, 
-  X, 
-  Bell, 
   ChevronDown, 
   Heart, 
   Star, 
@@ -12,121 +10,74 @@ import {
   Filter, 
   Grid, 
   List,
-  Check,
-  Zap,
-  Code,
-  Layout,
-  Globe,
-  Users
+  Check
 } from 'lucide-react';
-
-// --- DỮ LIỆU GIẢ LẬP ---
-
-const CATEGORIES = [
-  'Lập trình', 'Thiết kế', 'Marketing', 'Kinh doanh', 'Ngoại ngữ', 'Phát triển bản thân', 'Công nghệ thông tin'
-];
-
-const LEVELS = ['Cơ bản', 'Trung cấp', 'Nâng cao', 'Mọi cấp độ'];
-
-const COURSES = [
-  {
-    id: 'c1',
-    title: 'Full Stack Web Development 2025: Từ Zero đến Hero',
-    instructor: 'Nguyễn Văn A',
-    rating: 4.9,
-    reviews: 1200,
-    price: 299000,
-    oldPrice: 2500000,
-    thumbnail: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    tag: 'Bán chạy nhất',
-    lessons: 45,
-    duration: '12h 30m',
-    level: 'Mọi cấp độ',
-    category: 'Lập trình'
-  },
-  {
-    id: 'c2',
-    title: 'UI/UX Design Masterclass: Thiết kế giao diện hiện đại',
-    instructor: 'Trần Thị B',
-    rating: 4.8,
-    reviews: 850,
-    price: 350000,
-    oldPrice: 2200000,
-    thumbnail: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    tag: 'Mới ra mắt',
-    lessons: 32,
-    duration: '8h 15m',
-    level: 'Trung cấp',
-    category: 'Thiết kế'
-  },
-  {
-    id: 'c3',
-    title: 'Digital Marketing Thực Chiến trên đa nền tảng',
-    instructor: 'Lê Hoàng C',
-    rating: 4.7,
-    reviews: 2100,
-    price: 0,
-    oldPrice: 1800000,
-    thumbnail: 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    tag: 'Miễn phí',
-    lessons: 24,
-    duration: '6h 45m',
-    level: 'Cơ bản',
-    category: 'Marketing'
-  },
-  {
-    id: 'c4',
-    title: 'Python & AI: Trí tuệ nhân tạo cho người mới bắt đầu',
-    instructor: 'Phạm Minh D',
-    rating: 4.9,
-    reviews: 3200,
-    price: 499000,
-    oldPrice: 2800000,
-    thumbnail: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    tag: 'Thịnh hành',
-    lessons: 50,
-    duration: '15h 20m',
-    level: 'Cơ bản',
-    category: 'Công nghệ'
-  },
-  {
-    id: 'c5',
-    title: 'Quản trị kinh doanh 4.0: Tư duy lãnh đạo',
-    instructor: 'Dr. John Doe',
-    rating: 4.6,
-    reviews: 500,
-    price: 600000,
-    oldPrice: 1500000,
-    thumbnail: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    tag: 'Đề xuất',
-    lessons: 40,
-    duration: '10h 00m',
-    level: 'Nâng cao',
-    category: 'Kinh doanh'
-  },
-  {
-    id: 'c6',
-    title: 'Nhiếp ảnh cơ bản & Chỉnh sửa Lightroom',
-    instructor: 'Sarah Lee',
-    rating: 4.8,
-    reviews: 900,
-    price: 150000,
-    oldPrice: 800000,
-    thumbnail: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    tag: 'Sáng tạo',
-    lessons: 20,
-    duration: '5h 30m',
-    level: 'Cơ bản',
-    category: 'Thiết kế'
-  }
-];
+import { useCategories } from '../hooks/useCategories';
+import { useCourses } from '../hooks/useCourses';
+import type { Course as CourseType } from '../api/courses';
 
 const formatVND = (amount: number) => 
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
+// Level mapping
+const LEVEL_MAP = {
+  'BEGINNER': 'Cơ bản',
+  'INTERMEDIATE': 'Trung cấp',
+  'ADVANCED': 'Nâng cao',
+} as const;
 
-const CourseCard = ({ course }: { course: any }) => (
-    <a href={`/courses/${course.id}`}>   
+const LEVELS = [
+  { value: 'BEGINNER', label: 'Cơ bản' },
+  { value: 'INTERMEDIATE', label: 'Trung cấp' },
+  { value: 'ADVANCED', label: 'Nâng cao' },
+];
+
+// Format duration from seconds to "Xh Ym" format
+const formatDuration = (seconds: number): string => {
+  if (!seconds || seconds === 0) return '0h 0m';
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+};
+
+// Transform API course to display format
+const transformCourse = (course: CourseType) => {
+  // Calculate rating
+  const reviewsCount = course.reviewsCount || 0;
+  const rating = reviewsCount > 0 && course.totalStars 
+    ? Math.round((course.totalStars / reviewsCount) * 10) / 10 
+    : 0;
+
+  // Determine tag
+  let tag = 'Mới';
+  if (course.isFeatured) tag = 'Nổi bật';
+  if (course.totalLearners && course.totalLearners > 100) tag = 'Bán chạy';
+  if (course.price === 0) tag = 'Miễn phí';
+
+  return {
+    id: course.id,
+    title: course.title,
+    instructor: course.instructor?.name || 'Unknown',
+    rating: rating || 0,
+    reviews: reviewsCount,
+    price: course.salePrice || course.price,
+    oldPrice: course.salePrice ? course.price : 0,
+    thumbnail: course.thumbnail || 'https://via.placeholder.com/400x300?text=No+Image',
+    tag,
+    lessons: course.totalLessons || 0,
+    duration: formatDuration(course.totalDuration || 0),
+    level: course.level ? LEVEL_MAP[course.level] : 'Mọi cấp độ',
+    category: course.category?.name || 'Khác',
+    categoryId: course.categoryId,
+  };
+};
+
+
+const CourseCard = ({ course }: { course: ReturnType<typeof transformCourse> }) => (
+    <Link to={`/courses/${course.id}`}>   
         <div className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-indigo-100/50 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full relative">
             {/* Thumbnail */}
             <div className="relative aspect-video overflow-hidden rounded-t-2xl">
@@ -185,31 +136,107 @@ const CourseCard = ({ course }: { course: any }) => (
                 </div>
             </div>
         </div>
-    </a>
+    </Link>
 );
 
 
 // --- MAIN PAGE: COURSE LISTING ---
 
 const CourseListPage = () => {
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<string>('popular');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [page, setPage] = useState(1);
+  const limit = 12;
 
-  const toggleCategory = (cat: string) => {
-    if (selectedCategories.includes(cat)) {
-      setSelectedCategories(selectedCategories.filter(c => c !== cat));
-    } else {
-      setSelectedCategories([...selectedCategories, cat]);
+  // Fetch categories
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
+
+  // Build API params
+  const apiParams = useMemo(() => {
+    const params: any = {
+      page,
+      limit,
+      status: 'PUBLISHED',
+    };
+
+    if (searchQuery) {
+      params.search = searchQuery;
     }
+
+    if (selectedCategoryIds.length > 0) {
+      // If multiple categories selected, we'll need to handle this on backend or filter on frontend
+      // For now, use the first selected category
+      params.categoryId = selectedCategoryIds[0];
+    }
+
+    if (selectedLevel) {
+      params.level = selectedLevel;
+    }
+
+    return params;
+  }, [page, limit, searchQuery, selectedCategoryIds, selectedLevel]);
+
+  // Fetch courses
+  const { data: coursesData, isLoading: coursesLoading, error: coursesError } = useCourses(apiParams);
+
+  // Transform courses
+  const courses = useMemo(() => {
+    if (!coursesData?.data) return [];
+    
+    let transformed = coursesData.data.map(transformCourse);
+
+    // Filter by multiple categories on frontend if needed
+    if (selectedCategoryIds.length > 0) {
+      transformed = transformed.filter(course => 
+        course.categoryId && selectedCategoryIds.includes(course.categoryId)
+      );
+    }
+
+    // Sort courses
+    if (sortBy === 'newest') {
+      transformed = [...transformed].sort((a, b) => {
+        const courseA = coursesData.data.find(c => c.id === a.id);
+        const courseB = coursesData.data.find(c => c.id === b.id);
+        if (!courseA || !courseB) return 0;
+        return new Date(courseB.createdAt).getTime() - new Date(courseA.createdAt).getTime();
+      });
+    } else if (sortBy === 'price-low') {
+      transformed = [...transformed].sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'price-high') {
+      transformed = [...transformed].sort((a, b) => b.price - a.price);
+    }
+    // 'popular' is default (already sorted by backend)
+
+    return transformed;
+  }, [coursesData, selectedCategoryIds, sortBy]);
+
+  const toggleCategory = (categoryId: string) => {
+    if (selectedCategoryIds.includes(categoryId)) {
+      setSelectedCategoryIds(selectedCategoryIds.filter(id => id !== categoryId));
+    } else {
+      setSelectedCategoryIds([...selectedCategoryIds, categoryId]);
+    }
+    setPage(1); // Reset to first page when filter changes
   };
+
+  const handleLevelChange = (level: string | null) => {
+    setSelectedLevel(level);
+    setPage(1);
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+  };
+
+  const totalPages = coursesData ? Math.ceil(coursesData.total / coursesData.limit) : 1;
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-        
-       
-
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
             {/* Sidebar Filters */}
             <aside className="lg:col-span-3 space-y-8 sticky top-24">
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -219,82 +246,104 @@ const CourseListPage = () => {
                     </div>
                     
                     <div className="space-y-8">
+                        {/* Search */}
+                        <div>
+                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Tìm kiếm</h3>
+                            <form onSubmit={handleSearch} className="relative">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Tìm khóa học..."
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300"
+                                />
+                                <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-indigo-600">
+                                    <Search size={18} />
+                                </button>
+                            </form>
+                        </div>
+
                         {/* Categories */}
                         <div>
                             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Danh mục</h3>
-                            <div className="space-y-3">
-                                {CATEGORIES.map((cat, i) => (
-                                    <label key={i} className="flex items-center gap-3 cursor-pointer group select-none">
-                                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 ${selectedCategories.includes(cat) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white hover:border-indigo-400'}`}>
-                                            {selectedCategories.includes(cat) && <Check size={14} className="text-white" />}
-                                        </div>
-                                        <input 
-                                            type="checkbox" 
-                                            className="hidden" 
-                                            onChange={() => toggleCategory(cat)}
-                                            checked={selectedCategories.includes(cat)}
-                                        />
-                                        <span className={`text-sm transition-colors ${selectedCategories.includes(cat) ? 'text-slate-900 font-bold' : 'text-slate-600 group-hover:text-indigo-600'}`}>{cat}</span>
-                                    </label>
-                                ))}
-                            </div>
+                            {categoriesLoading ? (
+                                <div className="text-center py-4">
+                                    <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
+                                </div>
+                            ) : (
+                                <div className="space-y-3 max-h-64 overflow-y-auto">
+                                    {categoriesData?.filter(cat => cat.isActive && !cat.parentId).map((cat) => (
+                                        <label key={cat.id} className="flex items-center gap-3 cursor-pointer group select-none">
+                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 ${selectedCategoryIds.includes(cat.id) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white hover:border-indigo-400'}`}>
+                                                {selectedCategoryIds.includes(cat.id) && <Check size={14} className="text-white" />}
+                                            </div>
+                                            <input 
+                                                type="checkbox" 
+                                                className="hidden" 
+                                                onChange={() => toggleCategory(cat.id)}
+                                                checked={selectedCategoryIds.includes(cat.id)}
+                                            />
+                                            <span className={`text-sm transition-colors ${selectedCategoryIds.includes(cat.id) ? 'text-slate-900 font-bold' : 'text-slate-600 group-hover:text-indigo-600'}`}>{cat.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Levels */}
                         <div>
                             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Trình độ</h3>
                             <div className="space-y-3">
-                                {LEVELS.map((level, i) => (
-                                    <label key={i} className="flex items-center gap-3 cursor-pointer group">
-                                        <input type="radio" name="level" className="w-4 h-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer" />
-                                        <span className="text-sm text-slate-600 group-hover:text-indigo-600 transition-colors">{level}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Rating */}
-                        <div>
-                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Đánh giá</h3>
-                            <div className="space-y-3">
-                                {[5, 4, 3].map((star, i) => (
-                                    <label key={i} className="flex items-center gap-3 cursor-pointer group">
-                                        <input type="radio" name="rating" className="w-4 h-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer" />
-                                        <div className="flex items-center gap-1">
-                                            <span className="flex text-amber-400">
-                                            {[...Array(5)].map((_, idx) => (
-                                                <Star key={idx} size={14} fill={idx < star ? "currentColor" : "none"} className={idx >= star ? "text-slate-200" : ""} />
-                                            ))}
-                                            </span>
-                                            <span className="text-sm text-slate-600">& lên</span>
-                                        </div>
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <input 
+                                        type="radio" 
+                                        name="level" 
+                                        className="w-4 h-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer" 
+                                        checked={selectedLevel === null}
+                                        onChange={() => handleLevelChange(null)}
+                                    />
+                                    <span className="text-sm text-slate-600 group-hover:text-indigo-600 transition-colors">Mọi cấp độ</span>
+                                </label>
+                                {LEVELS.map((level) => (
+                                    <label key={level.value} className="flex items-center gap-3 cursor-pointer group">
+                                        <input 
+                                            type="radio" 
+                                            name="level" 
+                                            className="w-4 h-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600 cursor-pointer" 
+                                            checked={selectedLevel === level.value}
+                                            onChange={() => handleLevelChange(level.value)}
+                                        />
+                                        <span className="text-sm text-slate-600 group-hover:text-indigo-600 transition-colors">{level.label}</span>
                                     </label>
                                 ))}
                             </div>
                         </div>
                     </div>
                 </div>
-
-               
             </aside>
 
             {/* Main Content Area */}
             <div className="lg:col-span-9">
-                
                 {/* Filters Toolbar */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                     <div>
                         <h2 className="text-lg font-bold text-slate-800">Tất cả khóa học</h2>
-                        <p className="text-sm text-slate-500">Hiển thị <span className="font-bold text-slate-900">6</span> kết quả phù hợp</p>
+                        <p className="text-sm text-slate-500">
+                            Hiển thị <span className="font-bold text-slate-900">{coursesData?.total || 0}</span> kết quả phù hợp
+                        </p>
                     </div>
                     
                     <div className="flex items-center gap-3 self-end sm:self-auto">
                         <div className="relative group">
-                            <select className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl pl-4 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-100 font-medium cursor-pointer hover:border-slate-300 transition-colors">
-                                <option>Phổ biến nhất</option>
-                                <option>Mới nhất</option>
-                                <option>Giá: Thấp đến Cao</option>
-                                <option>Giá: Cao đến Thấp</option>
+                            <select 
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl pl-4 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-100 font-medium cursor-pointer hover:border-slate-300 transition-colors"
+                            >
+                                <option value="popular">Phổ biến nhất</option>
+                                <option value="newest">Mới nhất</option>
+                                <option value="price-low">Giá: Thấp đến Cao</option>
+                                <option value="price-high">Giá: Cao đến Thấp</option>
                             </select>
                             <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         </div>
@@ -317,25 +366,82 @@ const CourseListPage = () => {
                 </div>
 
                 {/* Course Listing */}
-                <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-6`}>
-                    {COURSES.map(course => (
-                        <CourseCard key={course.id} course={course} />
-                    ))}
-                </div>
-
-                {/* Pagination */}
-                <div className="mt-16 flex justify-center">
-                    <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
-                        <button className="w-10 h-10 rounded-xl border border-transparent flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors disabled:opacity-50">←</button>
-                        <button className="w-10 h-10 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center shadow-md shadow-indigo-200">1</button>
-                        <button className="w-10 h-10 rounded-xl border border-transparent flex items-center justify-center text-slate-600 hover:bg-slate-50 font-medium transition-colors">2</button>
-                        <button className="w-10 h-10 rounded-xl border border-transparent flex items-center justify-center text-slate-600 hover:bg-slate-50 font-medium transition-colors">3</button>
-                        <span className="w-10 h-10 flex items-center justify-center text-slate-400 pb-2">...</span>
-                        <button className="w-10 h-10 rounded-xl border border-transparent flex items-center justify-center text-slate-600 hover:bg-slate-50 font-medium transition-colors">8</button>
-                        <button className="w-10 h-10 rounded-xl border border-transparent flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors">→</button>
+                {coursesLoading ? (
+                    <div className="text-center py-16">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                        <p className="mt-4 text-slate-500">Đang tải khóa học...</p>
                     </div>
-                </div>
+                ) : coursesError ? (
+                    <div className="text-center py-16">
+                        <p className="text-red-500">Không thể tải khóa học. Vui lòng thử lại sau.</p>
+                    </div>
+                ) : courses.length === 0 ? (
+                    <div className="text-center py-16">
+                        <p className="text-slate-500">Không tìm thấy khóa học nào.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-6`}>
+                            {courses.map(course => (
+                                <CourseCard key={course.id} course={course} />
+                            ))}
+                        </div>
 
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="mt-16 flex justify-center">
+                                <div className="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+                                    <button 
+                                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                                        disabled={page === 1}
+                                        className="w-10 h-10 rounded-xl border border-transparent flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        ←
+                                    </button>
+                                    
+                                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                        let pageNum;
+                                        if (totalPages <= 5) {
+                                            pageNum = i + 1;
+                                        } else if (page <= 3) {
+                                            pageNum = i + 1;
+                                        } else if (page >= totalPages - 2) {
+                                            pageNum = totalPages - 4 + i;
+                                        } else {
+                                            pageNum = page - 2 + i;
+                                        }
+                                        
+                                        return (
+                                            <button
+                                                key={pageNum}
+                                                onClick={() => setPage(pageNum)}
+                                                className={`w-10 h-10 rounded-xl flex items-center justify-center font-medium transition-colors ${
+                                                    page === pageNum
+                                                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                                                        : 'border border-transparent text-slate-600 hover:bg-slate-50'
+                                                }`}
+                                            >
+                                                {pageNum}
+                                            </button>
+                                        );
+                                    })}
+                                    
+                                    {totalPages > 5 && page < totalPages - 2 && (
+                                        <span className="w-10 h-10 flex items-center justify-center text-slate-400 pb-2">...</span>
+                                    )}
+                                    
+                                    <button 
+                                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={page === totalPages}
+                                        className="w-10 h-10 rounded-xl border border-transparent flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        →
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
         </div>
     </div>

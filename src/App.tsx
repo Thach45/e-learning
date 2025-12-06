@@ -92,6 +92,14 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="learn/course/:courseId/lesson/:lessonId"
+            element={
+              <ProtectedRoute>
+                <LearningPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
         {/* Google OAuth callback - route ở root level để match với backend redirect */}
         <Route path="/google/callback" element={<GoogleCallbackPage />} />

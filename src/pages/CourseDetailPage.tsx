@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { 
   Star, 
   PlayCircle, 
@@ -15,163 +16,19 @@ import {
   ChevronDown, 
   ChevronRight,
   Heart,
-  ThumbsUp, // Mới
-  MoreHorizontal // Mới
+  ThumbsUp,
+  MoreHorizontal
 } from 'lucide-react';
+import { useCourse } from '../hooks/useCourses';
+import { useCourses } from '../hooks/useCourses';
 
 // --- HELPER FUNCTIONS ---
 const formatVND = (amount: number) => 
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
-// --- MOCK DATA (UPDATED) ---
-const COURSE_DATA = {
-  id: 'c1',
-  title: 'Full Stack Web Development 2025: Từ Zero đến Hero',
-  price: 299000,
-  salePrice: 299000,
-  originalPrice: 2500000,
-  thumbnail: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-  introVideo: 'https://www.youtube.com/watch?v=placeholder',
-  isFeatured: true,
-  level: 'BEGINNER',
-  status: 'PUBLISHED',
-  updatedAt: '24/05/2025',
-  
-  instructor: {
-    id: 'u1',
-    name: 'Nguyễn Văn A',
-    avatar: 'https://i.pravatar.cc/150?u=a',
-    bio: 'Senior Software Engineer tại Google. Có hơn 10 năm kinh nghiệm giảng dạy lập trình web. Đã đào tạo hơn 5000 học viên thành công.',
-    rating: 4.8,
-    students: 15400,
-    courses: 12
-  },
-
-  category: { name: 'Lập trình Web' },
-
-  detail: {
-    description: `Khóa học Full Stack Web Development toàn diện nhất, cập nhật mới nhất năm 2025. Bạn sẽ học được tất cả các kỹ năng cần thiết để trở thành một lập trình viên chuyên nghiệp, từ Frontend (HTML, CSS, JS, React) đến Backend (NodeJS, Express, MongoDB). Khóa học được thiết kế thực chiến, giúp bạn có sản phẩm ngay sau khi học.`,
-    objectives: [
-      'Xây dựng bất kỳ website nào bạn muốn từ con số 0',
-      'Thành thạo HTML5, CSS3, JavaScript ES6+',
-      'Làm việc chuyên nghiệp với ReactJS và Redux Toolkit',
-      'Xây dựng Backend RESTful API mạnh mẽ với NodeJS',
-      'Triển khai ứng dụng thực tế lên Cloud (AWS/Vercel)',
-      'Tư duy giải quyết vấn đề của một kỹ sư phần mềm'
-    ],
-    requirements: [
-      'Không cần kinh nghiệm lập trình trước đó, khóa học dạy từ đầu',
-      'Máy tính kết nối internet (Windows, Mac hoặc Linux)',
-      'Tinh thần ham học hỏi và kiên trì làm bài tập'
-    ],
-    targetAudience: 'Người mới bắt đầu, sinh viên CNTT muốn củng cố kiến thức, người trái ngành muốn chuyển việc.',
-  },
-
-  content: [
-    {
-      id: 'sec1',
-      title: 'Giới thiệu & Cài đặt môi trường',
-      lessons: [
-        { id: 'l1', title: 'Giới thiệu lộ trình khóa học', type: 'VIDEO', duration: '5:00', isFree: true },
-        { id: 'l2', title: 'Cài đặt VS Code & Extensions cần thiết', type: 'VIDEO', duration: '10:30', isFree: true },
-        { id: 'l3', title: 'Tài liệu & Source code khóa học', type: 'DOC', duration: '1:00', isFree: false },
-      ]
-    },
-    {
-      id: 'sec2',
-      title: 'HTML5: Cấu trúc trang web',
-      lessons: [
-        { id: 'l4', title: 'Cấu trúc DOM và các thẻ cơ bản', type: 'VIDEO', duration: '15:00', isFree: false },
-        { id: 'l5', title: 'Làm việc với Forms và Validation', type: 'VIDEO', duration: '20:00', isFree: false },
-        { id: 'l6', title: 'Semantic HTML & SEO Basics', type: 'VIDEO', duration: '12:45', isFree: false },
-      ]
-    },
-    {
-      id: 'sec3',
-      title: 'CSS3: Trang trí trang web',
-      lessons: [
-        { id: 'l7', title: 'Box Model, Margin, Padding', type: 'VIDEO', duration: '25:00', isFree: false },
-        { id: 'l8', title: 'Flexbox toàn tập', type: 'VIDEO', duration: '18:00', isFree: false },
-        { id: 'l9', title: 'CSS Grid & Responsive Design', type: 'VIDEO', duration: '22:00', isFree: false },
-      ]
-    }
-  ],
-
-  // --- REVIEW DATA ---
-  reviews: [
-    {
-      id: 'r1',
-      user: { name: 'Trần Minh Tuấn', avatar: 'https://i.pravatar.cc/150?u=10' },
-      rating: 5,
-      comment: 'Khóa học rất chi tiết, giảng viên dạy dễ hiểu. Phần ReactJS cập nhật kiến thức mới nhất rất hay. Đáng tiền!',
-      createdAt: '2 ngày trước',
-      helpful: 12
-    },
-    {
-      id: 'r2',
-      user: { name: 'Lê Thị Hoa', avatar: 'https://i.pravatar.cc/150?u=20' },
-      rating: 4,
-      comment: 'Nội dung tốt nhưng phần Backend hơi nhanh, mình phải xem lại 2 lần mới hiểu. Mong thầy bổ sung thêm bài tập phần này.',
-      createdAt: '1 tuần trước',
-      helpful: 5
-    },
-    {
-      id: 'r3',
-      user: { name: 'Phạm Văn Nam', avatar: 'https://i.pravatar.cc/150?u=30' },
-      rating: 5,
-      comment: 'Tuyệt vời! Mình từ dân kinh tế chuyển sang mà học xong đã tự làm được portfolio xin việc. Cảm ơn thầy rất nhiều.',
-      createdAt: '2 tuần trước',
-      helpful: 24
-    }
-  ],
-
-  // --- RELATED COURSES DATA ---
-  relatedCourses: [
-    {
-      id: 'rc1',
-      title: 'ReactJS Advanced: Các kỹ thuật nâng cao',
-      instructor: 'Nguyễn Văn A',
-      rating: 4.9,
-      reviews: 450,
-      price: 399000,
-      originalPrice: 1200000,
-      thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      tag: 'Nâng cao'
-    },
-    {
-      id: 'rc2',
-      title: 'NodeJS & MongoDB: Xây dựng API Scalable',
-      instructor: 'Trần Văn B',
-      rating: 4.7,
-      reviews: 320,
-      price: 250000,
-      originalPrice: 800000,
-      thumbnail: 'https://images.unsplash.com/photo-1618477247222-ac5912454582?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      tag: 'Backend'
-    },
-    {
-      id: 'rc3',
-      title: 'DevOps cơ bản cho Web Developer',
-      instructor: 'Lê Hoàng C',
-      rating: 4.8,
-      reviews: 150,
-      price: 199000,
-      originalPrice: 500000,
-      thumbnail: 'https://images.unsplash.com/photo-1667372393119-c81c0cda0563?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-      tag: 'Mới'
-    }
-  ],
-
-  totalLessons: 45,
-  totalDuration: '12h 30m',
-  rating: 4.9,
-  reviewsCount: 1200,
-  studentsCount: 5400
-};
-
 // --- SUB-COMPONENTS ---
 
-const AccordionItem = ({ section, defaultOpen = false }: { section: any, defaultOpen?: boolean }) => {
+const AccordionItem = ({ section, defaultOpen = false }: { section: { id: string; title: string; lessons: Array<{ id: string; title: string; type: string; duration?: string | null; isFree?: boolean }> }; defaultOpen?: boolean }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -189,7 +46,7 @@ const AccordionItem = ({ section, defaultOpen = false }: { section: any, default
       
       {isOpen && (
         <div className="bg-white divide-y divide-slate-100">
-          {section.lessons.map((lesson: any) => (
+          {section.lessons.map((lesson) => (
             <div key={lesson.id} className="p-3 pl-4 md:pl-11 flex items-center justify-between group hover:bg-indigo-50 transition-colors cursor-pointer">
               <div className="flex items-center gap-3 overflow-hidden">
                 <PlayCircle size={16} className={`text-slate-400 flex-shrink-0 group-hover:text-indigo-600 ${lesson.isFree ? 'fill-indigo-100 text-indigo-600' : ''}`} />
@@ -209,7 +66,7 @@ const AccordionItem = ({ section, defaultOpen = false }: { section: any, default
   );
 };
 
-const RelatedCourseCard = ({ course }: { course: any }) => (
+const RelatedCourseCard = ({ course }: { course: { id: string; title: string; instructor: string; rating: number; reviews: number; price: number; originalPrice?: number; thumbnail: string; tag?: string } }) => (
   <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full cursor-pointer group">
     <div className="relative aspect-video overflow-hidden rounded-t-xl">
         <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -235,7 +92,75 @@ const RelatedCourseCard = ({ course }: { course: any }) => (
 // --- MAIN PAGE COMPONENT ---
 
 const CourseDetailPage = () => {
-  const course = COURSE_DATA;
+  const { id } = useParams<{ id: string }>();
+  const { data: courseData, isLoading, error } = useCourse(id || '');
+  
+  // Fetch related courses (same category or featured courses)
+  const { data: relatedCoursesData } = useCourses({
+    page: 1,
+    limit: 4,
+    status: 'PUBLISHED',
+    categoryId: courseData?.category?.id,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          <p className="mt-4 text-slate-500">Đang tải khóa học...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !courseData) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Không thể tải khóa học. Vui lòng thử lại sau.</p>
+          <Link to="/courses" className="text-indigo-600 hover:underline">
+            Quay lại danh sách khóa học
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Use API data directly (already in correct format)
+  const course = courseData;
+
+  // Transform related courses
+  const relatedCourses = (relatedCoursesData?.data || [])
+    .filter(c => c.id !== course.id)
+    .slice(0, 4)
+    .map(c => {
+      const reviewsCount = c.reviewsCount || 0;
+      const rating = reviewsCount > 0 && c.totalStars 
+        ? Math.round((c.totalStars / reviewsCount) * 10) / 10 
+        : 0;
+
+      let tag = 'Mới';
+      if (c.isFeatured) tag = 'Nổi bật';
+      if (c.totalLearners && c.totalLearners > 100) tag = 'Bán chạy';
+      if (c.price === 0) tag = 'Miễn phí';
+
+      return {
+        id: c.id,
+        title: c.title,
+        instructor: c.instructor?.name || 'Unknown',
+        rating: rating || 0,
+        reviews: reviewsCount,
+        price: c.salePrice || c.price,
+        originalPrice: c.salePrice ? c.price : undefined,
+        thumbnail: c.thumbnail || 'https://via.placeholder.com/400x300?text=No+Image',
+        tag,
+      };
+    });
+
+  // Xử lý split string thành array để render list
+  const objectivesList = course.detail?.objectives ? course.detail.objectives.split('\n').filter(o => o.trim()) : [];
+  const requirementsList = course.detail?.requirements ? course.detail.requirements.split('\n').filter(r => r.trim()) : [];
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-600">
@@ -247,15 +172,18 @@ const CourseDetailPage = () => {
         <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-12">
            <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center gap-2 text-indigo-300 text-xs md:text-sm font-medium mb-4">
-                <span className="hover:text-white cursor-pointer">Khóa học</span>
+                <Link to="/courses" className="hover:text-white cursor-pointer">Khóa học</Link>
                 <ChevronRight size={14} />
-                <span className="hover:text-white cursor-pointer">{course.category.name}</span>
+                {course.category && (
+                  <Link to={`/courses?category=${course.category.id || ''}`} className="hover:text-white cursor-pointer">{course.category.name}</Link>
+                )}
+                {!course.category && <span className="text-white">Khác</span>}
                 <ChevronRight size={14} />
                 <span className="text-white truncate max-w-[150px] md:max-w-xs">{course.title}</span>
               </div>
               
               <h1 className="text-2xl md:text-4xl font-bold leading-tight">{course.title}</h1>
-              <p className="text-base md:text-lg text-slate-300 line-clamp-2">{course.detail.description}</p>
+              {course.detail?.description && <p className="text-base md:text-lg text-slate-300 line-clamp-2">{course.detail.description}</p>}
               
               <div className="flex flex-wrap items-center gap-4 text-sm">
                  <div className="flex items-center gap-1 text-amber-400 bg-amber-400/10 px-2 py-1 rounded">
@@ -269,7 +197,7 @@ const CourseDetailPage = () => {
 
               <div className="flex flex-wrap items-center gap-4 pt-2 text-sm">
                  <div className="flex items-center gap-2">
-                    <img src={course.instructor.avatar} alt="" className="w-8 h-8 rounded-full border border-white/20" />
+                    <img src={course.instructor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(course.instructor.name)}&background=random`} alt="" className="w-8 h-8 rounded-full border border-white/20" />
                     <span>Được dạy bởi <span className="font-bold text-white hover:underline cursor-pointer">{course.instructor.name}</span></span>
                  </div>
                  <div className="flex items-center gap-1 text-xs text-slate-400 lg:ml-4">
@@ -294,7 +222,7 @@ const CourseDetailPage = () => {
              <section className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <h2 className="text-xl font-bold text-slate-900 mb-6">Bạn sẽ học được gì?</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   {course.detail.objectives.map((obj: string, i: number) => (
+                   {objectivesList.map((obj, i) => (
                       <div key={i} className="flex gap-3 items-start">
                          <Check size={18} className="text-emerald-500 flex-shrink-0 mt-0.5" />
                          <span className="text-sm text-slate-700 leading-snug">{obj}</span>
@@ -312,7 +240,7 @@ const CourseDetailPage = () => {
                   </div>
                 </div>
                 <div>
-                   {course.content.map((sec: any, i: number) => (
+                   {course.content.map((sec, i) => (
                       <AccordionItem key={sec.id} section={sec} defaultOpen={i === 0} />
                    ))}
                 </div>
@@ -322,16 +250,18 @@ const CourseDetailPage = () => {
              <section>
                 <h2 className="text-xl font-bold text-slate-900 mb-4">Yêu cầu & Mô tả</h2>
                 <ul className="list-disc list-inside space-y-2 text-slate-700 text-sm marker:text-indigo-600 mb-6">
-                   {course.detail.requirements.map((req: string, i: number) => (
+                   {requirementsList.map((req, i) => (
                       <li key={i}>{req}</li>
                    ))}
                 </ul>
                 <div className="text-slate-700 leading-relaxed text-sm space-y-4 text-justify">
-                   <p>{course.detail.description}</p>
-                   <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                   {course.detail?.description && <p>{course.detail.description}</p>}
+                   {course.detail?.targetAudience && (
+                     <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
                         <p className="font-bold text-indigo-900 mb-1">Đối tượng:</p>
                         <p className="text-indigo-800">{course.detail.targetAudience}</p>
-                   </div>
+                     </div>
+                   )}
                 </div>
              </section>
 
@@ -340,18 +270,18 @@ const CourseDetailPage = () => {
                 <h2 className="text-xl font-bold text-slate-900 mb-6">Giảng viên</h2>
                 <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
-                      <img src={course.instructor.avatar} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm" />
+                      <img src={course.instructor.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(course.instructor.name)}&background=random`} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm" />
                       <div>
                          <h3 className="font-bold text-lg text-slate-900 hover:text-indigo-600 cursor-pointer">{course.instructor.name}</h3>
                          <p className="text-slate-500 text-sm font-medium">Software Engineer & Instructor</p>
                          <div className="flex gap-4 text-xs text-slate-600 mt-2">
                             <div className="flex items-center gap-1"><Star size={14} className="text-amber-500" /> {course.instructor.rating} Đánh giá</div>
-                            <div className="flex items-center gap-1"><Users size={14} /> {course.instructor.students.toLocaleString()} Học viên</div>
+                            <div className="flex items-center gap-1"><Users size={14} /> {(course.instructor.students || 0).toLocaleString()} Học viên</div>
                             <div className="flex items-center gap-1"><PlayCircle size={14} /> {course.instructor.courses} Khóa học</div>
                          </div>
                       </div>
                    </div>
-                   <p className="text-sm text-slate-700 leading-relaxed border-t border-slate-200 pt-4 mt-4">{course.instructor.bio}</p>
+                   {course.instructor.bio && <p className="text-sm text-slate-700 leading-relaxed border-t border-slate-200 pt-4 mt-4">{course.instructor.bio}</p>}
                 </div>
              </section>
 
@@ -398,7 +328,7 @@ const CourseDetailPage = () => {
                         <div key={review.id} className="border-b border-slate-100 pb-6 last:border-none">
                             <div className="flex justify-between items-start mb-3">
                                 <div className="flex items-center gap-3">
-                                    <img src={review.user.avatar} alt={review.user.name} className="w-10 h-10 rounded-full object-cover bg-slate-200" />
+                                    <img src={review.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(review.user.name)}&background=random`} alt={review.user.name} className="w-10 h-10 rounded-full object-cover bg-slate-200" />
                                     <div>
                                         <h4 className="font-bold text-sm text-slate-900">{review.user.name}</h4>
                                         <div className="flex items-center gap-2">
@@ -433,7 +363,7 @@ const CourseDetailPage = () => {
              <div className="sticky top-24 space-y-6">
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl shadow-indigo-900/10 overflow-hidden lg:-mt-48 relative z-20">
                    <div className="relative aspect-video group cursor-pointer bg-slate-900">
-                      <img src={course.thumbnail} alt="" className="w-full h-full object-cover opacity-80" />
+                      <img src={course.thumbnail || 'https://via.placeholder.com/400x300?text=No+Image'} alt="" className="w-full h-full object-cover opacity-80" />
                       <div className="absolute inset-0 flex items-center justify-center">
                          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                             <PlayCircle size={32} className="text-indigo-600 fill-indigo-600 ml-1" />
@@ -444,13 +374,15 @@ const CourseDetailPage = () => {
 
                    <div className="p-6">
                       <div className="flex items-end gap-3 mb-6">
-                         <span className="text-3xl font-bold text-slate-900">{formatVND(course.salePrice)}</span>
-                         {course.originalPrice > course.salePrice && (
+                         <span className="text-3xl font-bold text-slate-900">{formatVND(course.salePrice || course.price)}</span>
+                         {course.originalPrice && course.originalPrice > (course.salePrice || course.price) && (
                             <span className="text-slate-400 line-through mb-1 text-sm font-medium">{formatVND(course.originalPrice)}</span>
                          )}
-                         <span className="text-emerald-600 font-bold text-xs bg-emerald-50 px-2 py-1 rounded ml-auto mb-1">
-                            -{Math.round((1 - course.salePrice/course.originalPrice)*100)}%
-                         </span>
+                         {course.originalPrice && course.originalPrice > (course.salePrice || course.price) && (
+                           <span className="text-emerald-600 font-bold text-xs bg-emerald-50 px-2 py-1 rounded ml-auto mb-1">
+                              -{Math.round((1 - (course.salePrice || course.price)/course.originalPrice)*100)}%
+                           </span>
+                         )}
                       </div>
 
                       <div className="space-y-3 mb-6">
@@ -493,14 +425,18 @@ const CourseDetailPage = () => {
         </div>
 
         {/* 3. RELATED COURSES (FULL WIDTH BOTTOM) */}
-        <div className="mt-20 border-t border-slate-200 pt-16">
-            <h2 className="text-2xl font-bold text-slate-900 mb-8">Khóa học liên quan</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {course.relatedCourses.map(rc => (
-                    <RelatedCourseCard key={rc.id} course={rc} />
-                ))}
-            </div>
-        </div>
+        {relatedCourses.length > 0 && (
+          <div className="mt-20 border-t border-slate-200 pt-16">
+              <h2 className="text-2xl font-bold text-slate-900 mb-8">Khóa học liên quan</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {relatedCourses.map(rc => (
+                      <Link key={rc.id} to={`/courses/${rc.id}`}>
+                          <RelatedCourseCard course={rc} />
+                      </Link>
+                  ))}
+              </div>
+          </div>
+        )}
 
       </div>
     </div>

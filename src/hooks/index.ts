@@ -8,4 +8,6 @@ export * from './useCourseDetail';
 export * from './useInstructorStudents';
 export * from './useUpload';
 export * from './useCourseContent';
+export * from './useEnrollments';
+export * from './useWishlist';
 

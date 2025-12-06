@@ -1,0 +1,64 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { enrollmentsApi, type GetEnrollmentsParams, type Enrollment, type EnrollmentStats, type GetCourseContentsResponse, type LessonDetail } from '../api/enrollments';
+
+// Get my enrollments
+export const useMyEnrollments = (params?: GetEnrollmentsParams) => {
+  return useQuery({
+    queryKey: ['my-enrollments', params],
+    queryFn: () => enrollmentsApi.getMyEnrollments(params),
+  });
+};
+
+// Get enrollment stats
+export const useMyEnrollmentStats = () => {
+  return useQuery({
+    queryKey: ['my-enrollment-stats'],
+    queryFn: () => enrollmentsApi.getMyEnrollmentStats(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+// Enroll in course mutation
+export const useEnrollInCourse = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (courseId: string) => enrollmentsApi.enrollInCourse(courseId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-enrollments'] });
+      queryClient.invalidateQueries({ queryKey: ['my-enrollment-stats'] });
+    },
+  });
+};
+
+// Complete course mutation
+export const useCompleteCourse = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (courseId: string) => enrollmentsApi.completeCourse(courseId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-enrollments'] });
+      queryClient.invalidateQueries({ queryKey: ['my-enrollment-stats'] });
+    },
+  });
+};
+
+// Get course contents for enrolled user
+export const useCourseContents = (courseId: string) => {
+  return useQuery({
+    queryKey: ['course-contents', courseId],
+    queryFn: () => enrollmentsApi.getCourseContents(courseId),
+    enabled: !!courseId,
+  });
+};
+
+// Get lesson detail for enrolled user
+export const useLessonDetail = (courseId: string, lessonId: string) => {
+  return useQuery({
+    queryKey: ['lesson-detail', courseId, lessonId],
+    queryFn: () => enrollmentsApi.getLessonDetail(courseId, lessonId),
+    enabled: !!courseId && !!lessonId,
+  });
+};
+
