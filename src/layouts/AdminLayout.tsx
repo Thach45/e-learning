@@ -20,18 +20,18 @@ const AdminLayout = () => {
   const location = useLocation();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
+    // { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
     { icon: Users, label: 'Người dùng', path: '/admin/users' },
     { icon: BookOpen, label: 'Khóa học', path: '/admin/courses' },
     { icon: FolderTree, label: 'Danh mục', path: '/admin/categories' },
-    { icon: ShoppingCart, label: 'Đơn hàng', path: '/admin/orders' },
+    // { icon: ShoppingCart, label: 'Đơn hàng', path: '/admin/orders' },
     { icon: GraduationCap, label: 'Ghi danh', path: '/admin/enrollments' },
     { icon: MessageSquare, label: 'Đánh giá', path: '/admin/reviews' },
-    { icon: Shield, label: 'Phân quyền', path: '/admin/permissions' },
-    { icon: Settings, label: 'Cài đặt', path: '/admin/settings' },
+    // { icon: Shield, label: 'Phân quyền', path: '/admin/permissions' },
+    // { icon: Settings, label: 'Cài đặt', path: '/admin/settings' },
   ];
 
-  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <div className="min-h-screen bg-slate-50">

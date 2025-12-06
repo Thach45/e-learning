@@ -1,24 +1,36 @@
-import { useState } from 'react';
-import { Search, Plus, Edit, Trash2, FolderTree } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Search, Plus, Edit, Trash2, FolderTree, X, Save, Loader2, AlertCircle } from 'lucide-react';
+import { useAdminCategories, useCreateAdminCategory, useUpdateAdminCategory, useAdminCategory } from '../../hooks/useAdminCategories';
+import ImageUpload from '../../components/common/ImageUpload';
+import type { AdminCategory, CreateCategoryBody, UpdateCategoryBody } from '../../api/admin';
 
 const AdminCategoriesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
 
-  const mockCategories = [
-    { id: '1', name: 'Lập trình', parentId: null, courseCount: 120, isActive: true, createdAt: '2025-01-15' },
-    { id: '2', name: 'Frontend Development', parentId: '1', courseCount: 45, isActive: true, createdAt: '2025-02-20' },
-    { id: '3', name: 'Backend Development', parentId: '1', courseCount: 35, isActive: true, createdAt: '2025-02-20' },
-    { id: '4', name: 'Thiết kế', parentId: null, courseCount: 64, isActive: true, createdAt: '2025-03-10' },
-    { id: '5', name: 'UI/UX Design', parentId: '4', courseCount: 28, isActive: true, createdAt: '2025-03-15' },
-  ];
+  const { data: categories, isLoading, error } = useAdminCategories();
+  const createMutation = useCreateAdminCategory();
+  const updateMutation = useUpdateAdminCategory();
 
-  const filteredCategories = mockCategories.filter(cat => 
-    cat.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCategories = useMemo(() => {
+    if (!categories) return [];
+    return categories.filter(cat => 
+      cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [categories, searchTerm]);
 
   const getParentName = (parentId: string | null) => {
-    if (!parentId) return null;
-    return mockCategories.find(c => c.id === parentId)?.name || null;
+    if (!parentId || !categories) return null;
+    return categories.find(c => c.id === parentId)?.name || null;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
   };
 
   return (
@@ -28,7 +40,10 @@ const AdminCategoriesPage = () => {
           <h1 className="text-3xl font-bold text-slate-800">Quản lý danh mục</h1>
           <p className="text-slate-500 mt-1">Quản lý danh mục khóa học (hỗ trợ danh mục con)</p>
         </div>
-        <button className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-500 transition-colors flex items-center gap-2">
+        <button
+          onClick={() => setIsCreateModalOpen(true)}
+          className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-500 transition-colors flex items-center gap-2"
+        >
           <Plus size={18} />
           Thêm danh mục
         </button>
@@ -48,74 +63,295 @@ const AdminCategoriesPage = () => {
         </div>
       </div>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 flex items-center gap-3">
+          <AlertCircle className="text-rose-600" size={24} />
+          <div>
+            <p className="font-semibold text-rose-800">Lỗi khi tải dữ liệu</p>
+            <p className="text-sm text-rose-600">Vui lòng thử lại sau.</p>
+          </div>
+        </div>
+      )}
+
       {/* Categories Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Danh mục</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Danh mục cha</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Số khóa học</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Trạng thái</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Ngày tạo</th>
-                <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredCategories.map((category) => {
-                const parentName = getParentName(category.parentId);
-                return (
-                  <tr key={category.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <FolderTree size={20} className="text-indigo-600" />
-                        <div>
-                          <p className="font-semibold text-slate-800">{category.name}</p>
-                          <p className="text-xs text-slate-500">ID: {category.id}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {parentName ? (
-                        <span className="text-sm text-slate-600">{parentName}</span>
-                      ) : (
-                        <span className="text-sm text-slate-400 italic">Danh mục gốc</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="font-semibold text-slate-800">{category.courseCount}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        category.isActive
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : 'bg-slate-50 text-slate-700'
-                      }`}>
-                        {category.isActive ? 'Hoạt động' : 'Không hoạt động'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">{category.createdAt}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
-                          <Edit size={16} />
-                        </button>
-                        <button className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+      {!isLoading && !error && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Danh mục</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Danh mục cha</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Trạng thái</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Ngày tạo</th>
+                  <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredCategories.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                      Không có danh mục nào
                     </td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ) : (
+                  filteredCategories.map((category) => {
+                    const parentName = getParentName(category.parentId);
+                    return (
+                      <tr key={category.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            {category.imageUrl ? (
+                              <img
+                                src={category.imageUrl}
+                                alt={category.name}
+                                className="w-10 h-10 rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <FolderTree size={20} className="text-indigo-600" />
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-semibold text-slate-800">{category.name}</p>
+                              <p className="text-xs text-slate-500">ID: {category.id}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          {parentName ? (
+                            <span className="text-sm text-slate-600">{parentName}</span>
+                          ) : (
+                            <span className="text-sm text-slate-400 italic">Danh mục gốc</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            category.isActive
+                              ? 'bg-emerald-50 text-emerald-700'
+                              : 'bg-slate-50 text-slate-700'
+                          }`}>
+                            {category.isActive ? 'Hoạt động' : 'Không hoạt động'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-500">
+                          {formatDate(category.createdAt)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => setEditingCategory(category.id)}
+                              className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            >
+                              <Edit size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
+      )}
+
+      {/* Create Category Modal */}
+      {isCreateModalOpen && (
+        <CategoryModal
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={(data) => {
+            createMutation.mutate(data, {
+              onSuccess: () => {
+                setIsCreateModalOpen(false);
+              },
+            });
+          }}
+          isLoading={createMutation.isPending}
+          categories={categories || []}
+        />
+      )}
+
+      {/* Edit Category Modal */}
+      {editingCategory && (
+        <CategoryModal
+          categoryId={editingCategory}
+          onClose={() => setEditingCategory(null)}
+          onSubmit={(data) => {
+            updateMutation.mutate(
+              { id: editingCategory, body: data },
+              {
+                onSuccess: () => {
+                  setEditingCategory(null);
+                },
+              }
+            );
+          }}
+          isLoading={updateMutation.isPending}
+          categories={categories || []}
+        />
+      )}
+    </div>
+  );
+};
+
+// Category Modal Component
+type CategoryModalProps = {
+  categoryId?: string;
+  onClose: () => void;
+  onSubmit: (data: CreateCategoryBody | UpdateCategoryBody) => void;
+  isLoading: boolean;
+  categories: AdminCategory[];
+};
+
+const CategoryModal = ({ categoryId, onClose, onSubmit, isLoading, categories }: CategoryModalProps) => {
+  const { data: categoryData } = useAdminCategory(categoryId || '');
+  const [formData, setFormData] = useState({
+    name: '',
+    imageUrl: '',
+    parentId: '',
+    isActive: true,
+  });
+
+  // Load category data when editing
+  useEffect(() => {
+    if (categoryData && categoryId) {
+      setFormData({
+        name: categoryData.name,
+        imageUrl: categoryData.imageUrl || '',
+        parentId: categoryData.parentId || '',
+        isActive: categoryData.isActive,
+      });
+    } else {
+      // Reset form when creating new
+      setFormData({
+        name: '',
+        imageUrl: '',
+        parentId: '',
+        isActive: true,
+      });
+    }
+  }, [categoryData, categoryId]);
+
+  // Filter out current category from parent options (to prevent circular reference)
+  const availableParents = categories.filter(c => c.id !== categoryId);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const submitData: CreateCategoryBody | UpdateCategoryBody = {
+      name: formData.name,
+      imageUrl: formData.imageUrl || undefined,
+      isActive: formData.isActive,
+    };
+    if (categoryId) {
+      // Update
+      (submitData as UpdateCategoryBody).parentId = formData.parentId || null;
+    } else {
+      // Create
+      (submitData as CreateCategoryBody).parentId = formData.parentId || undefined;
+    }
+    onSubmit(submitData);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-slate-200 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-slate-800">
+            {categoryId ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Tên danh mục *</label>
+            <input
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 outline-none"
+              placeholder="Nhập tên danh mục"
+            />
+          </div>
+          <div>
+            <ImageUpload
+              value={formData.imageUrl}
+              onChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url }))}
+              label="Hình ảnh danh mục"
+              folder="categories"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Danh mục cha</label>
+            <select
+              value={formData.parentId}
+              onChange={(e) => setFormData(prev => ({ ...prev, parentId: e.target.value }))}
+              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-100 outline-none"
+            >
+              <option value="">Không có (Danh mục gốc)</option>
+              {availableParents.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.isActive}
+                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
+                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+              />
+              <span className="text-sm font-semibold text-slate-700">Hoạt động</span>
+            </label>
+          </div>
+          <div className="flex items-center justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-500 disabled:opacity-50 flex items-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Đang lưu...
+                </>
+              ) : (
+                <>
+                  <Save size={16} />
+                  Lưu
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
 export default AdminCategoriesPage;
-

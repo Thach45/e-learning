@@ -1,44 +1,44 @@
 import { useState } from 'react';
-import { Search, Filter, GraduationCap } from 'lucide-react';
+import { Search, GraduationCap, Loader2, AlertCircle, Eye } from 'lucide-react';
+import { useAdminEnrollments } from '../../hooks/useAdminEnrollments';
+import { useAdminCourses } from '../../hooks/useAdminCourses';
+import type { AdminEnrollment } from '../../api/admin';
 
 const AdminEnrollmentsPage = () => {
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState<string>('ALL');
+  const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
 
-  const mockEnrollments = [
-    { 
-      id: '1', 
-      userName: 'Nguyễn Văn A', 
-      userEmail: 'nguyenvana@example.com',
-      courseTitle: 'Full Stack Web Development 2025', 
-      enrolledAt: '2025-12-01 10:30',
-      completedAt: null,
-      progress: 45
-    },
-    { 
-      id: '2', 
-      userName: 'Trần Thị B', 
-      userEmail: 'tranthib@example.com',
-      courseTitle: 'UI/UX Design Masterclass', 
-      enrolledAt: '2025-11-15 09:12',
-      completedAt: '2025-12-05 14:30',
-      progress: 100
-    },
-    { 
-      id: '3', 
-      userName: 'Lê Hoàng C', 
-      userEmail: 'lehoangc@example.com',
-      courseTitle: 'Python & AI cho người mới bắt đầu', 
-      enrolledAt: '2025-11-01 14:55',
-      completedAt: null,
-      progress: 78
-    },
-  ];
+  const { data: enrollmentsData, isLoading, error } = useAdminEnrollments({
+    page,
+    limit: 10,
+    search: searchTerm || undefined,
+    courseId: selectedCourse !== 'ALL' ? selectedCourse : undefined,
+    completed: selectedStatus !== 'ALL' ? selectedStatus === 'COMPLETED' : undefined,
+  });
 
-  const filteredEnrollments = mockEnrollments.filter(enrollment => 
-    enrollment.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    enrollment.courseTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    enrollment.userEmail.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { data: coursesData } = useAdminCourses({ limit: 100 });
+
+  const enrollments = enrollmentsData?.data || [];
+  const totalPages = enrollmentsData?.totalPages || 1;
+  const courses = coursesData?.data || [];
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const calculateProgress = (enrollment: AdminEnrollment) => {
+    // Progress có thể được tính từ learning progress hoặc từ backend
+    // Ở đây tạm thời dùng progress từ enrollment nếu có
+    return enrollment.progress || 0;
+  };
 
   return (
     <div className="space-y-6">
@@ -50,76 +50,213 @@ const AdminEnrollmentsPage = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4">
-        <div className="relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Tìm kiếm theo tên, email hoặc khóa học..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 focus:bg-white outline-none"
-          />
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-4">
+        <div className="flex items-center gap-4">
+          <div className="flex-1 relative">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo tên, email hoặc khóa học..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 focus:bg-white outline-none"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-semibold text-slate-600">Lọc theo:</span>
+          <div className="flex gap-2">
+            <select
+              value={selectedCourse}
+              onChange={(e) => {
+                setSelectedCourse(e.target.value);
+                setPage(1);
+              }}
+              className="px-4 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 bg-white focus:ring-2 focus:ring-indigo-100 outline-none"
+            >
+              <option value="ALL">Tất cả khóa học</option>
+              {courses.map((course) => (
+                <option key={course.id} value={course.id}>
+                  {course.title}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-2 ml-4">
+            {['ALL', 'COMPLETED', 'IN_PROGRESS'].map((status) => (
+              <button
+                key={status}
+                onClick={() => {
+                  setSelectedStatus(status);
+                  setPage(1);
+                }}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                  selectedStatus === status
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {status === 'ALL' ? 'Tất cả' : 
+                 status === 'COMPLETED' ? 'Đã hoàn thành' : 'Đang học'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Enrollments Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Học viên</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Khóa học</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Ngày ghi danh</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Tiến độ</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredEnrollments.map((enrollment) => (
-                <tr key={enrollment.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="font-semibold text-slate-800">{enrollment.userName}</p>
-                      <p className="text-sm text-slate-500">{enrollment.userEmail}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm text-slate-600">{enrollment.courseTitle}</p>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">{enrollment.enrolledAt}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 bg-slate-100 rounded-full h-2">
-                        <div 
-                          className="bg-indigo-600 h-2 rounded-full transition-all"
-                          style={{ width: `${enrollment.progress}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-semibold text-slate-800 w-12 text-right">{enrollment.progress}%</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {enrollment.completedAt ? (
-                      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
-                        Đã hoàn thành
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">
-                        Đang học
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
         </div>
-      </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 flex items-center gap-3">
+          <AlertCircle className="text-rose-600" size={24} />
+          <div>
+            <p className="font-semibold text-rose-800">Lỗi khi tải dữ liệu</p>
+            <p className="text-sm text-rose-600">Vui lòng thử lại sau.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Enrollments Table */}
+      {!isLoading && !error && (
+        <>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Học viên</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Khóa học</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Ngày ghi danh</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Tiến độ</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Trạng thái</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Ngày hoàn thành</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {enrollments.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                        Không có ghi danh nào
+                      </td>
+                    </tr>
+                  ) : (
+                    enrollments.map((enrollment) => {
+                      const progress = calculateProgress(enrollment);
+                      const isCompleted = !!enrollment.completedAt;
+                      return (
+                        <tr key={enrollment.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              {enrollment.user?.avatar ? (
+                                <img
+                                  src={enrollment.user.avatar}
+                                  alt={enrollment.user.name}
+                                  className="w-10 h-10 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                  <GraduationCap size={18} className="text-indigo-600" />
+                                </div>
+                              )}
+                              <div>
+                                <p className="font-semibold text-slate-800">{enrollment.user?.name || 'N/A'}</p>
+                                <p className="text-sm text-slate-500">{enrollment.user?.email || 'N/A'}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              {enrollment.course?.thumbnail && (
+                                <img
+                                  src={enrollment.course.thumbnail}
+                                  alt={enrollment.course.title}
+                                  className="w-12 h-12 rounded-lg object-cover"
+                                />
+                              )}
+                              <div>
+                                <p className="font-semibold text-slate-800 text-sm">{enrollment.course?.title || 'N/A'}</p>
+                                {enrollment.course?.instructor && (
+                                  <p className="text-xs text-slate-500">GV: {enrollment.course.instructor.name}</p>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-600">
+                            {formatDate(enrollment.enrolledAt)}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-1 bg-slate-100 rounded-full h-2 min-w-[100px]">
+                                <div
+                                  className={`h-2 rounded-full transition-all ${
+                                    isCompleted ? 'bg-emerald-600' : 'bg-indigo-600'
+                                  }`}
+                                  style={{ width: `${Math.min(progress, 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-semibold text-slate-800 w-12 text-right">
+                                {progress}%
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            {isCompleted ? (
+                              <span className="px-2 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
+                                Đã hoàn thành
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700">
+                                Đang học
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-600">
+                            {enrollment.completedAt ? formatDate(enrollment.completedAt) : '-'}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Trước
+              </button>
+              <span className="px-4 py-2 text-sm text-slate-600">
+                Trang {page} / {totalPages}
+              </span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-4 py-2 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Sau
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
 
 export default AdminEnrollmentsPage;
-
