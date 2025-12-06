@@ -68,10 +68,7 @@ const AdminCoursesPage = () => {
           <h1 className="text-3xl font-bold text-slate-800">Quản lý khóa học</h1>
           <p className="text-slate-500 mt-1">Quản lý tất cả khóa học trong hệ thống</p>
         </div>
-        <button className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-500 transition-colors flex items-center gap-2">
-          <Plus size={18} />
-          Thêm khóa học
-        </button>
+       
       </div>
 
       {/* Filters */}
