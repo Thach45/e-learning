@@ -15,6 +15,20 @@ export type Course = {
   categoryId?: string;
   createdAt: string;
   updatedAt: string;
+  instructor?: {
+    id: string;
+    name: string;
+  };
+  category?: {
+    id: string;
+    name: string;
+  };
+  totalStars?: number;
+  reviewsCount?: number;
+  totalLearners?: number;
+  totalLikes?: number;
+  totalLessons?: number;
+  totalDuration?: number; // in seconds
 };
 
 export type CourseDetail = {
@@ -55,25 +69,25 @@ export const coursesApi = {
   // Get all courses
   getCourses: async (params?: CourseListParams): Promise<CourseListResponse> => {
     const response = await apiClient.get('/courses', { params });
-    return response.data;
+    return response.data.data;
   },
 
   // Get course by ID
   getCourseById: async (id: string): Promise<CourseWithDetail> => {
     const response = await apiClient.get(`/courses/${id}`);
-    return response.data;
+    return response.data.data;
   },
 
   // Create course (Instructor)
   createCourse: async (body: Partial<Course>): Promise<Course> => {
     const response = await apiClient.post('/courses', body);
-    return response.data;
+    return response.data.data;
   },
 
   // Update course (Instructor)
   updateCourse: async (id: string, body: Partial<Course>): Promise<Course> => {
     const response = await apiClient.put(`/courses/${id}`, body);
-    return response.data;
+    return response.data.data;
   },
 
   // Delete course (Instructor/Admin)

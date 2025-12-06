@@ -32,7 +32,7 @@ const FeaturedCoursesSection = ({ courses, formatPrice }: Props) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {courses.map(course => (
-          <div key={course.id} className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full">
+          <a href={`/courses/${course.id}`} key={course.id} className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full">
             <div className="relative aspect-[4/3] overflow-hidden">
               <img
                 src={course.thumbnail}
@@ -80,7 +80,7 @@ const FeaturedCoursesSection = ({ courses, formatPrice }: Props) => {
                 </div>
               </div>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </section>
