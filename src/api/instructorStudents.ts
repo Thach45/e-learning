@@ -50,5 +50,11 @@ export const instructorStudentsApi = {
   removeStudent: async (enrollmentId: string): Promise<void> => {
     await apiClient.delete(`/instructor/enrollments/${enrollmentId}`);
   },
+
+  // Add student to course (create enrollment)
+  addStudentToCourse: async (courseId: string, userId: string): Promise<InstructorStudent> => {
+    const response = await apiClient.post(`/instructor/courses/${courseId}/enrollments`, { userId });
+    return response.data.data;
+  },
 };
 

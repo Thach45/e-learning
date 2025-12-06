@@ -24,15 +24,13 @@ import type { CourseContentSection, LessonItem } from '../api/enrollments';
 
 // --- COMPONENTS ---
 
-const VideoPlayer = ({ videoUrl, storageType }: { videoUrl?: string | null; storageType?: string }) => {
+const VideoPlayer = ({ videoUrl, storageType, thumbnailUrl }: { videoUrl?: string | null; storageType?: string; thumbnailUrl?: string | null }) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Parse YouTube URL to embed format
+  
   const getYouTubeEmbedUrl = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    const videoId = (match && match[2].length === 11) ? match[2] : null;
-    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+   
+    return url ? `https://www.youtube.com/embed/${url}` : null;
   };
 
   const getVideoUrl = () => {
@@ -57,7 +55,7 @@ const VideoPlayer = ({ videoUrl, storageType }: { videoUrl?: string | null; stor
       ) : (
         <>
           <img 
-            src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+            src={thumbnailUrl || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'} 
             alt="Video Thumbnail" 
             className="w-full h-full object-cover opacity-60"
           />
@@ -294,6 +292,7 @@ const LearningPage = () => {
                   <VideoPlayer 
                     videoUrl={lessonData.storageUrl} 
                     storageType={lessonData.storageType}
+                    thumbnailUrl={contentsData.thumbnailUrl}
                   />
                </div>
             </div>

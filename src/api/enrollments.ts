@@ -108,6 +108,7 @@ export type LessonItem = {
 export type GetCourseContentsResponse = {
   courseId: string;
   courseTitle: string;
+  thumbnailUrl?: string | null;
   contents: CourseContentSection[];
 };
 

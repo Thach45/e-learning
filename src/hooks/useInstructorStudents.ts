@@ -21,3 +21,16 @@ export const useRemoveStudent = () => {
   });
 };
 
+// Add student to course mutation
+export const useAddStudentToCourse = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ courseId, userId }: { courseId: string; userId: string }) => 
+      instructorStudentsApi.addStudentToCourse(courseId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['instructor', 'students'] });
+    },
+  });
+};
+
