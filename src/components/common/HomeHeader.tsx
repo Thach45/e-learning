@@ -62,16 +62,19 @@ const HomeHeader = ({ cartCount = 0 }: HeaderProps) => {
           </div>
 
           <div className="hidden md:flex items-center gap-4 flex-shrink-0">
-            <a className="relative p-2 text-slate-400 hover:text-indigo-600 transition-colors"
-            href="/cart"
-            >
-              <ShoppingCart size={20} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-5 px-1 bg-amber-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-                  {cartCount}
-                </span>
-              )}
-            </a>
+            {isAuthenticated && (
+              <Link 
+                to="/cart"
+                className="relative p-2 text-slate-400 hover:text-indigo-600 transition-colors"
+              >
+                <ShoppingCart size={20} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-5 px-1 bg-amber-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
             <button className="relative p-2 text-slate-400 hover:text-indigo-600 transition-colors">
               <Bell size={20} />

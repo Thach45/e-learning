@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { 
   Star, 
   PlayCircle, 
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useCourse } from '../hooks/useCourses';
 import { useCourses } from '../hooks/useCourses';
+import { useAddToCart } from '../hooks/useCart';
 
 // --- HELPER FUNCTIONS ---
 const formatVND = (amount: number) => 
@@ -103,6 +105,23 @@ const CourseDetailPage = () => {
     categoryId: courseData?.category?.id,
   });
 
+  // Hooks must be called at the top level, before any early returns
+  const addToCartMutation = useAddToCart();
+  
+  const handleAddToCart = (courseId: string) => {
+    addToCartMutation.mutate(courseId, {
+      onSuccess: () => {
+        toast.success('Đã thêm khóa học vào giỏ hàng!', {
+          icon: '🛒',
+        });
+      },
+      onError: (error: any) => {
+        const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi thêm vào giỏ hàng';
+        toast.error(errorMessage);
+      },
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -161,7 +180,6 @@ const CourseDetailPage = () => {
   // Xử lý split string thành array để render list
   const objectivesList = course.detail?.objectives ? course.detail.objectives.split('\n').filter(o => o.trim()) : [];
   const requirementsList = course.detail?.requirements ? course.detail.requirements.split('\n').filter(r => r.trim()) : [];
-
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-600">
       
@@ -390,8 +408,12 @@ const CourseDetailPage = () => {
                             Mua ngay
                          </button>
                          <div className="flex gap-3">
-                            <button className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors">
-                                Thêm vào giỏ
+                            <button 
+                              onClick={() => handleAddToCart(course.id)} 
+                              disabled={addToCartMutation.isPending}
+                              className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {addToCartMutation.isPending ? 'Đang thêm...' : 'Thêm vào giỏ'}
                             </button>
                             <button className="px-4 py-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-red-500 transition-colors">
                                 <Heart size={20} />

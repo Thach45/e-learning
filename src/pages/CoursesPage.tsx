@@ -16,6 +16,7 @@ import { useCategories } from '../hooks/useCategories';
 import { useCourses } from '../hooks/useCourses';
 import type { Course as CourseType } from '../api/courses';
 
+
 const formatVND = (amount: number) => 
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
@@ -153,6 +154,7 @@ const CourseListPage = () => {
 
   // Fetch categories
   const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
+  
 
   // Build API params
   const apiParams = useMemo(() => {
@@ -231,7 +233,8 @@ const CourseListPage = () => {
     e.preventDefault();
     setPage(1);
   };
-
+  
+  
   const totalPages = coursesData ? Math.ceil(coursesData.total / coursesData.limit) : 1;
 
   return (

@@ -24,7 +24,7 @@ const AdminLayout = () => {
     { icon: Users, label: 'Người dùng', path: '/admin/users' },
     { icon: BookOpen, label: 'Khóa học', path: '/admin/courses' },
     { icon: FolderTree, label: 'Danh mục', path: '/admin/categories' },
-    // { icon: ShoppingCart, label: 'Đơn hàng', path: '/admin/orders' },
+    { icon: ShoppingCart, label: 'Đơn hàng', path: '/admin/orders' },
     { icon: GraduationCap, label: 'Ghi danh', path: '/admin/enrollments' },
     { icon: MessageSquare, label: 'Đánh giá', path: '/admin/reviews' },
     // { icon: Shield, label: 'Phân quyền', path: '/admin/permissions' },

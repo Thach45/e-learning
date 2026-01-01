@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 import InstructorLayout from './layouts/InstructorLayout';
@@ -10,6 +11,7 @@ import CourseDetailPage from './pages/CourseDetailPage';
 import MyCoursesPage from './pages/MyCoursesPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
+import PaymentPage from './pages/PaymentPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
@@ -85,6 +87,14 @@ const AppContent = () => {
             }
           />
           <Route
+            path="payment/:orderId"
+            element={
+              <ProtectedRoute>
+                <PaymentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="learn/course/:courseId"
             element={
               <ProtectedRoute>
@@ -121,8 +131,8 @@ const AppContent = () => {
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="courses" element={<AdminCoursesPage />} />
-          <Route path="categories" element={<AdminCategoriesPage />} />
           <Route path="orders" element={<AdminOrdersPage />} />
+          <Route path="categories" element={<AdminCategoriesPage />} />
           <Route path="enrollments" element={<AdminEnrollmentsPage />} />
           <Route path="reviews" element={<AdminReviewsPage />} />
           <Route path="permissions" element={<AdminPermissionsPage />} />
@@ -154,6 +164,31 @@ const App: React.FC = () => {
   return (
     <Router>
       <AppContent />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#fff',
+            color: '#334155',
+            borderRadius: '12px',
+            padding: '16px',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </Router>
   );
 };

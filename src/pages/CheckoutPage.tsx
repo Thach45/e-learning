@@ -1,23 +1,10 @@
 import { useMemo, useState } from 'react';
-import { CreditCard, ShieldCheck, Tag, User, Mail, Phone, MapPin, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CreditCard, ShieldCheck, Tag, Loader2 } from 'lucide-react';
 import Breadcrumbs from '../components/common/Breadcrumbs';
-
-const mockItems = [
-  {
-    id: 'c1',
-    title: 'Full Stack Web Development 2025',
-    instructor: 'Nguyễn Văn A',
-    price: 299000,
-    thumbnail: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    id: 'c2',
-    title: 'UI/UX Design Masterclass',
-    instructor: 'Trần Thị B',
-    price: 350000,
-    thumbnail: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?auto=format&fit=crop&w=600&q=80',
-  },
-];
+import { useGetCart } from '../hooks/useCart';
+import { useCreateOrder } from '../hooks/useOrders';
+import toast from 'react-hot-toast';
 
 const formatVND = (amount: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -29,11 +16,16 @@ const validVoucher = {
 };
 
 const CheckoutPage = () => {
+  const navigate = useNavigate();
   const [voucher, setVoucher] = useState('');
   const [appliedVoucher, setAppliedVoucher] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const subtotal = useMemo(() => mockItems.reduce((sum, i) => sum + i.price, 0), []);
+  const { data: cartData, isLoading: cartLoading } = useGetCart();
+  const createOrderMutation = useCreateOrder();
+
+  const cartItems = cartData?.cart?.cartItems || [];
+  const subtotal = cartData?.subtotal || 0;
 
   const voucherDiscount = useMemo(() => {
     if (appliedVoucher === validVoucher.code) {
@@ -61,6 +53,52 @@ const CheckoutPage = () => {
     setError(null);
   };
 
+  const handleCreateOrder = () => {
+    if (cartItems.length === 0) {
+      toast.error('Giỏ hàng trống');
+      navigate('/cart');
+      return;
+    }
+
+    createOrderMutation.mutate({}, {
+      onSuccess: (order) => {
+        toast.success('Đã tạo đơn hàng thành công!');
+        navigate(`/payment/${order.id}`);
+      },
+      onError: (error: any) => {
+        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi tạo đơn hàng');
+      },
+    });
+  };
+
+  if (cartLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="inline-block animate-spin h-12 w-12 text-indigo-600" />
+          <p className="mt-4 text-slate-500">Đang tải giỏ hàng...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!cartData || cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-slate-500 mb-4">Giỏ hàng trống</p>
+          <button
+            onClick={() => navigate('/cart')}
+            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors"
+          >
+            Quay lại giỏ hàng
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Giao diện checkout
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-4">
@@ -69,7 +107,7 @@ const CheckoutPage = () => {
 
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 space-y-6">
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
+          {/* <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-slate-800">Thông tin thanh toán</h2>
@@ -108,7 +146,7 @@ const CheckoutPage = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
             <div className="flex items-center justify-between">
@@ -145,16 +183,27 @@ const CheckoutPage = () => {
           <h2 className="text-lg font-bold text-slate-800">Đơn hàng</h2>
 
           <div className="space-y-3 max-h-64 overflow-auto">
-            {mockItems.map((item) => (
-              <div key={item.id} className="flex gap-3">
-                <img src={item.thumbnail} alt={item.title} className="w-16 h-14 object-cover rounded-lg border border-slate-100" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-slate-800 line-clamp-2">{item.title}</p>
-                  <p className="text-xs text-slate-500">{item.instructor}</p>
-                  <p className="text-sm font-bold text-indigo-600 mt-1">{formatVND(item.price)}</p>
+            {cartItems.map((item) => {
+              const course = item.course;
+              if (!course) return null;
+              const finalPrice = course.salePrice || course.price;
+              return (
+                <div key={item.id} className="flex gap-3">
+                  {course.thumbnail && (
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="w-16 h-14 object-cover rounded-lg border border-slate-100"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-slate-800 line-clamp-2">{course.title}</p>
+                    <p className="text-xs text-slate-500">{course.instructor?.name || 'N/A'}</p>
+                    <p className="text-sm font-bold text-indigo-600 mt-1">{formatVND(finalPrice)}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="flex items-center gap-2 bg-slate-50 border border-dashed border-slate-200 rounded-xl p-3">
@@ -189,9 +238,22 @@ const CheckoutPage = () => {
             </div>
           </div>
 
-          <button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors">
-            <CreditCard size={18} />
-            Xác nhận & Thanh toán
+          <button
+            onClick={handleCreateOrder}
+            disabled={createOrderMutation.isPending}
+            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {createOrderMutation.isPending ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                Đang xử lý...
+              </>
+            ) : (
+              <>
+                <CreditCard size={18} />
+                Xác nhận & Thanh toán
+              </>
+            )}
           </button>
 
           <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -205,4 +267,3 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
-
