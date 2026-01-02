@@ -124,6 +124,7 @@ export type GetCourseDetailResponse = {
   rating: number;
   reviewsCount: number;
   studentsCount: number;
+  totalWishlist?: number;
 };
 
 // Courses API functions

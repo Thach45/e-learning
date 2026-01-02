@@ -95,13 +95,13 @@ const WishlistCard = ({ item, onRemove }: { item: WishlistItem; onRemove: () => 
                 e.preventDefault();
                 onRemove();
               }}
-              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              className="p-1.5  text-red-500 hover:bg-red-50 rounded-lg transition-colors"
             >
               <Heart size={16} fill="currentColor" />
             </button>
             <Link 
               to={`/courses/${course.id}`}
-              className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors"
+              className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-lg hover:bg-indigo-700 transition-colors"
             >
               Mua ngay
             </Link>
@@ -157,32 +157,12 @@ const MyCoursesPage = () => {
                   <h1 className="text-2xl font-bold text-slate-900">Khóa học của tôi</h1>
                   
                   {/* Filter Mobile/Desktop */}
-                  <button className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
+                  {/* <button className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">
                      <Filter size={16} /> <span className="hidden sm:inline">Sắp xếp</span>
-                  </button>
+                  </button> */}
                </div>
 
-               {/* Tabs - sẽ implement filter sau dựa trên LearningProgress */}
-               {/* <div className="flex gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
-                  {[
-                     { id: 'ALL', label: 'Tất cả' },
-                     { id: 'IN_PROGRESS', label: 'Đang học' },
-                     { id: 'COMPLETED', label: 'Hoàn thành' },
-                  ].map(tab => (
-                     <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                           activeTab === tab.id 
-                           ? 'bg-slate-900 text-white shadow-sm' 
-                           : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-                        }`}
-                     >
-                        {tab.label}
-                     </button>
-                  ))}
-               </div> */}
-
+               
                {/* Grid */}
                {enrollmentsLoading ? (
                   <div className="text-center py-16">

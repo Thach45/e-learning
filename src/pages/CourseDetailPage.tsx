@@ -26,6 +26,7 @@ import { useCourses } from '../hooks/useCourses';
 import { useAddToCart } from '../hooks/useCart';
 import { useReviewsByCourse, useMyReview, useCreateReview } from '../hooks/useReviews';
 import type { CreateReviewBody } from '../api/reviews';
+import { useAddToWishlist, useCheckWishlist, useRemoveFromWishlist } from '../hooks/useWishlist';
 
 // --- HELPER FUNCTIONS ---
 const formatVND = (amount: number) => 
@@ -116,11 +117,16 @@ const CourseDetailPage = () => {
     limit: 5 
   });
   const { data: myReview, refetch: refetchMyReview } = useMyReview(courseId);
+  const { data: wishlistCheck } = useCheckWishlist(courseId);
+  const isInWishlist = wishlistCheck?.isInWishlist || false;
+  
   const createReviewMutation = useCreateReview();
 
   // Hooks must be called at the top level, before any early returns
   const addToCartMutation = useAddToCart();
-
+  
+  const addToWishlistMutation = useAddToWishlist();
+  const removeFromWishlistMutation = useRemoveFromWishlist();
   // Review form state
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
@@ -138,6 +144,24 @@ const CourseDetailPage = () => {
         toast.error(errorMessage);
       },
     });
+  };
+  const handleToggleWishlist = () => {
+    if (isInWishlist) {
+      removeFromWishlistMutation.mutate(courseId, {
+        onSuccess: () => {
+          toast.success('Đã xóa khỏi yêu thích');
+        },
+      });
+    } else {
+      addToWishlistMutation.mutate(courseId, {
+        onSuccess: () => {
+          toast.success('Đã thêm vào yêu thích! ❤️');
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
+        },
+      });
+    }
   };
 
   const handleSubmitReview = () => {
@@ -640,8 +664,32 @@ const CourseDetailPage = () => {
                             >
                               {addToCartMutation.isPending ? 'Đang thêm...' : 'Thêm vào giỏ'}
                             </button>
-                            <button className="px-4 py-3.5 border border-slate-200 rounded-xl hover:bg-slate-50 hover:text-red-500 transition-colors">
-                                <Heart size={20} />
+                            <button 
+                              onClick={handleToggleWishlist}
+                              disabled={addToWishlistMutation.isPending || removeFromWishlistMutation.isPending}
+                              className={`relative px-4 py-3.5 border rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
+                                isInWishlist 
+                                  ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-400 active:scale-95 shadow-sm shadow-red-100' 
+                                  : 'border-slate-200 bg-white text-slate-400 hover:bg-slate-50 hover:border-red-200 hover:text-red-500 active:scale-95'
+                              }`}
+                            >
+                              {(addToWishlistMutation.isPending || removeFromWishlistMutation.isPending) ? (
+                                <Loader2 size={20} className="animate-spin text-current" />
+                              ) : (
+                                <Heart 
+                                  size={20} 
+                                  className={`transition-all ${isInWishlist ? 'fill-current scale-110' : ''}`} 
+                                />
+                              )}
+                              {course.totalWishlist && course.totalWishlist > 0 && (
+                                <span className={`absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold rounded-full ${
+                                  isInWishlist 
+                                    ? 'bg-red-600 text-white' 
+                                    : 'bg-indigo-600 text-white'
+                                }`}>
+                                  {course.totalWishlist > 99 ? '9999+' : course.totalWishlist}
+                                </span>
+                              )}
                             </button>
                          </div>
                       </div>
