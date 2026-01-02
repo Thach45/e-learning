@@ -8,5 +8,6 @@ export * from './courseDetail';
 export * from './instructorStudents';
 export * from './upload';
 export * from './courseContent';
+export * from './reviews';
 export { default as apiClient } from './axios';
 

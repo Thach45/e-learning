@@ -17,12 +17,15 @@ import {
   ChevronDown, 
   ChevronRight,
   Heart,
-  ThumbsUp,
-  MoreHorizontal
+  Edit3,
+  X,
+  Loader2
 } from 'lucide-react';
 import { useCourse } from '../hooks/useCourses';
 import { useCourses } from '../hooks/useCourses';
 import { useAddToCart } from '../hooks/useCart';
+import { useReviewsByCourse, useMyReview, useCreateReview } from '../hooks/useReviews';
+import type { CreateReviewBody } from '../api/reviews';
 
 // --- HELPER FUNCTIONS ---
 const formatVND = (amount: number) => 
@@ -95,7 +98,8 @@ const RelatedCourseCard = ({ course }: { course: { id: string; title: string; in
 
 const CourseDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: courseData, isLoading, error } = useCourse(id || '');
+  const courseId = id || '';
+  const { data: courseData, isLoading, error } = useCourse(courseId);
   
   // Fetch related courses (same category or featured courses)
   const { data: relatedCoursesData } = useCourses({
@@ -105,8 +109,22 @@ const CourseDetailPage = () => {
     categoryId: courseData?.category?.id,
   });
 
+  // Reviews
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const { data: reviewsData, isLoading: isLoadingReviews } = useReviewsByCourse(courseId, { 
+    page: reviewsPage, 
+    limit: 5 
+  });
+  const { data: myReview, refetch: refetchMyReview } = useMyReview(courseId);
+  const createReviewMutation = useCreateReview();
+
   // Hooks must be called at the top level, before any early returns
   const addToCartMutation = useAddToCart();
+
+  // Review form state
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
   
   const handleAddToCart = (courseId: string) => {
     addToCartMutation.mutate(courseId, {
@@ -121,6 +139,63 @@ const CourseDetailPage = () => {
       },
     });
   };
+
+  const handleSubmitReview = () => {
+    if (!reviewRating || reviewRating < 1 || reviewRating > 5) {
+      toast.error('Vui lòng chọn số sao đánh giá');
+      return;
+    }
+
+    const body: CreateReviewBody = {
+      rating: reviewRating,
+      comment: reviewComment.trim() || undefined,
+    };
+
+    createReviewMutation.mutate(
+      { courseId, body },
+      {
+        onSuccess: () => {
+          toast.success('Đánh giá của bạn đã được gửi!', {
+            icon: '⭐',
+          });
+          setShowReviewForm(false);
+          setReviewComment('');
+          setReviewRating(5);
+          refetchMyReview();
+        },
+        onError: (error: any) => {
+          const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi gửi đánh giá';
+          toast.error(errorMessage);
+        },
+      }
+    );
+  };
+
+  // Calculate rating distribution from reviews
+  const calculateRatingDistribution = () => {
+    if (!reviewsData?.data) return { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    
+    const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviewsData.data.forEach(review => {
+      if (review.rating >= 1 && review.rating <= 5) {
+        distribution[review.rating as keyof typeof distribution]++;
+      }
+    });
+    
+    const total = reviewsData.total || reviewsData.data.length;
+    return {
+      distribution,
+      percentages: {
+        5: total > 0 ? Math.round((distribution[5] / total) * 100) : 0,
+        4: total > 0 ? Math.round((distribution[4] / total) * 100) : 0,
+        3: total > 0 ? Math.round((distribution[3] / total) * 100) : 0,
+        2: total > 0 ? Math.round((distribution[2] / total) * 100) : 0,
+        1: total > 0 ? Math.round((distribution[1] / total) * 100) : 0,
+      },
+    };
+  };
+
+  const ratingStats = calculateRatingDistribution();
 
   if (isLoading) {
     return (
@@ -303,76 +378,226 @@ const CourseDetailPage = () => {
                 </div>
              </section>
 
-             {/* REVIEWS SECTION (NEW) */}
+             {/* REVIEWS SECTION */}
              <section>
-                <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                    Đánh giá từ học viên <span className="text-sm font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{course.reviewsCount}</span>
-                </h2>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                      Đánh giá từ học viên <span className="text-sm font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{reviewsData?.total || course.reviewsCount || 0}</span>
+                  </h2>
+                  {!myReview && !showReviewForm && (
+                    <button
+                      onClick={() => setShowReviewForm(true)}
+                      className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                    >
+                      <Edit3 size={14} /> Viết đánh giá
+                    </button>
+                  )}
+                </div>
+
+                {/* My Review */}
+                {myReview && !showReviewForm && (
+                  <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                          <Star size={18} className="text-indigo-600 fill-indigo-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm text-slate-900">Đánh giá của bạn</h4>
+                          <div className="flex items-center gap-2">
+                            <div className="flex text-amber-400">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} size={12} fill={i < myReview.rating ? "currentColor" : "none"} className={i >= myReview.rating ? "text-slate-200" : ""} />
+                              ))}
+                            </div>
+                            <span className="text-xs text-slate-400">• {new Date(myReview.createdAt).toLocaleDateString('vi-VN')}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowReviewForm(true);
+                          setReviewRating(myReview.rating);
+                          setReviewComment(myReview.comment || '');
+                        }}
+                        className="text-xs text-indigo-600 hover:text-indigo-700"
+                      >
+                        <Edit3 size={14} />
+                      </button>
+                    </div>
+                    {myReview.comment && (
+                      <p className="text-sm text-slate-700 leading-relaxed">{myReview.comment}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Review Form */}
+                {showReviewForm && (
+                  <div className="bg-white border border-slate-200 rounded-xl p-6 mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold text-slate-900">
+                        {myReview ? 'Chỉnh sửa đánh giá' : 'Viết đánh giá của bạn'}
+                      </h3>
+                      <button
+                        onClick={() => {
+                          setShowReviewForm(false);
+                          setReviewComment('');
+                          setReviewRating(5);
+                        }}
+                        className="text-slate-400 hover:text-slate-600"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+                    <div className="mb-4">
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Đánh giá</label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setReviewRating(star)}
+                            className="focus:outline-none"
+                          >
+                            <Star
+                              size={32}
+                              className={star <= reviewRating ? 'text-amber-400 fill-amber-400' : 'text-slate-300'}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Nhận xét (tùy chọn)</label>
+                      <textarea
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        placeholder="Chia sẻ trải nghiệm của bạn về khóa học này..."
+                        className="w-full p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none"
+                        rows={4}
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleSubmitReview}
+                        disabled={createReviewMutation.isPending}
+                        className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {createReviewMutation.isPending ? (
+                          <>
+                            <Loader2 size={16} className="animate-spin" />
+                            Đang gửi...
+                          </>
+                        ) : (
+                          'Gửi đánh giá'
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowReviewForm(false);
+                          setReviewComment('');
+                          setReviewRating(5);
+                        }}
+                        className="px-4 py-2 border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+                      >
+                        Hủy
+                      </button>
+                    </div>
+                  </div>
+                )}
                 
                 {/* Rating Summary */}
-                <div className="flex items-center gap-8 mb-8 bg-white p-6 rounded-2xl border border-slate-200">
+                {reviewsData && reviewsData.total > 0 && (
+                  <div className="flex items-center gap-8 mb-8 bg-white p-6 rounded-2xl border border-slate-200">
                     <div className="text-center">
-                        <div className="text-5xl font-bold text-slate-900 mb-1">{course.rating}</div>
-                        <div className="flex justify-center text-amber-400 mb-1">
-                            <Star size={16} fill="currentColor"/>
-                            <Star size={16} fill="currentColor"/>
-                            <Star size={16} fill="currentColor"/>
-                            <Star size={16} fill="currentColor"/>
-                            <Star size={16} fill="currentColor"/>
-                        </div>
-                        <p className="text-xs text-slate-500">Xếp hạng khóa học</p>
+                      <div className="text-5xl font-bold text-slate-900 mb-1">{course.rating}</div>
+                      <div className="flex justify-center text-amber-400 mb-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} size={16} fill={i < Math.round(course.rating) ? "currentColor" : "none"} className={i >= Math.round(course.rating) ? "text-slate-200" : ""} />
+                        ))}
+                      </div>
+                      <p className="text-xs text-slate-500">Xếp hạng khóa học</p>
                     </div>
                     
                     <div className="flex-1 space-y-2">
-                        {[5, 4, 3, 2, 1].map(star => (
-                            <div key={star} className="flex items-center gap-3 text-xs text-slate-500">
-                                <span className="w-2">{star}</span>
-                                <Star size={10} className="text-slate-300" />
-                                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                                    <div 
-                                        className="h-full bg-amber-400 rounded-full" 
-                                        style={{ width: star === 5 ? '70%' : star === 4 ? '20%' : '5%' }}
-                                    ></div>
-                                </div>
-                                <span className="w-8 text-right">{star === 5 ? '70%' : star === 4 ? '20%' : '5%'}</span>
+                      {[5, 4, 3, 2, 1].map(star => {
+                        const percentage = ratingStats.percentages?.[star as keyof typeof ratingStats.percentages] || 0;
+                        return (
+                          <div key={star} className="flex items-center gap-3 text-xs text-slate-500">
+                            <span className="w-2">{star}</span>
+                            <Star size={10} className="text-slate-300" />
+                            <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-amber-400 rounded-full transition-all" 
+                                style={{ width: `${percentage}%` }}
+                              ></div>
                             </div>
-                        ))}
+                            <span className="w-8 text-right">{percentage}%</span>
+                          </div>
+                        );
+                      })}
                     </div>
-                </div>
+                  </div>
+                )}
 
                 {/* Review List */}
-                <div className="space-y-6">
-                    {course.reviews.map(review => (
+                {isLoadingReviews ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="animate-spin h-6 w-6 text-indigo-600" />
+                  </div>
+                ) : reviewsData && reviewsData.data.length > 0 ? (
+                  <>
+                    <div className="space-y-6">
+                      {reviewsData.data.map(review => (
                         <div key={review.id} className="border-b border-slate-100 pb-6 last:border-none">
-                            <div className="flex justify-between items-start mb-3">
-                                <div className="flex items-center gap-3">
-                                    <img src={review.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(review.user.name)}&background=random`} alt={review.user.name} className="w-10 h-10 rounded-full object-cover bg-slate-200" />
-                                    <div>
-                                        <h4 className="font-bold text-sm text-slate-900">{review.user.name}</h4>
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex text-amber-400">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <Star key={i} size={12} fill={i < review.rating ? "currentColor" : "none"} className={i >= review.rating ? "text-slate-200" : ""} />
-                                                ))}
-                                            </div>
-                                            <span className="text-xs text-slate-400">• {review.createdAt}</span>
-                                        </div>
-                                    </div>
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex items-center gap-3">
+                              <img 
+                                src={review.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(review.user?.name || 'User')}&background=random`} 
+                                alt={review.user?.name || 'User'} 
+                                className="w-10 h-10 rounded-full object-cover bg-slate-200" 
+                              />
+                              <div>
+                                <h4 className="font-bold text-sm text-slate-900">{review.user?.name || 'Người dùng'}</h4>
+                                <div className="flex items-center gap-2">
+                                  <div className="flex text-amber-400">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star key={i} size={12} fill={i < review.rating ? "currentColor" : "none"} className={i >= review.rating ? "text-slate-200" : ""} />
+                                    ))}
+                                  </div>
+                                  <span className="text-xs text-slate-400">• {new Date(review.createdAt).toLocaleDateString('vi-VN')}</span>
                                 </div>
-                                <button className="text-slate-400 hover:text-slate-600"><MoreHorizontal size={16}/></button>
+                              </div>
                             </div>
+                          </div>
+                          {review.comment && (
                             <p className="text-sm text-slate-700 leading-relaxed mb-3">{review.comment}</p>
-                            <div className="flex items-center gap-4">
-                                <button className="flex items-center gap-1.5 text-xs text-slate-500 font-medium hover:text-indigo-600 transition-colors">
-                                    <ThumbsUp size={14} /> Hữu ích ({review.helpful})
-                                </button>
-                            </div>
+                          )}
                         </div>
-                    ))}
-                </div>
-                <button className="w-full py-2.5 mt-4 border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors">
-                    Xem thêm đánh giá
-                </button>
+                      ))}
+                    </div>
+                    {reviewsData.totalPages > reviewsPage && (
+                      <button
+                        onClick={() => setReviewsPage(prev => prev + 1)}
+                        className="w-full py-2.5 mt-4 border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors"
+                      >
+                        Xem thêm đánh giá ({reviewsData.total - reviewsData.data.length} còn lại)
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center py-8 text-slate-500">
+                    <p>Chưa có đánh giá nào cho khóa học này.</p>
+                    {!myReview && !showReviewForm && (
+                      <button
+                        onClick={() => setShowReviewForm(true)}
+                        className="mt-4 text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+                      >
+                        Hãy là người đầu tiên đánh giá!
+                      </button>
+                    )}
+                  </div>
+                )}
              </section>
           </div>
 
