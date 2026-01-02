@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { 
   X, 
   ChevronLeft, 
@@ -17,10 +18,16 @@ import {
   Play,
   Pause,
   ChevronDown,
-  Lock
+  Lock,
+  Edit3,
+  Trash2,
+  Send,
+  Loader2
 } from 'lucide-react';
 import { useCourseContents, useLessonDetail } from '../hooks/useEnrollments';
 import type { CourseContentSection, LessonItem } from '../api/enrollments';
+import { useCommentsByLesson, useCreateComment, useUpdateComment, useDeleteComment } from '../hooks/useComments';
+import type { Comment, CreateCommentBody } from '../api/comments';
 
 // --- COMPONENTS ---
 
@@ -95,6 +102,169 @@ const VideoPlayer = ({ videoUrl, storageType, thumbnailUrl }: { videoUrl?: strin
           </div>
         </>
       )}
+    </div>
+  );
+};
+
+// Comment Item Component
+const CommentItem = ({
+  comment,
+  lessonId,
+  onReply,
+  onEdit,
+  onDelete,
+  editingComment,
+  editContent,
+  onEditChange,
+  onSaveEdit,
+  onCancelEdit,
+  formatDate,
+}: {
+  comment: Comment;
+  lessonId: string;
+  onReply: (commentId: string) => void;
+  onEdit: (commentId: string, content: string) => void;
+  onDelete: (commentId: string) => void;
+  editingComment: string | null;
+  editContent: string;
+  onEditChange: (content: string) => void;
+  onSaveEdit: (commentId: string) => void;
+  onCancelEdit: () => void;
+  formatDate: (date: string) => string;
+}) => {
+  const isEditing = editingComment === comment.id;
+  const replies = comment.replies || [];
+
+  return (
+    <div className="border-b border-slate-100 pb-4 last:border-none bg-white">
+      <div className="flex gap-3">
+        <img
+          src={comment.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user?.name || 'User')}&background=random`}
+          alt={comment.user?.name || 'User'}
+          className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+        />
+        <div className="flex-1">
+          <div className="flex items-start justify-between mb-1">
+            <div>
+              <h4 className="font-semibold text-sm text-slate-900">{comment.user?.name || 'Người dùng'}</h4>
+              <span className="text-xs text-slate-400">{formatDate(comment.createdAt)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onReply(comment.id)}
+                className="text-xs text-slate-500 hover:text-indigo-600 font-medium transition-colors"
+              >
+                Trả lời
+              </button>
+              <button
+                onClick={() => onEdit(comment.id, comment.content)}
+                className="text-xs text-slate-500 hover:text-indigo-600 font-medium transition-colors"
+              >
+                <Edit3 size={14} />
+              </button>
+              <button
+                onClick={() => onDelete(comment.id)}
+                className="text-xs text-slate-500 hover:text-rose-600 font-medium transition-colors"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </div>
+
+          {isEditing ? (
+            <div className="space-y-2">
+              <textarea
+                value={editContent}
+                onChange={(e) => onEditChange(e.target.value)}
+                className="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"
+                rows={3}
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onSaveEdit(comment.id)}
+                  className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700"
+                >
+                  Lưu
+                </button>
+                <button
+                  onClick={onCancelEdit}
+                  className="px-3 py-1.5 border border-slate-300 text-slate-600 text-xs font-semibold rounded-lg hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-700 leading-relaxed mb-2">{comment.content}</p>
+          )}
+
+          {/* Replies */}
+          {replies.length > 0 && (
+            <div className="mt-4 ml-4 pl-4 border-l-2 border-slate-200 space-y-4">
+              {replies.map((reply) => (
+                <div key={reply.id} className="flex gap-3">
+                  <img
+                    src={reply.user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user?.name || 'User')}&background=random`}
+                    alt={reply.user?.name || 'User'}
+                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-1">
+                      <div>
+                        <h5 className="font-semibold text-xs text-slate-900">{reply.user?.name || 'Người dùng'}</h5>
+                        <span className="text-xs text-slate-400">{formatDate(reply.createdAt)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {editingComment === reply.id ? (
+                          <>
+                            <button
+                              onClick={() => onSaveEdit(reply.id)}
+                              className="text-xs text-indigo-600 font-medium"
+                            >
+                              Lưu
+                            </button>
+                            <button
+                              onClick={onCancelEdit}
+                              className="text-xs text-slate-500 font-medium"
+                            >
+                              Hủy
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => onEdit(reply.id, reply.content)}
+                              className="text-xs text-slate-500 hover:text-indigo-600"
+                            >
+                              <Edit3 size={12} />
+                            </button>
+                            <button
+                              onClick={() => onDelete(reply.id)}
+                              className="text-xs text-slate-500 hover:text-rose-600"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    {editingComment === reply.id ? (
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => onEditChange(e.target.value)}
+                        className="w-full p-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm resize-none"
+                        rows={2}
+                      />
+                    ) : (
+                      <p className="text-xs text-slate-700 leading-relaxed">{reply.content}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -218,8 +388,138 @@ const LearningPage = () => {
     currentLessonId || ''
   );
 
+  // Comments
+  const [commentsPage, setCommentsPage] = useState(1);
+  const [allComments, setAllComments] = useState<any[]>([]);
+  const { data: commentsData, isLoading: isLoadingComments } = useCommentsByLesson(
+    currentLessonId || '', 
+    { page: commentsPage, limit: 10, parentId: null } // Only top-level comments
+  );
+
+  // Accumulate comments when page changes
+  useEffect(() => {
+    if (commentsData?.data) {
+      if (commentsPage === 1) {
+        // Reset on first page
+        setAllComments(commentsData.data.filter((c: any) => !c.parentId));
+      } else {
+        // Append new comments
+        setAllComments(prev => {
+          const newComments = commentsData.data.filter((c: any) => !c.parentId);
+          const existingIds = new Set(prev.map(c => c.id));
+          return [...prev, ...newComments.filter(c => !existingIds.has(c.id))];
+        });
+      }
+    }
+  }, [commentsData, commentsPage]);
+
+  // Reset comments when lesson changes
+  useEffect(() => {
+    setCommentsPage(1);
+    setAllComments([]);
+  }, [currentLessonId]);
+  const createCommentMutation = useCreateComment();
+  const updateCommentMutation = useUpdateComment();
+  const deleteCommentMutation = useDeleteComment();
+
+  // Comment form state
+  const [commentContent, setCommentContent] = useState('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [editingComment, setEditingComment] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+
   const handleLessonClick = (lessonId: string) => {
     navigate(`/learn/course/${courseId}/lesson/${lessonId}`);
+    setCommentsPage(1); // Reset comments page when switching lessons
+    setAllComments([]); // Reset accumulated comments
+    setReplyingTo(null);
+    setEditingComment(null);
+  };
+
+  const handleSubmitComment = () => {
+    if (!commentContent.trim()) {
+      toast.error('Vui lòng nhập nội dung comment');
+      return;
+    }
+
+    if (!currentLessonId) return;
+
+    const body: CreateCommentBody = {
+      content: commentContent.trim(),
+      parentId: replyingTo || null,
+    };
+
+    createCommentMutation.mutate(
+      { lessonId: currentLessonId, body },
+      {
+        onSuccess: () => {
+          toast.success(replyingTo ? 'Đã gửi phản hồi!' : 'Đã gửi comment!');
+          setCommentContent('');
+          setReplyingTo(null);
+          // Reset to page 1 to show new comment
+          setCommentsPage(1);
+          setAllComments([]);
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
+        },
+      }
+    );
+  };
+
+  const handleUpdateComment = (commentId: string) => {
+    if (!editContent.trim()) {
+      toast.error('Vui lòng nhập nội dung comment');
+      return;
+    }
+
+    if (!currentLessonId) return;
+
+    updateCommentMutation.mutate(
+      { lessonId: currentLessonId, commentId, body: { content: editContent.trim() } },
+      {
+        onSuccess: () => {
+          toast.success('Đã cập nhật comment!');
+          setEditingComment(null);
+          setEditContent('');
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
+        },
+      }
+    );
+  };
+
+  const handleDeleteComment = (commentId: string) => {
+    if (!currentLessonId) return;
+    if (!confirm('Bạn có chắc muốn xóa comment này?')) return;
+
+    deleteCommentMutation.mutate(
+      { lessonId: currentLessonId, commentId },
+      {
+        onSuccess: () => {
+          toast.success('Đã xóa comment!');
+        },
+        onError: (error: any) => {
+          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
+        },
+      }
+    );
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Vừa xong';
+    if (diffMins < 60) return `${diffMins} phút trước`;
+    if (diffHours < 24) return `${diffHours} giờ trước`;
+    if (diffDays < 7) return `${diffDays} ngày trước`;
+    return date.toLocaleDateString('vi-VN');
   };
 
   if (!courseId) {
@@ -303,7 +603,7 @@ const LearningPage = () => {
                <div className="flex items-center border-b border-slate-200 px-6 sticky top-0 bg-white z-10">
                   {[
                      { id: 'OVERVIEW', label: 'Tổng quan', icon: FileText },
-                     { id: 'QNA', label: 'Hỏi đáp (12)', icon: MessageSquare },
+                     { id: 'QNA', label: `Hỏi đáp (${commentsData?.total || 0})`, icon: MessageSquare },
                      { id: 'NOTES', label: 'Ghi chú', icon: FileText },
                   ].map(tab => (
                      <button
@@ -378,25 +678,150 @@ const LearningPage = () => {
                         </div>
                      </div>
                   )}
-                  {/* comming soon */}
+                  {/* Comments Section */}
                   {activeTab === 'QNA' && (
                      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                        <div className="flex gap-4 mb-6">
-                           <img src="https://i.pravatar.cc/150?u=user" alt="User" className="w-10 h-10 rounded-full" />
-                           <div className="flex-1">
-                              <textarea 
-                                 placeholder="Bạn có thắc mắc gì về bài học này?" 
-                                 className="w-full p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[80px] text-sm"
-                              ></textarea>
-                              <div className="flex justify-end mt-2">
-                                 <button className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700">Gửi câu hỏi</button>
+                        {/* Comment Form */}
+                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                           <div className="flex gap-3">
+                              <div className="flex-1">
+                                 {replyingTo && (
+                                    <div className="mb-2 flex items-center justify-between bg-indigo-50 border border-indigo-200 rounded-lg p-2">
+                                       <span className="text-xs text-indigo-700 font-medium">
+                                          Đang trả lời comment...
+                                       </span>
+                                       <button
+                                          onClick={() => setReplyingTo(null)}
+                                          className="text-indigo-600 hover:text-indigo-800"
+                                       >
+                                          <X size={14} />
+                                       </button>
+                                    </div>
+                                 )}
+                                 <textarea 
+                                    placeholder={replyingTo ? "Viết phản hồi..." : "Bạn có thắc mắc gì về bài học này?"} 
+                                    value={commentContent}
+                                    onChange={(e) => setCommentContent(e.target.value)}
+                                    className="w-full p-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[80px] text-sm resize-none"
+                                 />
+                                 <div className="flex justify-end mt-2 gap-2">
+                                    {replyingTo && (
+                                       <button
+                                          onClick={() => setReplyingTo(null)}
+                                          className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
+                                       >
+                                          Hủy
+                                       </button>
+                                    )}
+                                    <button
+                                       onClick={handleSubmitComment}
+                                       disabled={createCommentMutation.isPending || !commentContent.trim()}
+                                       className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    >
+                                       {createCommentMutation.isPending ? (
+                                          <>
+                                             <Loader2 size={14} className="animate-spin" />
+                                             Đang gửi...
+                                          </>
+                                       ) : (
+                                          <>
+                                             <Send size={14} />
+                                             {replyingTo ? 'Gửi phản hồi' : 'Gửi comment'}
+                                          </>
+                                       )}
+                                    </button>
+                                 </div>
                               </div>
                            </div>
                         </div>
 
-                        <div className="space-y-6">
-                           <p className="text-sm text-slate-500 text-center py-8">Tính năng hỏi đáp sẽ được implement sau</p>
-                        </div>
+                        {/* Comments List */}
+                        {isLoadingComments && commentsPage === 1 ? (
+                           <div className="flex items-center justify-center py-12 bg-white rounded-xl">
+                              <Loader2 className="animate-spin h-6 w-6 text-indigo-600" />
+                           </div>
+                        ) : allComments.length > 0 || (commentsData && commentsData.data.length > 0) ? (
+                           <div className="bg-white rounded-xl border border-slate-200 p-6">
+                              <div className="space-y-6">
+                                 {allComments.length > 0 ? allComments.map((comment) => (
+                                    <CommentItem
+                                       key={comment.id}
+                                       comment={comment}
+                                       lessonId={currentLessonId || ''}
+                                       onReply={(commentId) => {
+                                          setReplyingTo(commentId);
+                                          setEditingComment(null);
+                                       }}
+                                       onEdit={(commentId, content) => {
+                                          setEditingComment(commentId);
+                                          setEditContent(content);
+                                          setReplyingTo(null);
+                                       }}
+                                       onDelete={handleDeleteComment}
+                                       editingComment={editingComment}
+                                       editContent={editContent}
+                                       onEditChange={setEditContent}
+                                       onSaveEdit={handleUpdateComment}
+                                       onCancelEdit={() => {
+                                          setEditingComment(null);
+                                          setEditContent('');
+                                       }}
+                                       formatDate={formatDate}
+                                    />
+                                 )) : commentsData?.data
+                                    .filter((comment) => !comment.parentId)
+                                    .map((comment) => (
+                                       <CommentItem
+                                          key={comment.id}
+                                          comment={comment}
+                                          lessonId={currentLessonId || ''}
+                                          onReply={(commentId) => {
+                                             setReplyingTo(commentId);
+                                             setEditingComment(null);
+                                          }}
+                                          onEdit={(commentId, content) => {
+                                             setEditingComment(commentId);
+                                             setEditContent(content);
+                                             setReplyingTo(null);
+                                          }}
+                                          onDelete={handleDeleteComment}
+                                          editingComment={editingComment}
+                                          editContent={editContent}
+                                          onEditChange={setEditContent}
+                                          onSaveEdit={handleUpdateComment}
+                                          onCancelEdit={() => {
+                                             setEditingComment(null);
+                                             setEditContent('');
+                                          }}
+                                          formatDate={formatDate}
+                                       />
+                                    ))}
+
+                                 {/* Pagination */}
+                                 {commentsData && commentsData.totalPages > commentsPage && (
+                                    <div className="pt-4 border-t border-slate-100">
+                                       {isLoadingComments ? (
+                                          <div className="flex items-center justify-center py-4">
+                                             <Loader2 className="animate-spin h-5 w-5 text-indigo-600" />
+                                          </div>
+                                       ) : (
+                                          <button
+                                             onClick={() => setCommentsPage(prev => prev + 1)}
+                                             className="w-full py-2.5 border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 transition-colors"
+                                          >
+                                             Xem thêm comment ({commentsData.total - allComments.length} còn lại)
+                                          </button>
+                                       )}
+                                    </div>
+                                 )}
+                              </div>
+                           </div>
+                        ) : (
+                           <div className="text-center py-12 text-slate-500 bg-white rounded-xl border border-slate-200">
+                              <MessageSquare size={48} className="mx-auto mb-4 text-slate-300" />
+                              <p>Chưa có comment nào. Hãy là người đầu tiên đặt câu hỏi!</p>
+                           </div>
+                        )}
                      </div>
                   )}
                </div>

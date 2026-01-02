@@ -9,5 +9,6 @@ export * from './instructorStudents';
 export * from './upload';
 export * from './courseContent';
 export * from './reviews';
+export * from './comments';
 export { default as apiClient } from './axios';
 

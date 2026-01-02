@@ -206,18 +206,7 @@ const CheckoutPage = () => {
             })}
           </div>
 
-          <div className="flex items-center gap-2 bg-slate-50 border border-dashed border-slate-200 rounded-xl p-3">
-            <Tag size={16} className="text-indigo-600" />
-            <input
-              placeholder="Nhập mã giảm giá (ví dụ: SAVE10)"
-              value={voucher}
-              onChange={(e) => setVoucher(e.target.value)}
-              className="flex-1 bg-transparent text-sm outline-none"
-            />
-            <button onClick={handleApplyVoucher} className="text-sm font-semibold text-indigo-600">
-              Áp dụng
-            </button>
-          </div>
+          
           {error && <p className="text-xs text-rose-500 font-semibold">{error}</p>}
           {appliedVoucher && (
             <div className="text-xs text-emerald-600 font-semibold">Đã áp dụng mã {appliedVoucher}</div>
@@ -228,10 +217,10 @@ const CheckoutPage = () => {
               <span>Tạm tính</span>
               <span className="font-semibold text-slate-800">{formatVND(subtotal)}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Mã giảm giá</span>
+            {/* <div className="flex justify-between">
+              <span></span>
               <span className="font-semibold text-emerald-600">-{formatVND(voucherDiscount)}</span>
-            </div>
+            </div> */}
             <div className="flex justify-between items-center pt-2 border-t border-slate-200 text-base font-bold text-slate-800">
               <span>Thành tiền</span>
               <span className="text-indigo-600">{formatVND(total)}</span>

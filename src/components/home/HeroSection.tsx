@@ -1,6 +1,8 @@
 import { ArrowRight, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   return (
     <section className="relative overflow-hidden bg-indigo-600 rounded-3xl p-8 md:p-16 text-white shadow-xl shadow-indigo-200">
       <div className="absolute top-0 right-0 w-96 h-96 bg-white opacity-10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
@@ -10,7 +12,7 @@ const HeroSection = () => {
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-medium border border-white/20">
             <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-            Khuyến mãi mùa hè 2025
+            Khuyến mãi {new Date().getFullYear()}
           </div>
           <h1 className="text-4xl md:text-6xl font-bold leading-tight">
             Nâng tầm sự nghiệp với <br />
@@ -20,7 +22,7 @@ const HeroSection = () => {
             Truy cập hơn 10,000 khóa học chất lượng cao từ các chuyên gia hàng đầu. Học mọi lúc, mọi nơi.
           </p>
           <div className="flex flex-wrap gap-4 pt-2">
-            <button className="px-8 py-4 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-colors shadow-lg shadow-indigo-900/20 flex items-center gap-2">
+            <button onClick={() => navigate('/courses')} className="px-8 py-4 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-colors shadow-lg shadow-indigo-900/20 flex items-center gap-2">
               Bắt đầu ngay <ArrowRight size={18} />
             </button>
           </div>
@@ -36,7 +38,7 @@ const HeroSection = () => {
               <CheckCircle size={24} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-500">Đã hoàn thành</p>
+              <p className="text-xs font-semibold text-slate-500">Được sự tin tưởng từ</p>
               <p className="font-bold text-sm">15.000+ Học viên</p>
             </div>
           </div>
