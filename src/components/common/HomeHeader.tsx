@@ -77,7 +77,7 @@ const HomeHeader = ({ cartCount = 0 }: HeaderProps) => {
               Khóa học của tôi
             </Link>
             <a 
-              href="#" 
+              href="/community" 
               className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-indigo-600 hover:bg-slate-50 rounded-full transition-colors"
             >
               Cộng đồng
@@ -278,7 +278,7 @@ const HomeHeader = ({ cartCount = 0 }: HeaderProps) => {
                 Khóa học của tôi
               </Link>
               <a 
-                href="#" 
+                href="/community" 
                 className="p-2 font-semibold text-slate-600 hover:bg-slate-50 rounded-lg"
               >
                 Cộng đồng

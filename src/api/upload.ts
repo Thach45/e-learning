@@ -14,6 +14,14 @@ export type UploadVideoResponse = {
   height?: number;
 };
 
+export type UploadFileResponse = {
+  url: string;
+  publicId: string;
+  format?: string;
+  bytes?: number;
+  originalFilename?: string;
+};
+
 // Upload API functions
 export const uploadApi = {
   // Upload image to Cloudinary
@@ -35,6 +43,25 @@ export const uploadApi = {
     formData.append('file', file);
 
     const response = await apiClient.post('/upload/video', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(progress);
+        }
+      },
+    });
+    return response.data.data || response.data;
+  },
+
+  // Upload file (PDF, DOC, PPT, etc.) to Cloudinary
+  uploadFile: async (file: File, onProgress?: (progress: number) => void): Promise<UploadFileResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await apiClient.post('/upload/file', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

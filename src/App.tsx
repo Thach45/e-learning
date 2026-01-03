@@ -21,6 +21,7 @@ import AdminCategoriesPage from './pages/admin/AdminCategoriesPage';
 import AdminEnrollmentsPage from './pages/admin/AdminEnrollmentsPage';
 import AdminReviewsPage from './pages/admin/AdminReviewsPage';
 import AdminPermissionsPage from './pages/admin/AdminPermissionsPage';
+import AdminDocumentsPage from './pages/admin/AdminDocumentsPage';
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import InstructorCoursesPage from './pages/instructor/InstructorCoursesPage';
 import CreateCoursePage from './pages/instructor/CreateCoursePage';
@@ -37,6 +38,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { navigationUtils } from './utils/navigation';
 import './App.css';
 import LearningPage from './pages/LearningSection';
+import CommunityPage from './pages/Community';
 
 // Component để setup navigation
 const AppContent = () => {
@@ -52,6 +54,7 @@ const AppContent = () => {
           <Route index element={<HomePage />} />
           <Route path="courses" element={<CoursesPage />} />
           <Route path="courses/:id" element={<CourseDetailPage />} />
+          <Route path="community" element={<CommunityPage />} />
           
           {/* Protected routes - require authentication */}
           <Route
@@ -135,6 +138,7 @@ const AppContent = () => {
           <Route path="categories" element={<AdminCategoriesPage />} />
           <Route path="enrollments" element={<AdminEnrollmentsPage />} />
           <Route path="reviews" element={<AdminReviewsPage />} />
+          <Route path="documents" element={<AdminDocumentsPage />} />
           <Route path="permissions" element={<AdminPermissionsPage />} />
         </Route>
         {/* Instructor routes - require INSTRUCTOR role */}

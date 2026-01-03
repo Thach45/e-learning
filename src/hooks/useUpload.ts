@@ -16,3 +16,11 @@ export const useUploadVideo = () => {
   });
 };
 
+// Upload file mutation (PDF, DOC, PPT, etc.)
+export const useUploadFile = () => {
+  return useMutation({
+    mutationFn: ({ file, onProgress }: { file: File; onProgress?: (progress: number) => void }) =>
+      uploadApi.uploadFile(file, onProgress),
+  });
+};
+
