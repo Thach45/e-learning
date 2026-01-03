@@ -28,6 +28,7 @@ import { useCourseContents, useLessonDetail } from '../hooks/useEnrollments';
 import type { CourseContentSection, LessonItem } from '../api/enrollments';
 import { useCommentsByLesson, useCreateComment, useUpdateComment, useDeleteComment } from '../hooks/useComments';
 import type { Comment, CreateCommentBody } from '../api/comments';
+import { useAuthStatus } from '../hooks/useAuthStatus';
 
 // --- COMPONENTS ---
 
@@ -119,6 +120,7 @@ const CommentItem = ({
   onSaveEdit,
   onCancelEdit,
   formatDate,
+  currentUserId,
 }: {
   comment: Comment;
   lessonId: string;
@@ -131,9 +133,11 @@ const CommentItem = ({
   onSaveEdit: (commentId: string) => void;
   onCancelEdit: () => void;
   formatDate: (date: string) => string;
+  currentUserId?: string;
 }) => {
   const isEditing = editingComment === comment.id;
   const replies = comment.replies || [];
+  const isMyComment = currentUserId === comment.userId;
 
   return (
     <div className="border-b border-slate-100 pb-4 last:border-none bg-white">
@@ -156,18 +160,22 @@ const CommentItem = ({
               >
                 Trả lời
               </button>
-              <button
-                onClick={() => onEdit(comment.id, comment.content)}
-                className="text-xs text-slate-500 hover:text-indigo-600 font-medium transition-colors"
-              >
-                <Edit3 size={14} />
-              </button>
-              <button
-                onClick={() => onDelete(comment.id)}
-                className="text-xs text-slate-500 hover:text-rose-600 font-medium transition-colors"
-              >
-                <Trash2 size={14} />
-              </button>
+              {isMyComment && (
+                <>
+                  <button
+                    onClick={() => onEdit(comment.id, comment.content)}
+                    className="text-xs text-slate-500 hover:text-indigo-600 font-medium transition-colors"
+                  >
+                    <Edit3 size={14} />
+                  </button>
+                  <button
+                    onClick={() => onDelete(comment.id)}
+                    className="text-xs text-slate-500 hover:text-rose-600 font-medium transition-colors"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -214,39 +222,41 @@ const CommentItem = ({
                         <h5 className="font-semibold text-xs text-slate-900">{reply.user?.name || 'Người dùng'}</h5>
                         <span className="text-xs text-slate-400">{formatDate(reply.createdAt)}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {editingComment === reply.id ? (
-                          <>
-                            <button
-                              onClick={() => onSaveEdit(reply.id)}
-                              className="text-xs text-indigo-600 font-medium"
-                            >
-                              Lưu
-                            </button>
-                            <button
-                              onClick={onCancelEdit}
-                              className="text-xs text-slate-500 font-medium"
-                            >
-                              Hủy
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => onEdit(reply.id, reply.content)}
-                              className="text-xs text-slate-500 hover:text-indigo-600"
-                            >
-                              <Edit3 size={12} />
-                            </button>
-                            <button
-                              onClick={() => onDelete(reply.id)}
-                              className="text-xs text-slate-500 hover:text-rose-600"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          </>
-                        )}
-                      </div>
+                      {currentUserId === reply.userId && (
+                        <div className="flex items-center gap-2">
+                          {editingComment === reply.id ? (
+                            <>
+                              <button
+                                onClick={() => onSaveEdit(reply.id)}
+                                className="text-xs text-indigo-600 font-medium"
+                              >
+                                Lưu
+                              </button>
+                              <button
+                                onClick={onCancelEdit}
+                                className="text-xs text-slate-500 font-medium"
+                              >
+                                Hủy
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => onEdit(reply.id, reply.content)}
+                                className="text-xs text-slate-500 hover:text-indigo-600"
+                              >
+                                <Edit3 size={12} />
+                              </button>
+                              <button
+                                onClick={() => onDelete(reply.id)}
+                                className="text-xs text-slate-500 hover:text-rose-600"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
                     {editingComment === reply.id ? (
                       <textarea
@@ -372,6 +382,7 @@ const CourseSidebar = ({
 const LearningPage = () => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId?: string }>();
   const navigate = useNavigate();
+  const { user } = useAuthStatus();
   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'QNA' | 'NOTES'>('OVERVIEW');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -767,6 +778,7 @@ const LearningPage = () => {
                                           setEditContent('');
                                        }}
                                        formatDate={formatDate}
+                                       currentUserId={user?.id}
                                     />
                                  )) : commentsData?.data
                                     .filter((comment) => !comment.parentId)
@@ -794,6 +806,7 @@ const LearningPage = () => {
                                              setEditContent('');
                                           }}
                                           formatDate={formatDate}
+                                          currentUserId={user?.id}
                                        />
                                     ))}
 
