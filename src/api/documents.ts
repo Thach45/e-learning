@@ -27,7 +27,12 @@ export type Document = {
   views: number;
   downloads: number;
   likes: number;
-  tags: string[];
+  tags: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    color?: string;
+  }>;
   isLiked?: boolean;
 };
 
@@ -72,7 +77,7 @@ export type CreateDocumentBody = {
   subject?: string;
   pages?: number;
   thumbnail?: string;
-  tags?: string[];
+  tagIds?: string[];
 };
 
 export type UpdateDocumentBody = Partial<Omit<CreateDocumentBody, 'type' | 'url'>>;

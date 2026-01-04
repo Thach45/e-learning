@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
-import { X, Upload, FileText, Loader2, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, FileText, Loader2, Image as ImageIcon, Check } from 'lucide-react';
 import { useUploadFile, useUploadImage } from '../../hooks/useUpload';
 import { useCreateDocument } from '../../hooks/useDocuments';
 import { useDocumentCategories } from '../../hooks/useDocumentCategories';
+import { useDocumentTags } from '../../hooks/useDocumentTags';
 import type { MaterialType } from '../../api/documents';
 import toast from 'react-hot-toast';
 
@@ -50,8 +51,8 @@ const UploadDocumentModal = ({ isOpen, onClose }: UploadDocumentModalProps) => {
     university: '',
     subject: '',
     pages: '',
-    tags: '',
   });
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [fileUrl, setFileUrl] = useState('');
   const [fileType, setFileType] = useState<MaterialType>('PDF');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
@@ -59,6 +60,7 @@ const UploadDocumentModal = ({ isOpen, onClose }: UploadDocumentModalProps) => {
   const [isUploading, setIsUploading] = useState(false);
   
   const { data: categoriesData } = useDocumentCategories({ isActive: true });
+  const { data: tagsData } = useDocumentTags({ isActive: true });
   const uploadFileMutation = useUploadFile();
   const uploadImageMutation = useUploadImage();
   const createDocumentMutation = useCreateDocument();
@@ -154,7 +156,7 @@ const UploadDocumentModal = ({ isOpen, onClose }: UploadDocumentModalProps) => {
         subject: formData.subject.trim() || undefined,
         pages: formData.pages ? parseInt(formData.pages) : undefined,
         thumbnail: thumbnailUrl || undefined,
-        tags: formData.tags ? formData.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+        tagIds: selectedTagIds,
       });
 
       toast.success('Đăng tài liệu thành công!');
@@ -166,16 +168,26 @@ const UploadDocumentModal = ({ isOpen, onClose }: UploadDocumentModalProps) => {
   };
 
   const handleClose = () => {
-    setFormData({ title: '', categoryId: '', university: '', subject: '', pages: '', tags: '' });
+    setFormData({ title: '', categoryId: '', university: '', subject: '', pages: '' });
+    setSelectedTagIds([]);
     setFileUrl('');
     setThumbnailUrl('');
     setUploadProgress(0);
     onClose();
   };
+  
+  const toggleTag = (tagId: string) => {
+    setSelectedTagIds(prev => 
+      prev.includes(tagId) 
+        ? prev.filter(id => id !== tagId)
+        : prev.length < 10 ? [...prev, tagId] : prev
+    );
+  };
 
   if (!isOpen) return null;
 
   const categories = categoriesData?.data || [];
+  const tags = tagsData?.data || [];
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -377,15 +389,41 @@ const UploadDocumentModal = ({ isOpen, onClose }: UploadDocumentModalProps) => {
           {/* Tags */}
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Tags (phân cách bằng dấu phẩy)
+              Từ khóa (chọn tối đa 10)
             </label>
-            <input
-              type="text"
-              value={formData.tags}
-              onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
-              placeholder="VD: đề thi, giải tích, 2024"
-              className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            />
+            {tags.length > 0 ? (
+              <div className="flex flex-wrap gap-2 p-3 border border-slate-300 rounded-xl max-h-40 overflow-y-auto">
+                {tags.map(tag => {
+                  const isSelected = selectedTagIds.includes(tag.id);
+                  return (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => toggleTag(tag.id)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+                        isSelected 
+                          ? 'ring-2 ring-indigo-500 ring-offset-1' 
+                          : 'hover:opacity-80'
+                      }`}
+                      style={{ 
+                        backgroundColor: tag.color ? `${tag.color}20` : '#f1f5f9',
+                        color: tag.color || '#475569'
+                      }}
+                    >
+                      {isSelected && <Check size={14} />}
+                      {tag.name}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400 italic">Chưa có từ khóa nào</p>
+            )}
+            {selectedTagIds.length > 0 && (
+              <p className="text-xs text-slate-500 mt-2">
+                Đã chọn {selectedTagIds.length} từ khóa
+              </p>
+            )}
           </div>
 
           {/* Actions */}
