@@ -30,10 +30,10 @@ export const useCourseAnalytics = () => {
 };
 
 // Hook to get revenue chart data
-export const useInstructorRevenueChart = (days = 30) => {
+export const useInstructorRevenueChart = (params?: { days?: number; startDate?: string; endDate?: string }) => {
   return useQuery<RevenueChartData>({
-    queryKey: [INSTRUCTOR_KEY, 'revenue-chart', days],
-    queryFn: () => instructorApi.getRevenueChartData(days),
+    queryKey: [INSTRUCTOR_KEY, 'revenue-chart', params],
+    queryFn: () => instructorApi.getRevenueChartData(params || { days: 30 }),
   });
 };
 

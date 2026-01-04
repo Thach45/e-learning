@@ -158,9 +158,9 @@ export const instructorApi = {
     return response.data.data || response.data;
   },
 
-  getRevenueChartData: async (days = 30): Promise<RevenueChartData> => {
+  getRevenueChartData: async (params?: { days?: number; startDate?: string; endDate?: string }): Promise<RevenueChartData> => {
     const response = await apiClient.get('/instructor/revenue/chart', {
-      params: { days },
+      params: params || { days: 30 },
     });
     return response.data.data || response.data;
   },

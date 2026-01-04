@@ -29,9 +29,22 @@ import {
 import { formatVND } from '../../utils/format';
 
 const InstructorDashboard = () => {
-  const [chartDays, setChartDays] = useState(30);
+  const [dateRange, setDateRange] = useState<'preset' | 'custom'>('preset');
+  const [presetDays, setPresetDays] = useState(30);
+  const [startDate, setStartDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 30);
+    return date.toISOString().split('T')[0];
+  });
+  const [endDate, setEndDate] = useState(() => {
+    return new Date().toISOString().split('T')[0];
+  });
+
   const { data: stats, isLoading: statsLoading } = useInstructorStats();
-  const { data: revenueChart, isLoading: chartLoading } = useInstructorRevenueChart(chartDays);
+  const chartParams = dateRange === 'preset' 
+    ? { days: presetDays }
+    : { startDate, endDate };
+  const { data: revenueChart, isLoading: chartLoading } = useInstructorRevenueChart(chartParams);
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -111,19 +124,50 @@ const InstructorDashboard = () => {
             <BarChart3 size={24} className="text-purple-600" />
             <h2 className="text-xl font-bold text-slate-800">Doanh thu & Ghi danh</h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Calendar size={18} className="text-slate-400" />
-            <select
-              value={chartDays}
-              onChange={(e) => setChartDays(Number(e.target.value))}
-              className="px-4 py-2 border border-slate-300 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
-            >
-              <option value={7}>7 ngày</option>
-              <option value={30}>30 ngày</option>
-              <option value={90}>90 ngày</option>
-              <option value={180}>6 tháng</option>
-              <option value={365}>1 năm</option>
-            </select>
+            <div className="flex items-center gap-2">
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value as 'preset' | 'custom')}
+                className="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+              >
+                <option value="preset">Khoảng thời gian</option>
+                <option value="custom">Tùy chọn</option>
+              </select>
+              {dateRange === 'preset' ? (
+                <select
+                  value={presetDays}
+                  onChange={(e) => setPresetDays(Number(e.target.value))}
+                  className="px-4 py-2 border border-slate-300 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                >
+                  <option value={7}>7 ngày</option>
+                  <option value={30}>30 ngày</option>
+                  <option value={90}>90 ngày</option>
+                  <option value={180}>6 tháng</option>
+                  <option value={365}>1 năm</option>
+                </select>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    max={endDate}
+                    className="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                  />
+                  <span className="text-slate-500">đến</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    min={startDate}
+                    max={new Date().toISOString().split('T')[0]}
+                    className="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {chartLoading ? (
@@ -138,7 +182,7 @@ const InstructorDashboard = () => {
                   ...d,
                   dateLabel: new Date(d.date).toLocaleDateString('vi-VN', {
                     day: '2-digit',
-                    month: chartDays <= 30 ? '2-digit' : 'short',
+                    month: revenueChart.data.length <= 30 ? '2-digit' : 'short',
                   }),
                 }))}
                 margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
