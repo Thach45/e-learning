@@ -1,4 +1,5 @@
 import apiClient from './axios';
+import type { CourseWithDetail } from './courses';
 
 // Types
 export type InstructorStats = {
@@ -61,50 +62,9 @@ export type GetEnrolledStudentsResponse = {
   totalPages: number;
 };
 
-// Instructor Courses Types
-export type Course = {
-  id: string;
-  title: string;
-  price: number;
-  salePrice?: number | null;
-  thumbnail?: string | null;
-  introVideo?: string | null;
-  isFeatured: boolean;
-  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
-  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'PENDING_PUBLISHED' | 'PENDING_DRAFT';
-  instructorId: string;
-  categoryId?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  instructor?: {
-    id: string;
-    name: string;
-  };
-  category?: {
-    id: string;
-    name: string;
-  } | null;
-  totalStars?: number;
-  reviewsCount?: number;
-  totalLearners?: number;
-  totalLikes?: number;
-  totalLessons?: number;
-  totalDuration?: number; // in seconds
-};
-
-export type CourseWithDetail = Course & {
-  courseDetail?: {
-    id: string;
-    courseId: string;
-    description?: string | null;
-    content?: string | null;
-    objectives?: string | null;
-    requirements?: string | null;
-    targetAudience?: string | null;
-    benefits?: string | null;
-    relatedCourses: string[];
-  };
-};
+// Instructor Courses Types - dùng CourseWithDetail từ courses
+export type CourseLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+export type CourseStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'PENDING_PUBLISHED' | 'PENDING_DRAFT';
 
 export type GetInstructorCoursesParams = {
   page?: number;

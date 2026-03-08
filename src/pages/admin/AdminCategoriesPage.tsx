@@ -104,7 +104,7 @@ const AdminCategoriesPage = () => {
                   </tr>
                 ) : (
                   filteredCategories.map((category) => {
-                    const parentName = getParentName(category.parentId);
+                    const parentName = getParentName(category.parentId ?? null);
                     return (
                       <tr key={category.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4">
@@ -170,7 +170,7 @@ const AdminCategoriesPage = () => {
         <CategoryModal
           onClose={() => setIsCreateModalOpen(false)}
           onSubmit={(data) => {
-            createMutation.mutate(data, {
+            createMutation.mutate(data as CreateCategoryBody, {
               onSuccess: () => {
                 setIsCreateModalOpen(false);
               },

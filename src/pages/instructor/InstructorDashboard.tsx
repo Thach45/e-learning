@@ -226,11 +226,12 @@ const InstructorDashboard = () => {
                     borderRadius: '8px',
                     padding: '12px',
                   }}
-                  formatter={(value: number, name: string) => {
+                  formatter={(value, name) => {
+                    const v = typeof value === 'number' ? value : 0;
                     if (name === 'revenue') {
-                      return [formatVND(value), 'Doanh thu'];
+                      return [formatVND(v), 'Doanh thu'];
                     }
-                    return [value, 'Ghi danh'];
+                    return [v, 'Ghi danh'];
                   }}
                   labelFormatter={(label) => `Ngày: ${label}`}
                 />

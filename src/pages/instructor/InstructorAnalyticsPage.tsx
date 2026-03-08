@@ -21,7 +21,7 @@ const InstructorAnalyticsPage = () => {
 
   const { data: stats, isLoading: statsLoading } = useInstructorStats();
   const { data: analyticsData, isLoading: analyticsLoading } = useCourseAnalytics();
-  const { data: revenueChart, isLoading: chartLoading } = useInstructorRevenueChart(chartDays);
+  const { data: revenueChart, isLoading: chartLoading } = useInstructorRevenueChart({ days: chartDays });
 
   const formatNumber = (num: number) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -31,7 +31,7 @@ const InstructorAnalyticsPage = () => {
 
   const analytics = analyticsData?.data || [];
   const topCourses = analytics.slice(0, 3);
-  const maxRevenue = revenueChart?.data.length > 0 
+  const maxRevenue = revenueChart?.data && revenueChart.data.length > 0 
     ? Math.max(...revenueChart.data.map(d => d.revenue))
     : 1;
 

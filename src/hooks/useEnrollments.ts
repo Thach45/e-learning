@@ -44,8 +44,8 @@ export const useCompleteCourse = () => {
   });
 };
 
-// Get course contents for enrolled user
-export const useCourseContents = (courseId: string) => {
+// Get course contents for enrolled user (student view)
+export const useEnrolledCourseContents = (courseId: string) => {
   return useQuery({
     queryKey: ['course-contents', courseId],
     queryFn: () => enrollmentsApi.getCourseContents(courseId),

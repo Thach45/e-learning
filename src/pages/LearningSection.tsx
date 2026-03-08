@@ -24,7 +24,7 @@ import {
   Send,
   Loader2
 } from 'lucide-react';
-import { useCourseContents, useLessonDetail } from '../hooks/useEnrollments';
+import { useEnrolledCourseContents, useLessonDetail } from '../hooks/useEnrollments';
 import type { CourseContentSection, LessonItem } from '../api/enrollments';
 import { useCommentsByLesson, useCreateComment, useUpdateComment, useDeleteComment } from '../hooks/useComments';
 import type { Comment, CreateCommentBody } from '../api/comments';
@@ -387,7 +387,7 @@ const LearningPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Fetch course contents
-  const { data: contentsData, isLoading: contentsLoading } = useCourseContents(courseId || '');
+  const { data: contentsData, isLoading: contentsLoading } = useEnrolledCourseContents(courseId || '');
   
   // Get first lesson if no lessonId provided
   const firstLessonId = contentsData?.contents[0]?.lessons[0]?.id;

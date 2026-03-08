@@ -1,6 +1,7 @@
 import apiClient from './axios';
 
-export type CourseDetail = {
+/** CourseDetail từ API (có createdAt, updatedAt) - CourseDetail cơ bản lấy từ courses */
+export type CourseDetailWithTimestamps = {
   id: string;
   courseId: string;
   description?: string | null;
@@ -38,19 +39,19 @@ export type UpdateCourseDetailBody = {
 // Course Detail API functions
 export const courseDetailApi = {
   // Get course detail (instructor)
-  getCourseDetail: async (courseId: string): Promise<CourseDetail> => {
+  getCourseDetail: async (courseId: string): Promise<CourseDetailWithTimestamps> => {
     const response = await apiClient.get(`/instructor/courses/${courseId}/detail`);
     return response.data.data;
   },
 
   // Create course detail
-  createCourseDetail: async (courseId: string, body: CreateCourseDetailBody): Promise<CourseDetail> => {
+  createCourseDetail: async (courseId: string, body: CreateCourseDetailBody): Promise<CourseDetailWithTimestamps> => {
     const response = await apiClient.post(`/instructor/courses/${courseId}/detail`, body);
     return response.data.data;
   },
 
   // Update course detail
-  updateCourseDetail: async (courseId: string, body: UpdateCourseDetailBody): Promise<CourseDetail> => {
+  updateCourseDetail: async (courseId: string, body: UpdateCourseDetailBody): Promise<CourseDetailWithTimestamps> => {
     const response = await apiClient.put(`/instructor/courses/${courseId}/detail`, body);
     return response.data.data;
   },
