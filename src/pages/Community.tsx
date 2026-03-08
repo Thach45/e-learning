@@ -183,14 +183,7 @@ const CommunityPage = () => {
   const contributors = contributorsData?.data || [];
   const totalPages = documentsData?.totalPages || 1;
 
-  const UNIVERSITIES = [
-    'ĐH Bách Khoa',
-    'ĐH Kinh Tế Quốc Dân',
-    'ĐH Ngoại Thương',
-    'ĐH Quốc Gia',
-    'ĐH FPT',
-    'Học viện Ngân Hàng',
-  ];
+ 
 
   const TRENDING_TAGS = ['Tiểu luận', 'Đề thi cuối kỳ', 'Slide', 'Giáo trình', 'Báo cáo thực tập', 'Toeic', 'IELTS'];
 
@@ -203,36 +196,7 @@ const CommunityPage = () => {
           
           {/* LEFT SIDEBAR: FILTERS & NAV */}
           <aside className="lg:col-span-3 space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <School size={18} className="text-indigo-600"/> Trường Đại Học
-              </h3>
-              <div className="space-y-2">
-                {UNIVERSITIES.map((uni, i) => (
-                  <button
-                    key={i}
-                    onClick={() => { 
-                      setSelectedUniversity(selectedUniversity === uni ? '' : uni);
-                      setPage(1);
-                    }}
-                    className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                      selectedUniversity === uni 
-                        ? 'bg-indigo-50 text-indigo-700' 
-                        : 'hover:bg-slate-50 text-slate-600'
-                    }`}
-                  >
-                    <div className={`w-8 h-8 rounded flex items-center justify-center text-xs font-bold ${
-                      selectedUniversity === uni 
-                        ? 'bg-indigo-100 text-indigo-600' 
-                        : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {uni.charAt(0)}
-                    </div>
-                    <span className="text-sm font-medium truncate">{uni}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            
 
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
               <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">

@@ -3,10 +3,6 @@ import Cookies from 'js-cookie';
 import { navigationUtils } from '../utils/navigation';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
-
-// Create axios instance
-// Axios tự động serialize object thành JSON khi gửi POST/PUT/PATCH
-// Không cần JSON.stringify() - axios làm điều đó tự động
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
