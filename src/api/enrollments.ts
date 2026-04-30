@@ -117,7 +117,7 @@ export type LessonDetail = {
   id: string;
   title: string;
   type: 'VIDEO' | 'TEXT' | 'QUIZ' | 'GAME';
-  storageType: 'YOUTUBE' | 'CLOUDINARY' | 'DIRECT_UPLOAD' | 'TEXT';
+  storageType: 'YOUTUBE' | 'GOOGLE_DRIVE' | 'CLOUDINARY' | 'DIRECT_UPLOAD' | 'OTHER';
   storageUrl?: string | null;
   contentText?: string | null;
   duration?: number | null;

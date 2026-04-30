@@ -103,34 +103,40 @@ const InstructorStudentsPage = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {students.map((student) => (
+                    {students.map((student) => {
+                      const displayName = student.userName?.trim() || 'Học viên';
+                      const displayEmail = student.userEmail || 'Chưa có email';
+                      const displayCourseTitle = student.courseTitle || 'Chưa có tên khóa học';
+                      const avatarInitial = displayName.charAt(0).toUpperCase();
+
+                      return (
                       <tr key={`${student.userId}-${student.courseId}`} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             {student.userAvatar ? (
                               <img 
                                 src={student.userAvatar} 
-                                alt={student.userName}
+                                alt={displayName}
                                 className="w-10 h-10 rounded-full object-cover"
                               />
                             ) : (
                               <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
                                 <span className="text-purple-600 font-semibold">
-                                  {student.userName.charAt(0).toUpperCase()}
+                                  {avatarInitial}
                                 </span>
                               </div>
                             )}
                             <div>
-                              <p className="font-semibold text-slate-800">{student.userName}</p>
+                              <p className="font-semibold text-slate-800">{displayName}</p>
                               <div className="flex items-center gap-1 text-sm text-slate-500 mt-1">
                                 <Mail size={14} />
-                                {student.userEmail}
+                                {displayEmail}
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-sm text-slate-600 font-medium">{student.courseTitle}</p>
+                          <p className="text-sm text-slate-600 font-medium">{displayCourseTitle}</p>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-1 text-sm text-slate-600">
@@ -165,7 +171,7 @@ const InstructorStudentsPage = () => {
                           )}
                         </td>
                       </tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
               </div>

@@ -41,10 +41,38 @@ const VideoPlayer = ({ videoUrl, storageType, thumbnailUrl }: { videoUrl?: strin
     return url ? `https://www.youtube.com/embed/${url}` : null;
   };
 
+  const getGoogleDriveEmbedUrl = (url: string) => {
+    if (!url) return null;
+
+    const trimmedUrl = url.trim();
+    const idOnlyPattern = /^[a-zA-Z0-9_-]{20,}$/;
+    if (idOnlyPattern.test(trimmedUrl)) {
+      return `https://drive.google.com/file/d/${trimmedUrl}/preview`;
+    }
+
+    const patterns = [
+      /\/file\/d\/([a-zA-Z0-9_-]+)/,
+      /[?&]id=([a-zA-Z0-9_-]+)/,
+      /\/d\/([a-zA-Z0-9_-]+)/,
+    ];
+
+    for (const pattern of patterns) {
+      const match = trimmedUrl.match(pattern);
+      if (match?.[1]) {
+        return `https://drive.google.com/file/d/${match[1]}/preview`;
+      }
+    }
+
+    return trimmedUrl;
+  };
+
   const getVideoUrl = () => {
     if (!videoUrl) return null;
     if (storageType === 'YOUTUBE') {
       return getYouTubeEmbedUrl(videoUrl);
+    }
+    if (storageType === 'GOOGLE_DRIVE') {
+      return getGoogleDriveEmbedUrl(videoUrl);
     }
     return videoUrl;
   };
@@ -101,6 +129,19 @@ const VideoPlayer = ({ videoUrl, storageType, thumbnailUrl }: { videoUrl?: strin
                 <Maximize size={20} />
              </div>
           </div>
+
+          {storageType === 'GOOGLE_DRIVE' && videoUrl && (
+            <div className="absolute top-3 right-3">
+              <a
+                href={videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs px-3 py-1.5 rounded-md bg-white/90 text-slate-700 hover:bg-white"
+              >
+                Mo truc tiep tren Drive
+              </a>
+            </div>
+          )}
         </>
       )}
     </div>
