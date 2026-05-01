@@ -36,15 +36,22 @@ export type RevenueChartData = {
 };
 
 export type EnrolledStudent = {
+  id: string;
   userId: string;
-  userName: string;
-  userEmail: string;
-  userAvatar?: string;
   courseId: string;
-  courseTitle: string;
   enrolledAt: string;
   progress?: number;
-  completedAt?: string;
+  completedAt?: string | null;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string | null;
+  };
+  course: {
+    id: string;
+    title: string;
+  };
 };
 
 export type GetEnrolledStudentsParams = {
@@ -56,7 +63,8 @@ export type GetEnrolledStudentsParams = {
 
 export type GetEnrolledStudentsResponse = {
   data: EnrolledStudent[];
-  totalItems: number;
+  total?: number;
+  totalItems?: number;
   page: number;
   limit: number;
   totalPages: number;

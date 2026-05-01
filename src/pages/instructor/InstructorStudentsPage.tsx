@@ -20,7 +20,7 @@ const InstructorStudentsPage = () => {
 
   const students = studentsData?.data || [];
   const totalPages = studentsData?.totalPages || 1;
-  const totalItems = studentsData?.totalItems || 0;
+  const totalItems = studentsData?.totalItems ?? studentsData?.total ?? 0;
   const courses = coursesData?.data || [];
 
   const formatDate = (dateString: string) => {
@@ -104,18 +104,18 @@ const InstructorStudentsPage = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {students.map((student) => {
-                      const displayName = student.userName?.trim() || 'Học viên';
-                      const displayEmail = student.userEmail || 'Chưa có email';
-                      const displayCourseTitle = student.courseTitle || 'Chưa có tên khóa học';
+                      const displayName = student.user?.name?.trim() || 'Học viên';
+                      const displayEmail = student.user?.email || 'Chưa có email';
+                      const displayCourseTitle = student.course?.title || 'Chưa có tên khóa học';
                       const avatarInitial = displayName.charAt(0).toUpperCase();
 
                       return (
                       <tr key={`${student.userId}-${student.courseId}`} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            {student.userAvatar ? (
+                            {student.user?.avatar ? (
                               <img 
-                                src={student.userAvatar} 
+                                src={student.user.avatar} 
                                 alt={displayName}
                                 className="w-10 h-10 rounded-full object-cover"
                               />

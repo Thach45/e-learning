@@ -65,7 +65,7 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
   };
 
   const handleCreateChapter = () => {
-    if (!newChapterTitle.trim()) return;
+    if (!newChapterTitle.trim() || createChapterMutation.isPending) return;
 
     createChapterMutation.mutate(
       {
@@ -85,6 +85,7 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
   };
 
   const handleUpdateChapter = (chapterId: string, title: string) => {
+    if (updateChapterMutation.isPending) return;
     updateChapterMutation.mutate({
       courseId,
       id: chapterId,
@@ -94,13 +95,14 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
   };
 
   const handleDeleteChapter = (chapterId: string) => {
+    if (deleteChapterMutation.isPending) return;
     if (window.confirm('Bạn có chắc chắn muốn xóa chương này? Tất cả bài học trong chương sẽ bị xóa.')) {
       deleteChapterMutation.mutate({ courseId, id: chapterId });
     }
   };
 
   const handleCreateLesson = (chapterId: string) => {
-    if (!newLessonData.title.trim()) return;
+    if (!newLessonData.title.trim() || createLessonMutation.isPending) return;
 
     createLessonMutation.mutate(
       {
@@ -130,6 +132,7 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
   };
 
   const handleUpdateLesson = (chapterId: string, lessonId: string, lesson: Lesson) => {
+    if (updateLessonMutation.isPending) return;
     updateLessonMutation.mutate({
       courseId,
       contentId: chapterId,
@@ -146,6 +149,7 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
   };
 
   const handleDeleteLesson = (chapterId: string, lessonId: string) => {
+    if (deleteLessonMutation.isPending) return;
     if (window.confirm('Bạn có chắc chắn muốn xóa bài học này?')) {
       deleteLessonMutation.mutate({ courseId, contentId: chapterId, id: lessonId });
     }
@@ -224,6 +228,8 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
               onToggle={() => toggleChapter(chapter.id)}
               onEdit={() => setEditingChapter(chapter.id)}
               onDelete={() => handleDeleteChapter(chapter.id)}
+              isUpdatingChapter={updateChapterMutation.isPending}
+              isDeletingChapter={deleteChapterMutation.isPending}
               editingChapter={editingChapter}
               onUpdateTitle={(title) => handleUpdateChapter(chapter.id, title)}
               onCancelEdit={() => setEditingChapter(null)}
@@ -234,6 +240,9 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
               onEditLesson={setEditingLesson}
               onUpdateLesson={(lessonId, lesson) => handleUpdateLesson(chapter.id, lessonId, lesson)}
               onDeleteLesson={(lessonId) => handleDeleteLesson(chapter.id, lessonId)}
+              isCreatingLesson={createLessonMutation.isPending}
+              isUpdatingLesson={updateLessonMutation.isPending}
+              isDeletingLesson={deleteLessonMutation.isPending}
             />
           ))
         )}
@@ -249,6 +258,8 @@ interface ChapterItemProps {
   onToggle: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  isUpdatingChapter: boolean;
+  isDeletingChapter: boolean;
   editingChapter: string | null;
   onUpdateTitle: (title: string) => void;
   onCancelEdit: () => void;
@@ -265,6 +276,9 @@ interface ChapterItemProps {
   onEditLesson: (data: { chapterId: string; lessonId: string } | null) => void;
   onUpdateLesson: (lessonId: string, lesson: Lesson) => void;
   onDeleteLesson: (lessonId: string) => void;
+  isCreatingLesson: boolean;
+  isUpdatingLesson: boolean;
+  isDeletingLesson: boolean;
 }
 
 const ChapterItem = ({
@@ -274,6 +288,8 @@ const ChapterItem = ({
   onToggle,
   onEdit,
   onDelete,
+  isUpdatingChapter,
+  isDeletingChapter,
   editingChapter,
   onUpdateTitle,
   onCancelEdit,
@@ -284,6 +300,9 @@ const ChapterItem = ({
   onEditLesson,
   onUpdateLesson,
   onDeleteLesson,
+  isCreatingLesson,
+  isUpdatingLesson,
+  isDeletingLesson,
 }: ChapterItemProps) => {
   const { data: lessons, isLoading: lessonsLoading } = useLessons(courseId, chapter.id);
   const [editTitle, setEditTitle] = useState(chapter.title);
@@ -332,9 +351,11 @@ const ChapterItem = ({
             <button
               type="button"
               onClick={handleSaveTitle}
-              className="px-3 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700"
+              disabled={isUpdatingChapter}
+              className="px-3 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
             >
-              Lưu
+              {isUpdatingChapter && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {isUpdatingChapter ? 'Đang lưu...' : 'Lưu'}
             </button>
             <button
               type="button"
@@ -354,7 +375,8 @@ const ChapterItem = ({
               <button
                 type="button"
                 onClick={onEdit}
-                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                disabled={isUpdatingChapter || isDeletingChapter}
+                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Chỉnh sửa"
               >
                 <Edit2 size={16} />
@@ -362,10 +384,11 @@ const ChapterItem = ({
               <button
                 type="button"
                 onClick={onDelete}
-                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                disabled={isDeletingChapter}
+                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Xóa"
               >
-                <Trash2 size={16} />
+                {isDeletingChapter ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 size={16} />}
               </button>
             </div>
           </>
@@ -393,6 +416,8 @@ const ChapterItem = ({
                   onCancelEdit={() => onEditLesson(null)}
                   onUpdate={(updatedLesson) => onUpdateLesson(lesson.id, updatedLesson)}
                   onDelete={() => onDeleteLesson(lesson.id)}
+                  isUpdating={isUpdatingLesson}
+                  isDeleting={isDeletingLesson}
                 />
               ))}
 
@@ -405,6 +430,7 @@ const ChapterItem = ({
                   onChange={onNewLessonChange}
                   onSubmit={onCreateLesson}
                   onCancel={() => onEditLesson(null)}
+                  isSubmitting={isCreatingLesson}
                 />
               ) : (
                 <button
@@ -433,6 +459,8 @@ interface LessonItemProps {
   onCancelEdit: () => void;
   onUpdate: (lesson: Lesson) => void;
   onDelete: () => void;
+  isUpdating: boolean;
+  isDeleting: boolean;
 }
 
 const LessonItem = ({
@@ -444,6 +472,8 @@ const LessonItem = ({
   onCancelEdit,
   onUpdate,
   onDelete,
+  isUpdating,
+  isDeleting,
 }: LessonItemProps) => {
   const [editData, setEditData] = useState<Lesson>(lesson);
 
@@ -502,9 +532,11 @@ const LessonItem = ({
           <button
             type="button"
             onClick={handleSave}
-            className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            disabled={isUpdating}
+            className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            Lưu
+            {isUpdating && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isUpdating ? 'Đang lưu...' : 'Lưu'}
           </button>
           <button
             type="button"
@@ -543,7 +575,8 @@ const LessonItem = ({
         <button
           type="button"
           onClick={onEdit}
-          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          disabled={isUpdating || isDeleting}
+          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Chỉnh sửa"
         >
           <Edit2 size={16} />
@@ -551,10 +584,11 @@ const LessonItem = ({
         <button
           type="button"
           onClick={onDelete}
-          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+          disabled={isDeleting}
+          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           title="Xóa"
         >
-          <Trash2 size={16} />
+          {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 size={16} />}
         </button>
       </div>
     </div>
@@ -574,9 +608,10 @@ interface NewLessonFormProps {
   onChange: (data: any) => void;
   onSubmit: () => void;
   onCancel: () => void;
+  isSubmitting: boolean;
 }
 
-const NewLessonForm = ({ data, onChange, onSubmit, onCancel }: NewLessonFormProps) => {
+const NewLessonForm = ({ data, onChange, onSubmit, onCancel, isSubmitting }: NewLessonFormProps) => {
   return (
     <div className="bg-white border-2 border-purple-300 rounded-lg p-4 space-y-3">
       <input
@@ -627,10 +662,11 @@ const NewLessonForm = ({ data, onChange, onSubmit, onCancel }: NewLessonFormProp
         <button
           type="button"
           onClick={onSubmit}
-          disabled={!data.title.trim()}
-          className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!data.title.trim() || isSubmitting}
+          className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          Thêm bài học
+          {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+          {isSubmitting ? 'Đang thêm...' : 'Thêm bài học'}
         </button>
         <button
           type="button"
