@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Search, Download, Loader2, AlertCircle, Eye, ChevronDown, X } from 'lucide-react';
 import { useAdminOrders, useUpdateOrderStatus, useAdminOrder } from '../../hooks/useOrders';
 import type { OrderStatus } from '../../api/orders';
-import toast from 'react-hot-toast';
 
 const AdminOrdersPage = () => {
   const [page, setPage] = useState(1);
@@ -46,17 +45,7 @@ const AdminOrdersPage = () => {
   };
 
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
-    updateStatusMutation.mutate(
-      { orderId, body: { status: newStatus } },
-      {
-        onSuccess: () => {
-          toast.success('Đã cập nhật trạng thái đơn hàng');
-        },
-        onError: (error: any) => {
-          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
-        },
-      }
-    );
+    updateStatusMutation.mutate({ orderId, body: { status: newStatus } });
   };
 
   if (isLoading) {

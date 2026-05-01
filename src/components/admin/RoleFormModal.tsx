@@ -46,20 +46,9 @@ export const RoleFormModal = ({ isOpen, onClose, role }: RoleFormModalProps) => 
     };
 
     if (isEditMode && role) {
-      updateMutation.mutate(
-        { id: role.id, body },
-        {
-          onSuccess: () => {
-            onClose();
-          },
-        }
-      );
+      updateMutation.mutate({ id: role.id, body }, { onSuccess: onClose });
     } else {
-      createMutation.mutate(body, {
-        onSuccess: () => {
-          onClose();
-        },
-      });
+      createMutation.mutate(body, { onSuccess: onClose });
     }
   };
 

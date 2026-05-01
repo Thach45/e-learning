@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from 'sonner';
 import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 import InstructorLayout from './layouts/InstructorLayout';
@@ -168,7 +168,32 @@ const App: React.FC = () => {
   return (
     <Router>
       <AppContent />
-      <Toaster position="top-right" />
+      <Toaster
+        position="top-right"
+        closeButton
+        richColors
+        toastOptions={{
+          style: {
+            background: '#ffffff',
+            color: '#0f172a',
+            border: '1px solid #e2e8f0',
+            borderRadius: '14px',
+            boxShadow: '0 10px 30px -12px rgba(15, 23, 42, 0.25)',
+            padding: '12px 14px',
+            gap: '10px',
+          },
+          classNames: {
+            toast: 'font-medium',
+            success: '!border-emerald-200 !bg-emerald-50/80 !text-emerald-700',
+            error: '!border-rose-200 !bg-rose-50/85 !text-rose-700',
+            warning: '!border-amber-200 !bg-amber-50/85 !text-amber-700',
+            info: '!border-slate-200 !bg-slate-50 !text-slate-700',
+            default: '!border-slate-200 !bg-slate-50 !text-slate-700',
+            closeButton:
+              '!border-slate-200 !bg-white !text-slate-500 hover:!bg-slate-50 hover:!text-slate-700',
+          },
+        }}
+      />
     </Router>
   );
 };

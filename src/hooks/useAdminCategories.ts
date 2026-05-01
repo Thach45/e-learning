@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminCategoriesApi, type CreateCategoryBody, type UpdateCategoryBody } from '../api/admin';
+import { toast } from 'sonner';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Get admin categories
 export const useAdminCategories = () => {
@@ -26,6 +32,10 @@ export const useCreateAdminCategory = () => {
     mutationFn: (body: CreateCategoryBody) => adminCategoriesApi.createCategory(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] });
+      toast.success('Đã tạo danh mục.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể tạo danh mục.'));
     },
   });
 };
@@ -40,6 +50,10 @@ export const useUpdateAdminCategory = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'categories'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'category', variables.id] });
+      toast.success('Đã cập nhật danh mục.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật danh mục.'));
     },
   });
 };

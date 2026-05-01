@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Search, Plus, Edit, Trash2, FolderTree, X, Save, Loader2, AlertCircle } from 'lucide-react';
+import { Search, Plus, Edit, FolderTree, X, Save, Loader2, AlertCircle } from 'lucide-react';
 import { useAdminCategories, useCreateAdminCategory, useUpdateAdminCategory, useAdminCategory } from '../../hooks/useAdminCategories';
 import ImageUpload from '../../components/common/ImageUpload';
 import type { AdminCategory, CreateCategoryBody, UpdateCategoryBody } from '../../api/admin';
@@ -23,14 +23,6 @@ const AdminCategoriesPage = () => {
   const getParentName = (parentId: string | null) => {
     if (!parentId || !categories) return null;
     return categories.find(c => c.id === parentId)?.name || null;
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
   };
 
   return (
@@ -90,15 +82,14 @@ const AdminCategoriesPage = () => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Danh mục</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Danh mục cha</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Trạng thái</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Ngày tạo</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Số khóa học</th>
                   <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 uppercase">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredCategories.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                    <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
                       Không có danh mục nào
                     </td>
                   </tr>
@@ -134,16 +125,7 @@ const AdminCategoriesPage = () => {
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                            category.isActive
-                              ? 'bg-emerald-50 text-emerald-700'
-                              : 'bg-slate-50 text-slate-700'
-                          }`}>
-                            {category.isActive ? 'Hoạt động' : 'Không hoạt động'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-slate-500">
-                          {formatDate(category.createdAt)}
+                          <span className="text-sm text-slate-600 font-medium">{category.countCourses}</span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-2">
@@ -219,7 +201,6 @@ const CategoryModal = ({ categoryId, onClose, onSubmit, isLoading, categories }:
     name: '',
     imageUrl: '',
     parentId: '',
-    isActive: true,
   });
 
   // Load category data when editing
@@ -229,7 +210,6 @@ const CategoryModal = ({ categoryId, onClose, onSubmit, isLoading, categories }:
         name: categoryData.name,
         imageUrl: categoryData.imageUrl || '',
         parentId: categoryData.parentId || '',
-        isActive: categoryData.isActive,
       });
     } else {
       // Reset form when creating new
@@ -237,7 +217,6 @@ const CategoryModal = ({ categoryId, onClose, onSubmit, isLoading, categories }:
         name: '',
         imageUrl: '',
         parentId: '',
-        isActive: true,
       });
     }
   }, [categoryData, categoryId]);
@@ -250,7 +229,6 @@ const CategoryModal = ({ categoryId, onClose, onSubmit, isLoading, categories }:
     const submitData: CreateCategoryBody | UpdateCategoryBody = {
       name: formData.name,
       imageUrl: formData.imageUrl || undefined,
-      isActive: formData.isActive,
     };
     if (categoryId) {
       // Update
@@ -310,17 +288,6 @@ const CategoryModal = ({ categoryId, onClose, onSubmit, isLoading, categories }:
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.isActive}
-                onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-              />
-              <span className="text-sm font-semibold text-slate-700">Hoạt động</span>
-            </label>
           </div>
           <div className="flex items-center justify-end gap-3 pt-4">
             <button

@@ -1,10 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { 
   documentTagsApi, 
   type GetDocumentTagsParams, 
   type CreateDocumentTagBody, 
   type UpdateDocumentTagBody 
 } from '../api/documentTags';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Query keys
 const DOCUMENT_TAGS_KEY = 'documentTags';
@@ -34,6 +40,10 @@ export const useCreateDocumentTag = () => {
     mutationFn: (body: CreateDocumentTagBody) => documentTagsApi.createTag(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENT_TAGS_KEY] });
+      toast.success('Đã tạo từ khóa tài liệu.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Tạo từ khóa thất bại.'));
     },
   });
 };
@@ -47,6 +57,10 @@ export const useUpdateDocumentTag = () => {
       documentTagsApi.updateTag(id, body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENT_TAGS_KEY] });
+      toast.success('Đã cập nhật từ khóa tài liệu.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Cập nhật từ khóa thất bại.'));
     },
   });
 };
@@ -59,6 +73,10 @@ export const useDeleteDocumentTag = () => {
     mutationFn: (id: string) => documentTagsApi.deleteTag(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENT_TAGS_KEY] });
+      toast.success('Đã xóa từ khóa tài liệu.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Xóa từ khóa thất bại.'));
     },
   });
 };

@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Search, 
   ChevronDown, 
+  ChevronRight,
   Heart, 
   Star, 
   MonitorPlay, 
@@ -145,6 +146,7 @@ const CourseCard = ({ course }: { course: ReturnType<typeof transformCourse> }) 
 
 const CourseListPage = () => {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<string[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<string>('popular');
@@ -154,7 +156,20 @@ const CourseListPage = () => {
 
   // Fetch categories
   const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
-  
+
+  type CategoryNode = {
+    id: string;
+    name: string;
+    countCourses: number;
+    children?: CategoryNode[];
+  };
+
+  const categoryTree = useMemo(() => (categoriesData || []) as CategoryNode[], [categoriesData]);
+
+  useEffect(() => {
+    if (!categoryTree.length) return;
+    setExpandedCategoryIds(prev => (prev.length > 0 ? prev : categoryTree.map(node => node.id)));
+  }, [categoryTree]);
 
   // Build API params
   const apiParams = useMemo(() => {
@@ -224,6 +239,69 @@ const CourseListPage = () => {
     setPage(1); // Reset to first page when filter changes
   };
 
+  const toggleExpandCategory = (categoryId: string) => {
+    setExpandedCategoryIds(prev =>
+      prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
+    );
+  };
+
+  const renderCategoryTree = (nodes: CategoryNode[], depth = 0): ReactNode[] => {
+    return nodes.flatMap((node) => {
+      const hasChildren = !!node.children && node.children.length > 0;
+      const isExpanded = expandedCategoryIds.includes(node.id);
+      const paddingLeft = 8 + depth * 16;
+
+      if (hasChildren) {
+        const parentRow = (
+          <button
+            key={`parent-${node.id}`}
+            type="button"
+            onClick={() => toggleExpandCategory(node.id)}
+            style={{ paddingLeft }}
+            className="w-full flex items-center justify-between py-2 pr-2 rounded-lg hover:bg-slate-100 transition-colors text-left"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <ChevronRight
+                size={14}
+                className={`text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+              />
+              <span className="text-sm font-semibold text-slate-700 truncate">{node.name}</span>
+            </div>
+            <span className="text-xs text-slate-400">{node.countCourses}</span>
+          </button>
+        );
+
+        if (!isExpanded) {
+          return [parentRow];
+        }
+
+        return [parentRow, ...renderCategoryTree(node.children || [], depth + 1)];
+      }
+
+      return [
+        <label
+          key={`leaf-${node.id}`}
+          style={{ paddingLeft }}
+          className="w-full flex items-center gap-3 py-2 pr-2 rounded-lg cursor-pointer group select-none hover:bg-slate-100"
+        >
+          <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 ${selectedCategoryIds.includes(node.id) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white hover:border-indigo-400'}`}>
+            {selectedCategoryIds.includes(node.id) && <Check size={14} className="text-white" />}
+          </div>
+          <input
+            type="checkbox"
+            className="hidden"
+            onChange={() => toggleCategory(node.id)}
+            checked={selectedCategoryIds.includes(node.id)}
+          />
+          <span className={`text-sm flex-1 transition-colors ${selectedCategoryIds.includes(node.id) ? 'text-slate-900 font-semibold' : 'text-slate-600 group-hover:text-indigo-600'}`}>
+            {node.name}
+          </span>
+          <span className="text-xs text-slate-400">{node.countCourses}</span>
+        </label>,
+      ];
+    });
+  };
+
   const handleLevelChange = (level: string | null) => {
     setSelectedLevel(level);
     setPage(1);
@@ -274,21 +352,8 @@ const CourseListPage = () => {
                                     <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
                                 </div>
                             ) : (
-                                <div className="space-y-3 max-h-64 overflow-y-auto">
-                                    {categoriesData?.filter(cat => cat.isActive && !cat.parentId).map((cat) => (
-                                        <label key={cat.id} className="flex items-center gap-3 cursor-pointer group select-none">
-                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all duration-200 ${selectedCategoryIds.includes(cat.id) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 bg-white hover:border-indigo-400'}`}>
-                                                {selectedCategoryIds.includes(cat.id) && <Check size={14} className="text-white" />}
-                                            </div>
-                                            <input 
-                                                type="checkbox" 
-                                                className="hidden" 
-                                                onChange={() => toggleCategory(cat.id)}
-                                                checked={selectedCategoryIds.includes(cat.id)}
-                                            />
-                                            <span className={`text-sm transition-colors ${selectedCategoryIds.includes(cat.id) ? 'text-slate-900 font-bold' : 'text-slate-600 group-hover:text-indigo-600'}`}>{cat.name}</span>
-                                        </label>
-                                    ))}
+                                <div className="max-h-72 overflow-y-auto pr-1 border border-slate-100 rounded-xl bg-slate-50/50 py-2">
+                                  {renderCategoryTree(categoryTree)}
                                 </div>
                             )}
                         </div>

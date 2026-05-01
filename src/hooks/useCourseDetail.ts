@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { courseDetailApi, type CreateCourseDetailBody, type UpdateCourseDetailBody } from '../api/courseDetail';
+import { toast } from 'sonner';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Get course detail
 export const useCourseDetail = (courseId: string) => {
@@ -19,6 +25,10 @@ export const useCreateCourseDetail = () => {
       courseDetailApi.createCourseDetail(courseId, body),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['course-detail', variables.courseId] });
+      toast.success('Đã tạo chi tiết khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể tạo chi tiết khóa học.'));
     },
   });
 };
@@ -32,6 +42,10 @@ export const useUpdateCourseDetail = () => {
       courseDetailApi.updateCourseDetail(courseId, body),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['course-detail', variables.courseId] });
+      toast.success('Đã cập nhật chi tiết khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật chi tiết khóa học.'));
     },
   });
 };
@@ -44,6 +58,10 @@ export const useDeleteCourseDetail = () => {
     mutationFn: (courseId: string) => courseDetailApi.deleteCourseDetail(courseId),
     onSuccess: (_, courseId) => {
       queryClient.invalidateQueries({ queryKey: ['course-detail', courseId] });
+      toast.success('Đã xóa chi tiết khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể xóa chi tiết khóa học.'));
     },
   });
 };

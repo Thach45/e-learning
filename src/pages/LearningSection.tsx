@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { 
   X, 
   ChevronLeft, 
@@ -505,15 +505,11 @@ const LearningPage = () => {
       { lessonId: currentLessonId, body },
       {
         onSuccess: () => {
-          toast.success(replyingTo ? 'Đã gửi phản hồi!' : 'Đã gửi comment!');
           setCommentContent('');
           setReplyingTo(null);
           // Reset to page 1 to show new comment
           setCommentsPage(1);
           setAllComments([]);
-        },
-        onError: (error: any) => {
-          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
         },
       }
     );
@@ -531,12 +527,8 @@ const LearningPage = () => {
       { lessonId: currentLessonId, commentId, body: { content: editContent.trim() } },
       {
         onSuccess: () => {
-          toast.success('Đã cập nhật comment!');
           setEditingComment(null);
           setEditContent('');
-        },
-        onError: (error: any) => {
-          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
         },
       }
     );
@@ -546,17 +538,7 @@ const LearningPage = () => {
     if (!currentLessonId) return;
     if (!confirm('Bạn có chắc muốn xóa comment này?')) return;
 
-    deleteCommentMutation.mutate(
-      { lessonId: currentLessonId, commentId },
-      {
-        onSuccess: () => {
-          toast.success('Đã xóa comment!');
-        },
-        onError: (error: any) => {
-          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
-        },
-      }
-    );
+    deleteCommentMutation.mutate({ lessonId: currentLessonId, commentId });
   };
 
   const formatDate = (dateString: string) => {

@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { coursesApi, type CourseListParams, type CourseWithDetail, type Course } from '../api/courses';
+import { toast } from 'sonner';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Get all courses
 export const useCourses = (params?: CourseListParams) => {
@@ -26,6 +32,10 @@ export const useCreateCourse = () => {
     mutationFn: (body: Partial<Course>) => coursesApi.createCourse(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      toast.success('Đã tạo khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể tạo khóa học.'));
     },
   });
 };
@@ -40,6 +50,10 @@ export const useUpdateCourse = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
       queryClient.invalidateQueries({ queryKey: ['course', variables.id] });
+      toast.success('Đã cập nhật khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật khóa học.'));
     },
   });
 };
@@ -52,6 +66,10 @@ export const useDeleteCourse = () => {
     mutationFn: (id: string) => coursesApi.deleteCourse(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      toast.success('Đã xóa khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể xóa khóa học.'));
     },
   });
 };

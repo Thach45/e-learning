@@ -3,7 +3,7 @@ import { Copy, CheckCircle, Loader2, AlertCircle, QrCode, Building2, ShieldCheck
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import { useQrCode } from '../hooks/useOrders';
 import { ordersApi } from '../api/orders';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useState, useEffect, useRef } from 'react';
 
 const formatVND = (amount: number) =>

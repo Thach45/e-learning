@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { 
   Star, 
   PlayCircle, 
@@ -133,34 +133,13 @@ const CourseDetailPage = () => {
   const [reviewComment, setReviewComment] = useState('');
   
   const handleAddToCart = (courseId: string) => {
-    addToCartMutation.mutate(courseId, {
-      onSuccess: () => {
-        toast.success('Đã thêm khóa học vào giỏ hàng!', {
-          icon: '🛒',
-        });
-      },
-      onError: (error: any) => {
-        const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi thêm vào giỏ hàng';
-        toast.error(errorMessage);
-      },
-    });
+    addToCartMutation.mutate(courseId);
   };
   const handleToggleWishlist = () => {
     if (isInWishlist) {
-      removeFromWishlistMutation.mutate(courseId, {
-        onSuccess: () => {
-          toast.success('Đã xóa khỏi yêu thích');
-        },
-      });
+      removeFromWishlistMutation.mutate(courseId);
     } else {
-      addToWishlistMutation.mutate(courseId, {
-        onSuccess: () => {
-          toast.success('Đã thêm vào yêu thích! ❤️');
-        },
-        onError: (error: any) => {
-          toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
-        },
-      });
+      addToWishlistMutation.mutate(courseId);
     }
   };
 
@@ -179,17 +158,10 @@ const CourseDetailPage = () => {
       { courseId, body },
       {
         onSuccess: () => {
-          toast.success('Đánh giá của bạn đã được gửi!', {
-            icon: '⭐',
-          });
           setShowReviewForm(false);
           setReviewComment('');
           setReviewRating(5);
           refetchMyReview();
-        },
-        onError: (error: any) => {
-          const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi gửi đánh giá';
-          toast.error(errorMessage);
         },
       }
     );

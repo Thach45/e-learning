@@ -5,7 +5,7 @@ import { useCreateDocument } from '../../hooks/useDocuments';
 import { useDocumentCategories } from '../../hooks/useDocumentCategories';
 import { useDocumentTags } from '../../hooks/useDocumentTags';
 import type { MaterialType } from '../../api/documents';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 type UploadDocumentModalProps = {
   isOpen: boolean;

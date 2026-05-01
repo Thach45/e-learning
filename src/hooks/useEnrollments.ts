@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { enrollmentsApi, type GetEnrollmentsParams, type Enrollment, type EnrollmentStats, type GetCourseContentsResponse, type LessonDetail } from '../api/enrollments';
+import { toast } from 'sonner';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Get my enrollments
 export const useMyEnrollments = (params?: GetEnrollmentsParams) => {
@@ -27,6 +33,10 @@ export const useEnrollInCourse = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-enrollments'] });
       queryClient.invalidateQueries({ queryKey: ['my-enrollment-stats'] });
+      toast.success('Ghi danh khóa học thành công.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể ghi danh khóa học.'));
     },
   });
 };
@@ -40,6 +50,10 @@ export const useCompleteCourse = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-enrollments'] });
       queryClient.invalidateQueries({ queryKey: ['my-enrollment-stats'] });
+      toast.success('Đã đánh dấu hoàn thành khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật trạng thái hoàn thành.'));
     },
   });
 };

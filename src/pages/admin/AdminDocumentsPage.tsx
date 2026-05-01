@@ -34,7 +34,7 @@ import {
 import type { Document, DocumentSort } from '../../api/documents';
 import type { DocumentCategory } from '../../api/documentCategories';
 import type { DocumentTag } from '../../api/documentTags';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 const UNIVERSITIES = [
   'ĐH Bách Khoa Hà Nội',
@@ -150,21 +150,12 @@ const DocumentsTab = () => {
       );
 
   const handleToggleVerify = (id: string, currentStatus: boolean) => {
-    toggleVerifyMutation.mutate(
-      { id, isVerified: !currentStatus },
-      {
-        onSuccess: () => toast.success(currentStatus ? 'Đã gỡ xác nhận' : 'Đã xác nhận tài liệu'),
-        onError: () => toast.error('Có lỗi xảy ra'),
-      }
-    );
+    toggleVerifyMutation.mutate({ id, isVerified: !currentStatus });
   };
 
   const handleDelete = (id: string) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa tài liệu này?')) {
-      deleteDocumentMutation.mutate(id, {
-        onSuccess: () => toast.success('Đã xóa tài liệu'),
-        onError: () => toast.error('Có lỗi xảy ra khi xóa'),
-      });
+      deleteDocumentMutation.mutate(id);
     }
   };
 
@@ -413,20 +404,11 @@ const CategoriesTab = () => {
   const handleEdit = (category: DocumentCategory) => { setEditingCategory(category); setIsModalOpen(true); };
   const handleDelete = (id: string, name: string) => {
     if (window.confirm(`Bạn có chắc chắn muốn xóa lĩnh vực "${name}"?`)) {
-      deleteMutation.mutate(id, {
-        onSuccess: () => toast.success('Đã xóa lĩnh vực'),
-        onError: () => toast.error('Có lỗi xảy ra khi xóa'),
-      });
+      deleteMutation.mutate(id);
     }
   };
   const handleToggleActive = (category: DocumentCategory) => {
-    updateMutation.mutate(
-      { id: category.id, body: { isActive: !category.isActive } },
-      {
-        onSuccess: () => toast.success(category.isActive ? 'Đã ẩn lĩnh vực' : 'Đã hiện lĩnh vực'),
-        onError: () => toast.error('Có lỗi xảy ra'),
-      }
-    );
+    updateMutation.mutate({ id: category.id, body: { isActive: !category.isActive } });
   };
 
   return (
@@ -528,18 +510,9 @@ const CategoriesTab = () => {
           onClose={() => setIsModalOpen(false)}
           onSubmit={(data) => {
             if (editingCategory) {
-              updateMutation.mutate(
-                { id: editingCategory.id, body: data },
-                {
-                  onSuccess: () => { toast.success('Đã cập nhật lĩnh vực'); setIsModalOpen(false); },
-                  onError: () => toast.error('Có lỗi xảy ra'),
-                }
-              );
+              updateMutation.mutate({ id: editingCategory.id, body: data }, { onSuccess: () => setIsModalOpen(false) });
             } else {
-              createMutation.mutate(data, {
-                onSuccess: () => { toast.success('Đã thêm lĩnh vực mới'); setIsModalOpen(false); },
-                onError: () => toast.error('Có lỗi xảy ra'),
-              });
+              createMutation.mutate(data, { onSuccess: () => setIsModalOpen(false) });
             }
           }}
           isLoading={createMutation.isPending || updateMutation.isPending}
@@ -570,20 +543,11 @@ const TagsTab = () => {
   const handleEdit = (tag: DocumentTag) => { setEditingTag(tag); setIsModalOpen(true); };
   const handleDelete = (id: string, name: string) => {
     if (window.confirm(`Bạn có chắc chắn muốn xóa từ khóa "${name}"?`)) {
-      deleteMutation.mutate(id, {
-        onSuccess: () => toast.success('Đã xóa từ khóa'),
-        onError: () => toast.error('Có lỗi xảy ra khi xóa'),
-      });
+      deleteMutation.mutate(id);
     }
   };
   const handleToggleActive = (tag: DocumentTag) => {
-    updateMutation.mutate(
-      { id: tag.id, body: { isActive: !tag.isActive } },
-      {
-        onSuccess: () => toast.success(tag.isActive ? 'Đã ẩn từ khóa' : 'Đã hiện từ khóa'),
-        onError: () => toast.error('Có lỗi xảy ra'),
-      }
-    );
+    updateMutation.mutate({ id: tag.id, body: { isActive: !tag.isActive } });
   };
 
   return (
@@ -686,18 +650,9 @@ const TagsTab = () => {
           onClose={() => setIsModalOpen(false)}
           onSubmit={(data) => {
             if (editingTag) {
-              updateMutation.mutate(
-                { id: editingTag.id, body: data },
-                {
-                  onSuccess: () => { toast.success('Đã cập nhật từ khóa'); setIsModalOpen(false); },
-                  onError: () => toast.error('Có lỗi xảy ra'),
-                }
-              );
+              updateMutation.mutate({ id: editingTag.id, body: data }, { onSuccess: () => setIsModalOpen(false) });
             } else {
-              createMutation.mutate(data, {
-                onSuccess: () => { toast.success('Đã thêm từ khóa mới'); setIsModalOpen(false); },
-                onError: () => toast.error('Có lỗi xảy ra'),
-              });
+              createMutation.mutate(data, { onSuccess: () => setIsModalOpen(false) });
             }
           }}
           isLoading={createMutation.isPending || updateMutation.isPending}

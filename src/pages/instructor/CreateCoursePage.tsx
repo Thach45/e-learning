@@ -2,14 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import { useCreateInstructorCourse } from '../../hooks/useInstructorCourses';
-import { useCategories } from '../../hooks/useCategories';
+import { useAdminCategories } from '../../hooks/useAdminCategories';
 import ImageUpload from '../../components/common/ImageUpload';
 import type { CourseLevel } from '../../api/instructor';
 
 const CreateCoursePage = () => {
   const navigate = useNavigate();
   const createMutation = useCreateInstructorCourse();
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: categories, isLoading: categoriesLoading } = useAdminCategories();
+  const leafCategories = (categories || []).filter(
+    (category) => !(categories || []).some((item) => item.parentId === category.id)
+  );
 
   const [formData, setFormData] = useState({
     title: '',
@@ -187,7 +190,7 @@ const CreateCoursePage = () => {
                 className="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all"
               >
                 <option value="">Chọn danh mục</option>
-                {categories?.map((category) => (
+                {leafCategories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>

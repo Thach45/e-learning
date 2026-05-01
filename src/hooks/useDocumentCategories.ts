@@ -1,10 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
   documentCategoriesApi,
   type GetDocumentCategoriesParams,
   type CreateDocumentCategoryBody,
   type UpdateDocumentCategoryBody,
 } from '../api/documentCategories';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Query keys
 const DOCUMENT_CATEGORIES_KEY = 'document-categories';
@@ -33,6 +39,10 @@ export const useCreateDocumentCategory = () => {
     mutationFn: (body: CreateDocumentCategoryBody) => documentCategoriesApi.createCategory(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENT_CATEGORIES_KEY] });
+      toast.success('Đã tạo lĩnh vực tài liệu.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Tạo lĩnh vực thất bại.'));
     },
   });
 };
@@ -45,6 +55,10 @@ export const useUpdateDocumentCategory = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENT_CATEGORIES_KEY] });
       queryClient.invalidateQueries({ queryKey: [DOCUMENT_CATEGORY_KEY, variables.id] });
+      toast.success('Đã cập nhật lĩnh vực tài liệu.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Cập nhật lĩnh vực thất bại.'));
     },
   });
 };
@@ -55,6 +69,10 @@ export const useDeleteDocumentCategory = () => {
     mutationFn: (id: string) => documentCategoriesApi.deleteCategory(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENT_CATEGORIES_KEY] });
+      toast.success('Đã xóa lĩnh vực tài liệu.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Xóa lĩnh vực thất bại.'));
     },
   });
 };

@@ -1,10 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { 
   reviewsApi, 
   type GetReviewsParams, 
   type CreateReviewBody, 
   type UpdateReviewBody 
 } from '../api/reviews';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Get reviews by course
 export const useReviewsByCourse = (courseId: string, params?: Omit<GetReviewsParams, 'courseId'>) => {
@@ -41,6 +47,10 @@ export const useCreateReview = () => {
       queryClient.invalidateQueries({ queryKey: ['course', variables.courseId] });
       // Invalidate course list (if rating affects listing)
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      toast.success('Đã gửi đánh giá.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể gửi đánh giá.'));
     },
   });
 };
@@ -65,6 +75,10 @@ export const useUpdateReview = () => {
       queryClient.invalidateQueries({ queryKey: ['instructor', 'reviews', 'course', variables.courseId] });
       queryClient.invalidateQueries({ queryKey: ['reviews', 'course', variables.courseId] });
       queryClient.invalidateQueries({ queryKey: ['course', variables.courseId] });
+      toast.success('Đã cập nhật đánh giá.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật đánh giá.'));
     },
   });
 };
@@ -80,6 +94,10 @@ export const useDeleteReview = () => {
       queryClient.invalidateQueries({ queryKey: ['instructor', 'reviews', 'course', variables.courseId] });
       queryClient.invalidateQueries({ queryKey: ['reviews', 'course', variables.courseId] });
       queryClient.invalidateQueries({ queryKey: ['course', variables.courseId] });
+      toast.success('Đã xóa đánh giá.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể xóa đánh giá.'));
     },
   });
 };
@@ -113,6 +131,10 @@ export const useUpdateReviewAdmin = () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'reviews', 'course', variables.courseId] });
       queryClient.invalidateQueries({ queryKey: ['reviews', 'course', variables.courseId] });
       queryClient.invalidateQueries({ queryKey: ['course', variables.courseId] });
+      toast.success('Đã cập nhật đánh giá.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật đánh giá.'));
     },
   });
 };
@@ -129,6 +151,10 @@ export const useDeleteReviewAdmin = () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'reviews', 'course', variables.courseId] });
       queryClient.invalidateQueries({ queryKey: ['reviews', 'course', variables.courseId] });
       queryClient.invalidateQueries({ queryKey: ['course', variables.courseId] });
+      toast.success('Đã xóa đánh giá.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể xóa đánh giá.'));
     },
   });
 };

@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminCoursesApi, type GetAdminCoursesParams } from '../api/admin';
+import { toast } from 'sonner';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Get admin courses
 export const useAdminCourses = (params?: GetAdminCoursesParams) => {
@@ -30,6 +36,10 @@ export const useApprovePublish = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'course', id] });
+      toast.success('Đã duyệt xuất bản khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể duyệt xuất bản.'));
     },
   });
 };
@@ -43,6 +53,10 @@ export const useRejectPublish = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'course', id] });
+      toast.success('Đã từ chối xuất bản khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể từ chối xuất bản.'));
     },
   });
 };
@@ -55,6 +69,10 @@ export const useApproveDelete = () => {
     mutationFn: (id: string) => adminCoursesApi.approveDelete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
+      toast.success('Đã duyệt xóa khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể duyệt xóa khóa học.'));
     },
   });
 };
@@ -68,6 +86,10 @@ export const useRejectDelete = () => {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'course', id] });
+      toast.success('Đã từ chối xóa khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể từ chối xóa khóa học.'));
     },
   });
 };

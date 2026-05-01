@@ -223,9 +223,24 @@ export type AdminCategory = {
   name: string;
   imageUrl?: string | null;
   parentId?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  isActive: boolean;
+  countCourses: number;
+};
+
+const normalizeAdminCategoryList = (payload: unknown): AdminCategory[] => {
+  if (Array.isArray(payload)) {
+    return payload as AdminCategory[];
+  }
+
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    'data' in payload &&
+    Array.isArray((payload as { data?: unknown }).data)
+  ) {
+    return (payload as { data: AdminCategory[] }).data;
+  }
+
+  return [];
 };
 
 export type CreateCategoryBody = {
@@ -247,7 +262,7 @@ export const adminCategoriesApi = {
   // Get all categories
   getCategories: async (): Promise<AdminCategory[]> => {
     const response = await apiClient.get('/admin/categories');
-    return response.data.data;
+    return normalizeAdminCategoryList(response.data.data);
   },
 
   // Get category by ID

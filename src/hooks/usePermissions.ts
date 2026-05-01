@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { permissionsApi, type Permission, type CreatePermissionBody, type UpdatePermissionBody, type GetPermissionsParams } from '../api/permissions';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 // Get list permissions
 export const usePermissions = (params?: GetPermissionsParams) => {

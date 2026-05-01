@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 import { useLogin, useGoogleLogin } from '../../hooks/useAuth';
-import { toast } from '../../custome';
 
 const LoginPage = () => {
   const [searchParams] = useSearchParams();
@@ -39,15 +38,7 @@ const LoginPage = () => {
     e.preventDefault();
     setErrors({});
 
-    loginMutation.mutate(formData, {
-      onError: (error: any) => {
-        if (error.response?.data?.field === 'password') {
-          toast.error(error.response.data.message || 'Mật khẩu không đúng');
-        } else {
-          toast.error(error.response?.data?.message || 'Đăng nhập thất bại');
-        }
-      },
-    });
+    loginMutation.mutate(formData);
   };
 
   const handleGoogleLogin = () => {

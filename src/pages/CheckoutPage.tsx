@@ -4,7 +4,7 @@ import { CreditCard, ShieldCheck, Tag, Loader2 } from 'lucide-react';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import { useGetCart } from '../hooks/useCart';
 import { useCreateOrder } from '../hooks/useOrders';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 const formatVND = (amount: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -62,11 +62,7 @@ const CheckoutPage = () => {
 
     createOrderMutation.mutate({}, {
       onSuccess: (order) => {
-        toast.success('Đã tạo đơn hàng thành công!');
         navigate(`/payment/${order.id}`);
-      },
-      onError: (error: any) => {
-        toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi tạo đơn hàng');
       },
     });
   };

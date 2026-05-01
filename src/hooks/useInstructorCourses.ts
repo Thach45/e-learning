@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { instructorCoursesApi, type GetInstructorCoursesParams, type CreateCourseBody, type UpdateCourseBody } from '../api/instructor';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 const getErrorMessage = (error: unknown, fallback: string) => {
   const maybeAxiosError = error as { response?: { data?: { message?: string } } };

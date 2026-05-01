@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ordersApi, type GetOrdersParams, type CreateOrderBody, type UpdateOrderStatusBody } from '../api/orders';
+import { toast } from 'sonner';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Get my orders
 export const useMyOrders = (params?: GetOrdersParams) => {
@@ -27,6 +33,10 @@ export const useCreateOrder = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-orders'] });
       queryClient.invalidateQueries({ queryKey: ['cart'] });
+      toast.success('Tạo đơn hàng thành công.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể tạo đơn hàng.'));
     },
   });
 };
@@ -40,6 +50,10 @@ export const usePayOrder = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-orders'] });
       queryClient.invalidateQueries({ queryKey: ['my-courses'] });
+      toast.success('Thanh toán đơn hàng thành công.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Thanh toán thất bại.'));
     },
   });
 };
@@ -71,6 +85,10 @@ export const useUpdateOrderStatus = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'order', variables.orderId] });
+      toast.success('Cập nhật trạng thái đơn hàng thành công.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật trạng thái đơn hàng.'));
     },
   });
 };

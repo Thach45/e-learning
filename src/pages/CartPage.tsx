@@ -1,6 +1,5 @@
 import { Trash2, CreditCard, ShieldCheck, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import Breadcrumbs from '../components/common/Breadcrumbs';
 import { useGetCart, useRemoveFromCart } from '../hooks/useCart';
 
@@ -42,17 +41,7 @@ const CartPage = () => {
 
   const handleRemoveFromCart = (courseId: string, courseTitle: string) => {
     if (window.confirm(`Bạn có chắc chắn muốn xóa "${courseTitle}" khỏi giỏ hàng?`)) {
-      removeFromCartMutation.mutate(courseId, {
-        onSuccess: () => {
-          toast.success(`Đã xóa "${courseTitle}" khỏi giỏ hàng`, {
-            icon: '🗑️',
-          });
-        },
-        onError: (error: any) => {
-          const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi xóa khỏi giỏ hàng';
-          toast.error(errorMessage);
-        },
-      });
+      removeFromCartMutation.mutate(courseId);
     }
   };
 

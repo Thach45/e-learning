@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminUsersApi, type GetAdminUsersParams, type CreateUserBody, type UpdateUserBody, type UpdateUserStatusBody } from '../api/admin';
+import { toast } from 'sonner';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Get admin users
 export const useAdminUsers = (params?: GetAdminUsersParams) => {
@@ -29,6 +35,10 @@ export const useCreateAdminUser = () => {
     mutationFn: (body: CreateUserBody) => adminUsersApi.createUser(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      toast.success('Đã tạo người dùng.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể tạo người dùng.'));
     },
   });
 };
@@ -43,6 +53,10 @@ export const useUpdateAdminUser = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'user', variables.id] });
+      toast.success('Đã cập nhật người dùng.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật người dùng.'));
     },
   });
 };
@@ -55,6 +69,10 @@ export const useDeleteAdminUser = () => {
     mutationFn: (id: string) => adminUsersApi.deleteUser(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      toast.success('Đã xóa người dùng.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể xóa người dùng.'));
     },
   });
 };
@@ -69,6 +87,10 @@ export const useUpdateAdminUserStatus = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'user', variables.id] });
+      toast.success('Đã cập nhật trạng thái người dùng.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật trạng thái người dùng.'));
     },
   });
 };

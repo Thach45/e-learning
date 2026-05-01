@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { wishlistApi, type GetWishlistParams } from '../api/wishlist';
+import { toast } from 'sonner';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Get my wishlist
 export const useMyWishlist = (params?: GetWishlistParams) => {
@@ -27,6 +33,10 @@ export const useAddToWishlist = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-wishlist'] });
       queryClient.invalidateQueries({ queryKey: ['wishlist-check'] });
+      toast.success('Đã thêm vào danh sách yêu thích.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể thêm vào danh sách yêu thích.'));
     },
   });
 };
@@ -40,6 +50,10 @@ export const useRemoveFromWishlist = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-wishlist'] });
       queryClient.invalidateQueries({ queryKey: ['wishlist-check'] });
+      toast.success('Đã xóa khỏi danh sách yêu thích.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể xóa khỏi danh sách yêu thích.'));
     },
   });
 };

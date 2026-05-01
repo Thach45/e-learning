@@ -54,20 +54,9 @@ export const PermissionFormModal = ({ isOpen, onClose, permission }: PermissionF
     };
 
     if (isEditMode && permission) {
-      updateMutation.mutate(
-        { id: permission.id, body },
-        {
-          onSuccess: () => {
-            onClose();
-          },
-        }
-      );
+      updateMutation.mutate({ id: permission.id, body }, { onSuccess: onClose });
     } else {
-      createMutation.mutate(body, {
-        onSuccess: () => {
-          onClose();
-        },
-      });
+      createMutation.mutate(body, { onSuccess: onClose });
     }
   };
 

@@ -1,10 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { 
   commentsApi, 
   type GetCommentsParams, 
   type CreateCommentBody, 
   type UpdateCommentBody 
 } from '../api/comments';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Get comments by lesson
 export const useCommentsByLesson = (lessonId: string, params?: Omit<GetCommentsParams, 'lessonId'>) => {
@@ -38,6 +44,10 @@ export const useCreateComment = () => {
       if (variables.body.parentId) {
         queryClient.invalidateQueries({ queryKey: ['comment', variables.lessonId, variables.body.parentId] });
       }
+      toast.success(variables.body.parentId ? 'Đã gửi phản hồi.' : 'Đã gửi bình luận.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể gửi bình luận.'));
     },
   });
 };
@@ -52,6 +62,10 @@ export const useUpdateComment = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['comments', 'lesson', variables.lessonId] });
       queryClient.invalidateQueries({ queryKey: ['comment', variables.lessonId, variables.commentId] });
+      toast.success('Đã cập nhật bình luận.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật bình luận.'));
     },
   });
 };
@@ -66,6 +80,10 @@ export const useDeleteComment = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['comments', 'lesson', variables.lessonId] });
       queryClient.invalidateQueries({ queryKey: ['comment', variables.lessonId, variables.commentId] });
+      toast.success('Đã xóa bình luận.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể xóa bình luận.'));
     },
   });
 };
@@ -89,6 +107,10 @@ export const useUpdateCommentAdmin = () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'comments'] });
       queryClient.invalidateQueries({ queryKey: ['comments', 'lesson', variables.lessonId] });
       queryClient.invalidateQueries({ queryKey: ['comment', variables.lessonId, variables.commentId] });
+      toast.success('Đã cập nhật bình luận.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật bình luận.'));
     },
   });
 };
@@ -104,6 +126,10 @@ export const useDeleteCommentAdmin = () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'comments'] });
       queryClient.invalidateQueries({ queryKey: ['comments', 'lesson', variables.lessonId] });
       queryClient.invalidateQueries({ queryKey: ['comment', variables.lessonId, variables.commentId] });
+      toast.success('Đã xóa bình luận.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể xóa bình luận.'));
     },
   });
 };

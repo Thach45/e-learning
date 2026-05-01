@@ -1,56 +1,13 @@
-import { Code, Briefcase, PenTool, Megaphone, Cpu, Smile, BookOpen } from 'lucide-react';
 import HeroSection from '../components/home/HeroSection';
-import PurchaseFlowSection from '../components/home/PurchaseFlowSection';
-import TrustedCompaniesSection from '../components/home/TrustedCompaniesSection';
 import CategoriesSection, { type Category } from '../components/home/CategoriesSection';
 import FeaturedCoursesSection, { type Course } from '../components/home/FeaturedCoursesSection';
 import NewsletterSection from '../components/home/NewsletterSection';
 import { useCategories } from '../hooks/useCategories';
 import { useCourses } from '../hooks/useCourses';
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { coursesApi } from '../api/courses';
 
 const formatVND = (amount: number) => 
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
-
-// Map category icons and colors
-const getCategoryIcon = (name: string) => {
-  const lowerName = name.toLowerCase();
-  if (lowerName.includes('lập trình') || lowerName.includes('programming') || lowerName.includes('code')) {
-    return <Code size={24} />;
-  }
-  if (lowerName.includes('kinh doanh') || lowerName.includes('business')) {
-    return <Briefcase size={24} />;
-  }
-  if (lowerName.includes('thiết kế') || lowerName.includes('design')) {
-    return <PenTool size={24} />;
-  }
-  if (lowerName.includes('marketing')) {
-    return <Megaphone size={24} />;
-  }
-  if (lowerName.includes('công nghệ') || lowerName.includes('technology') || lowerName.includes('tech')) {
-    return <Cpu size={24} />;
-  }
-  if (lowerName.includes('kỹ năng') || lowerName.includes('skill')) {
-    return <Smile size={24} />;
-  }
-  return <BookOpen size={24} />;
-};
-
-const getCategoryColor = (index: number) => {
-  const colors = [
-    'bg-blue-50 text-blue-600',
-    'bg-emerald-50 text-emerald-600',
-    'bg-purple-50 text-purple-600',
-    'bg-orange-50 text-orange-600',
-    'bg-indigo-50 text-indigo-600',
-    'bg-pink-50 text-pink-600',
-    'bg-cyan-50 text-cyan-600',
-    'bg-amber-50 text-amber-600',
-  ];
-  return colors[index % colors.length];
-};
 
 const HomePage = () => {
   // Fetch categories
@@ -64,41 +21,20 @@ const HomePage = () => {
     status: 'PUBLISHED',
   });
 
-  // Fetch course counts for each category
-  const { data: allCoursesData } = useQuery({
-    queryKey: ['courses', 'all-for-count'],
-    queryFn: () => coursesApi.getCourses({ page: 1, limit: 1000, status: 'PUBLISHED' }),
-    
-    enabled: !!categoriesData,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
-
   // Transform categories data
   const categories: Category[] = useMemo(() => {
     if (!categoriesData) return [];
-    
-    // Count courses per category
-    const courseCountMap = new Map<string, number>();
-   
-    if (allCoursesData?.data) {
-      allCoursesData.data.forEach(course => {
-        if (course.categoryId) {
-          courseCountMap.set(course.categoryId, (courseCountMap.get(course.categoryId) || 0) + 1);
-        }
-      });
-    }
-    
+
     return categoriesData
-      .filter(cat => cat.isActive && !cat.parentId) // Only show top-level active categories
+      .filter(cat => !cat.parentId) // Public API now returns tree roots here
       .slice(0, 6) // Limit to 6 categories
-      .map((cat, index) => ({
+      .map((cat) => ({
         id: cat.id,
         name: cat.name,
-        count: courseCountMap.get(cat.id) || 0,
-        icon: getCategoryIcon(cat.name),
-        color: getCategoryColor(index),
+        count: cat.countCourses || 0,
+        imageUrl: cat.imageUrl,
       }));
-  }, [categoriesData, allCoursesData]);
+  }, [categoriesData]);
 
   // Transform courses data
   const courses: Course[] = useMemo(() => {

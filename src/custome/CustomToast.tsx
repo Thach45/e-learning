@@ -1,10 +1,10 @@
-import { default as hotToast, type Toast } from 'react-hot-toast';
+import { toast as sonnerToast } from 'sonner';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 interface CustomToastProps {
-  t: Toast;
+  toastId: string | number;
   message: string;
   type: ToastType;
   duration: number;
@@ -45,7 +45,7 @@ const typeStyles = {
   },
 };
 
-const ToastContent = ({ t, message, type, duration }: CustomToastProps) => {
+const ToastContent = ({ toastId, message, type, duration }: CustomToastProps) => {
   const style = typeStyles[type];
   const Icon = style.icon;
 
@@ -53,8 +53,7 @@ const ToastContent = ({ t, message, type, duration }: CustomToastProps) => {
     <div
       className={`overflow-hidden rounded-xl border ${style.border} ${style.bg}
         min-w-[320px] max-w-md shadow-[0_10px_40px_-12px_rgba(0,0,0,0.25)]
-        transition-[transform,opacity] duration-300 ease-out
-        ${t.visible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}
+        transition-[transform,opacity] duration-300 ease-out translate-x-0 opacity-100`}
     >
       <div className="flex items-center gap-3 px-4 py-3">
         <div
@@ -66,7 +65,7 @@ const ToastContent = ({ t, message, type, duration }: CustomToastProps) => {
           {message}
         </p>
         <button
-          onClick={() => hotToast.dismiss(t.id)}
+          onClick={() => sonnerToast.dismiss(toastId)}
           className="flex-shrink-0 w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors"
           aria-label="Đóng"
         >
@@ -89,10 +88,10 @@ const ToastContent = ({ t, message, type, duration }: CustomToastProps) => {
 
 export const toast = {
   success: (message: string, duration = 4000) => {
-    hotToast.custom(
-      (t) => (
+    sonnerToast.custom(
+      (toastId) => (
         <ToastContent
-          t={t}
+          toastId={toastId}
           message={message}
           type="success"
           duration={duration}
@@ -103,10 +102,10 @@ export const toast = {
   },
 
   error: (message: string, duration = 5000) => {
-    hotToast.custom(
-      (t) => (
+    sonnerToast.custom(
+      (toastId) => (
         <ToastContent
-          t={t}
+          toastId={toastId}
           message={message}
           type="error"
           duration={duration}
@@ -117,10 +116,10 @@ export const toast = {
   },
 
   warning: (message: string, duration = 4000) => {
-    hotToast.custom(
-      (t) => (
+    sonnerToast.custom(
+      (toastId) => (
         <ToastContent
-          t={t}
+          toastId={toastId}
           message={message}
           type="warning"
           duration={duration}
@@ -131,10 +130,10 @@ export const toast = {
   },
 
   info: (message: string, duration = 4000) => {
-    hotToast.custom(
-      (t) => (
+    sonnerToast.custom(
+      (toastId) => (
         <ToastContent
-          t={t}
+          toastId={toastId}
           message={message}
           type="info"
           duration={duration}

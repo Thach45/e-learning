@@ -2,11 +2,23 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { authApi, type LoginBody, type RegisterBody, type SendOtpBody, type ForgotPasswordBody } from '../api/auth';
+import { toast } from 'sonner';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Send OTP Mutation
 export const useSendOtp = () => {
   return useMutation({
     mutationFn: (body: SendOtpBody) => authApi.sendOtp(body),
+    onSuccess: () => {
+      toast.success('Đã gửi mã OTP.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể gửi OTP.'));
+    },
   });
 };
 
@@ -17,7 +29,11 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: (body: RegisterBody) => authApi.register(body),
     onSuccess: () => {
+      toast.success('Đăng ký thành công. Vui lòng đăng nhập.');
       navigate('/auth/login?registered=true');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Đăng ký thất bại.'));
     },
   });
 };
@@ -33,7 +49,11 @@ export const useLogin = (redirectTo?: string) => {
       // Invalidate và refetch user info sau khi login
       await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
       queryClient.invalidateQueries({ queryKey: ['user'] });
+      toast.success('Đăng nhập thành công.');
       navigate(redirectTo || '/');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Đăng nhập thất bại.'));
     },
   });
 };
@@ -55,6 +75,7 @@ export const useLogout = () => {
       // Remove auth/me cache khi logout
       queryClient.removeQueries({ queryKey: ['auth', 'me'] });
       queryClient.clear();
+      toast.success('Đăng xuất thành công.');
       navigate('/auth/login');
     },
     onError: () => {
@@ -64,6 +85,7 @@ export const useLogout = () => {
       // Remove auth/me cache khi logout
       queryClient.removeQueries({ queryKey: ['auth', 'me'] });
       queryClient.clear();
+      toast.error('Phiên đăng nhập đã kết thúc.');
       navigate('/auth/login');
     },
   });
@@ -76,7 +98,11 @@ export const useForgotPassword = () => {
   return useMutation({
     mutationFn: (body: ForgotPasswordBody) => authApi.forgotPassword(body),
     onSuccess: () => {
+      toast.success('Đặt lại mật khẩu thành công.');
       navigate('/auth/login?passwordReset=true');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể đặt lại mật khẩu.'));
     },
   });
 };
@@ -89,6 +115,9 @@ export const useGoogleLogin = () => {
       if (data?.data?.link) {
         window.location.href = data.data.link;
       }
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể khởi tạo đăng nhập Google.'));
     },
   });
 };

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Loader2, AlertCircle, Save, FileText, Info, BookOpen } from 'lucide-react';
 import { useInstructorCourse, useUpdateInstructorCourse } from '../../hooks/useInstructorCourses';
-import { useCategories } from '../../hooks/useCategories';
+import { useAdminCategories } from '../../hooks/useAdminCategories';
 import { useCourseDetail, useCreateCourseDetail, useUpdateCourseDetail } from '../../hooks/useCourseDetail';
 import ImageUpload from '../../components/common/ImageUpload';
 import type { CourseLevel } from '../../api/instructor';
@@ -17,7 +17,10 @@ const EditCoursePage = () => {
   const updateMutation = useUpdateInstructorCourse();
   const createDetailMutation = useCreateCourseDetail();
   const updateDetailMutation = useUpdateCourseDetail();
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: categories, isLoading: categoriesLoading } = useAdminCategories();
+  const leafCategories = (categories || []).filter(
+    (category) => !(categories || []).some((item) => item.parentId === category.id)
+  );
 
   const [formData, setFormData] = useState({
     title: '',
@@ -359,7 +362,7 @@ const EditCoursePage = () => {
                 className="w-full px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl focus:ring-2 focus:ring-purple-100 focus:border-purple-500 outline-none transition-all"
               >
                 <option value="">Chọn danh mục</option>
-                {categories?.map((category) => (
+                {leafCategories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>

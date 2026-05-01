@@ -1,6 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { documentsApi } from '../api/documents';
 import type { GetDocumentsParams, CreateDocumentBody, UpdateDocumentBody } from '../api/documents';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Query keys
 const DOCUMENTS_KEY = 'documents';
@@ -63,6 +69,10 @@ export const useCreateDocument = () => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [MY_DOCUMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [TOP_CONTRIBUTORS_KEY] });
+      toast.success('Đã đăng tài liệu thành công.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Đăng tài liệu thất bại.'));
     },
   });
 };
@@ -76,6 +86,10 @@ export const useUpdateDocument = () => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [DOCUMENT_KEY, variables.id] });
       queryClient.invalidateQueries({ queryKey: [MY_DOCUMENTS_KEY] });
+      toast.success('Đã cập nhật tài liệu.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Cập nhật tài liệu thất bại.'));
     },
   });
 };
@@ -88,6 +102,10 @@ export const useDeleteDocument = () => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [MY_DOCUMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [TOP_CONTRIBUTORS_KEY] });
+      toast.success('Đã xóa tài liệu.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Xóa tài liệu thất bại.'));
     },
   });
 };
@@ -101,6 +119,10 @@ export const useToggleLike = () => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENT_KEY, id] });
       queryClient.invalidateQueries({ queryKey: [TRENDING_KEY] });
       queryClient.invalidateQueries({ queryKey: [MY_LIKED_DOCUMENTS_KEY] });
+      toast.success('Đã cập nhật trạng thái yêu thích.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể cập nhật yêu thích.'));
     },
   });
 };
@@ -111,6 +133,9 @@ export const useTrackDownload = () => {
     mutationFn: (id: string) => documentsApi.trackDownload(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENT_KEY, id] });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể ghi nhận lượt tải.'));
     },
   });
 };
@@ -124,6 +149,10 @@ export const useToggleVerified = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [DOCUMENT_KEY, variables.id] });
+      toast.success('Đã cập nhật trạng thái xác minh tài liệu.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Cập nhật xác minh thất bại.'));
     },
   });
 };
@@ -135,6 +164,10 @@ export const useAdminDeleteDocument = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [DOCUMENTS_KEY] });
       queryClient.invalidateQueries({ queryKey: [TOP_CONTRIBUTORS_KEY] });
+      toast.success('Đã xóa tài liệu khỏi hệ thống.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Xóa tài liệu thất bại.'));
     },
   });
 };

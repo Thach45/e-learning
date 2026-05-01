@@ -1,5 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { instructorStudentsApi, type GetInstructorStudentsParams } from '../api/instructorStudents';
+import { toast } from 'sonner';
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  const maybeAxiosError = error as { response?: { data?: { message?: string } } };
+  return maybeAxiosError?.response?.data?.message || fallback;
+};
 
 // Get instructor students
 export const useInstructorStudents = (params?: GetInstructorStudentsParams) => {
@@ -17,6 +23,10 @@ export const useRemoveStudent = () => {
     mutationFn: (enrollmentId: string) => instructorStudentsApi.removeStudent(enrollmentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['instructor', 'students'] });
+      toast.success('Đã xóa học viên khỏi khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể xóa học viên.'));
     },
   });
 };
@@ -30,6 +40,10 @@ export const useAddStudentToCourse = () => {
       instructorStudentsApi.addStudentToCourse(courseId, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['instructor', 'students'] });
+      toast.success('Đã thêm học viên vào khóa học.');
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Không thể thêm học viên.'));
     },
   });
 };

@@ -17,7 +17,7 @@ import { useDocumentCategories } from '../hooks/useDocumentCategories';
 import type { Document, DocumentSort } from '../api/documents';
 import { useAuthStatus } from '../hooks/useAuthStatus';
 import UploadDocumentModal from '../components/community/UploadDocumentModal';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 // --- COMPONENTS ---
 
@@ -150,14 +150,7 @@ const CommunityPage = () => {
   const trackDownloadMutation = useTrackDownload();
 
   const handleLike = (id: string) => {
-    toggleLikeMutation.mutate(id, {
-      onSuccess: (data) => {
-        toast.success(data.liked ? 'Đã thích tài liệu' : 'Đã bỏ thích');
-      },
-      onError: () => {
-        toast.error('Có lỗi xảy ra');
-      },
-    });
+    toggleLikeMutation.mutate(id);
   };
 
   const handleDownload = (id: string, url: string) => {
