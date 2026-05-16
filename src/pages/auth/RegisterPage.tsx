@@ -67,7 +67,7 @@ const RegisterPage = () => {
     return (
       <div>
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">Đăng ký</h1>
+          <h1 className="text-3xl font-semibold text-slate-800 mb-2 tracking-tight">Đăng ký</h1>
           <p className="text-slate-500">Tạo tài khoản mới để bắt đầu học tập</p>
         </div>
 
@@ -102,7 +102,7 @@ const RegisterPage = () => {
           <button
             type="submit"
             disabled={sendOtpMutation.isPending}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {sendOtpMutation.isPending ? 'Đang gửi OTP...' : 'Gửi mã OTP'}
           </button>
@@ -110,7 +110,7 @@ const RegisterPage = () => {
 
         <div className="mt-6 text-center text-sm text-slate-600">
           <span>Đã có tài khoản? </span>
-          <Link to="/auth/login" className="font-semibold text-indigo-600 hover:text-indigo-700">
+          <Link to="/auth/login" className="font-semibold text-primary hover:text-primary-hover">
             Đăng nhập
           </Link>
         </div>
@@ -127,7 +127,7 @@ const RegisterPage = () => {
         >
           ← Quay lại
         </button>
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">Hoàn tất đăng ký</h1>
+        <h1 className="text-3xl font-semibold text-slate-800 mb-2 tracking-tight">Hoàn tất đăng ký</h1>
         <p className="text-slate-500">Nhập thông tin và mã OTP đã gửi đến {email}</p>
       </div>
 

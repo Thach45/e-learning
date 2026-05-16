@@ -104,7 +104,7 @@ const VideoPlayer = ({ videoUrl, storageType, thumbnailUrl }: { videoUrl?: strin
             >
               <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-transform hover:scale-110">
                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
-                    <Play size={32} className="text-indigo-600 fill-indigo-600 ml-1" />
+                    <Play size={32} className="text-primary fill-primary ml-1" />
                  </div>
               </div>
             </div>
@@ -381,7 +381,7 @@ const CourseSidebar = ({
   return (
     <aside className={`fixed inset-y-0 right-0 z-40 w-80 bg-white border-l border-slate-200 transform transition-transform duration-300 flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'} lg:relative lg:translate-x-0 lg:w-96`}>
        <div className="h-16 px-4 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
-          <h3 className="font-bold text-slate-800">Nội dung khóa học</h3>
+          <h3 className="font-semibold text-slate-800 tracking-tight">Nội dung khóa học</h3>
           <button onClick={onClose} className="lg:hidden p-2 hover:bg-slate-100 rounded-lg"><X size={20}/></button>
        </div>
 
@@ -593,10 +593,10 @@ const LearningPage = () => {
                <ChevronLeft size={20} />
             </button>
             <div className="flex items-center gap-3">
-               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-sm">E</div>
+               <img src="/assets/image.png" alt="U Đê Mê" className="w-8 h-8 rounded-lg object-cover shadow-lg shadow-indigo-600" />
                <div className="hidden md:block">
-                  <h1 className="text-sm font-bold leading-tight">Full Stack Web Development 2025</h1>
-                  <p className="text-xs text-slate-400">Đã hoàn thành 4/45 bài học</p>
+                  <h1 className="text-sm font-bold leading-tight">U Đê Mê Learning</h1>
+                  <p className="text-xs text-slate-400">Đang học tập</p>
                </div>
             </div>
          </div>

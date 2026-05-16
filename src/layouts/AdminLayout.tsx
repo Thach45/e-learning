@@ -42,12 +42,10 @@ const AdminLayout = () => {
         {/* Logo */}
         <div className="p-6 border-b border-slate-200">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-200">
-              A
-            </div>
+            <img src="/assets/image.png" alt="U Đê Mê" className="w-10 h-10 rounded-xl object-cover shadow-lg shadow-indigo-200" />
             <div>
               <h1 className="text-lg font-bold text-slate-800">Admin Panel</h1>
-              <p className="text-xs text-slate-500">E-Learning Platform</p>
+              <p className="text-xs text-slate-500">U Đê Mê Platform</p>
             </div>
           </div>
         </div>

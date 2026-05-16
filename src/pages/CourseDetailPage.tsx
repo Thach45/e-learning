@@ -45,7 +45,7 @@ const AccordionItem = ({ section, defaultOpen = false }: { section: { id: string
       >
         <div className="flex items-center gap-3">
           <span className="text-slate-400">{isOpen ? <ChevronDown size={20}/> : <ChevronRight size={20}/>}</span>
-          <h4 className="font-bold text-slate-800 text-sm md:text-base">{section.title}</h4>
+          <h4 className="font-semibold text-slate-800 text-sm md:text-base">{section.title}</h4>
         </div>
         <span className="text-xs text-slate-500 font-medium whitespace-nowrap">{section.lessons.length} bài học</span>
       </button>
@@ -81,7 +81,7 @@ const RelatedCourseCard = ({ course }: { course: { id: string; title: string; in
         )}
     </div>
     <div className="p-4 flex flex-col flex-1">
-        <h4 className="font-bold text-slate-900 text-sm mb-1 line-clamp-2 group-hover:text-indigo-600 transition-colors">{course.title}</h4>
+        <h4 className="font-semibold text-slate-900 text-sm mb-1 line-clamp-2 group-hover:text-primary transition-colors">{course.title}</h4>
         <p className="text-xs text-slate-500 mb-2">{course.instructor}</p>
         <div className="mt-auto flex items-center justify-between">
             <div className="flex items-center gap-1">
@@ -89,7 +89,7 @@ const RelatedCourseCard = ({ course }: { course: { id: string; title: string; in
                 <Star size={12} className="text-amber-500 fill-amber-500" />
                 <span className="text-xs text-slate-400">({course.reviews})</span>
             </div>
-            <span className="font-bold text-indigo-600 text-sm">{formatVND(course.price)}</span>
+            <span className="font-semibold text-primary text-sm">{formatVND(course.price)}</span>
         </div>
     </div>
   </div>
@@ -271,7 +271,7 @@ const CourseDetailPage = () => {
                 <span className="text-white truncate max-w-[150px] md:max-w-xs">{course.title}</span>
               </div>
               
-              <h1 className="text-2xl md:text-4xl font-bold leading-tight">{course.title}</h1>
+              <h1 className="text-2xl md:text-4xl font-semibold leading-tight tracking-tight">{course.title}</h1>
               {course.detail?.description && <p className="text-base md:text-lg text-slate-300 line-clamp-2">{course.detail.description}</p>}
               
               <div className="flex flex-wrap items-center gap-4 text-sm">
@@ -323,7 +323,7 @@ const CourseDetailPage = () => {
              {/* Content */}
              <section>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-slate-900">Nội dung khóa học</h2>
+                  <h2 className="text-xl font-semibold text-slate-900 tracking-tight">Nội dung khóa học</h2>
                   <div className="text-sm text-slate-500 font-medium hidden sm:block">
                      {course.content.length} phần • {course.totalLessons} bài học • {course.totalDuration}
                   </div>
@@ -377,13 +377,13 @@ const CourseDetailPage = () => {
              {/* REVIEWS SECTION */}
              <section>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2 tracking-tight">
                       Đánh giá từ học viên <span className="text-sm font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{reviewsData?.total || course.reviewsCount || 0}</span>
                   </h2>
                   {!myReview && !showReviewForm && (
                     <button
                       onClick={() => setShowReviewForm(true)}
-                      className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                      className="text-sm font-semibold text-primary hover:text-primary-hover flex items-center gap-1"
                     >
                       <Edit3 size={14} /> Viết đánh giá
                     </button>
@@ -477,7 +477,7 @@ const CourseDetailPage = () => {
                       <button
                         onClick={handleSubmitReview}
                         disabled={createReviewMutation.isPending}
-                        className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
                         {createReviewMutation.isPending ? (
                           <>

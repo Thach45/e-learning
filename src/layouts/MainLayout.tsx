@@ -9,12 +9,11 @@ const MainLayout: React.FC = () => {
 
   return (
     <div className="app-container">
-     <HomeHeader cartCount={cartCount} />
+      <HomeHeader cartCount={cartCount} />
       <main className="main-content">
         <Outlet />
       </main>
-
-    <FooterSection />
+      <FooterSection />
     </div>
   );
 };

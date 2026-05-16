@@ -49,10 +49,8 @@ const HomeHeader = ({ cartCount = 0 }: HeaderProps) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20 gap-8">
           <Link to="/" className="flex items-center gap-2 flex-shrink-0 cursor-pointer">
-            <div className="w-10 h-10 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-200">
-              L
-            </div>
-            <span className="text-xl font-bold text-slate-800 tracking-tight hidden sm:block">LearnHub</span>
+            <img src="/assets/image.png" alt="U Đê Mê" className="w-10 h-10 rounded-xl object-cover shadow-lg shadow-indigo-200" />
+            <span className="text-xl font-bold text-slate-800 tracking-tight hidden sm:block">U Đê Mê</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">

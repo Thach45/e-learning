@@ -48,7 +48,7 @@ const LoginPage = () => {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">Đăng nhập</h1>
+        <h1 className="text-3xl font-semibold text-slate-800 mb-2 tracking-tight">Đăng nhập</h1>
         <p className="text-slate-500">Chào mừng trở lại! Vui lòng đăng nhập vào tài khoản của bạn.</p>
       </div>
 
@@ -132,7 +132,7 @@ const LoginPage = () => {
         <button
           type="submit"
           disabled={loginMutation.isPending}
-          className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loginMutation.isPending ? 'Đang đăng nhập...' : 'Đăng nhập'}
         </button>
@@ -162,7 +162,7 @@ const LoginPage = () => {
       {/* Register Link */}
       <div className="mt-6 text-center text-sm text-slate-600">
         <span>Chưa có tài khoản? </span>
-        <Link to="/auth/register" className="font-semibold text-indigo-600 hover:text-indigo-700">
+        <Link to="/auth/register" className="font-semibold text-primary hover:text-primary-hover">
           Đăng ký ngay
         </Link>
       </div>

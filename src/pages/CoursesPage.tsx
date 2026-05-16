@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, type ReactNode } from 'react';
+import { useState, useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Search, 
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import { useCourses } from '../hooks/useCourses';
-import type { Course as CourseType } from '../api/courses';
+import type { Course as CourseType, CourseListParams } from '../api/courses';
 
 
 const formatVND = (amount: number) => 
@@ -28,7 +28,7 @@ const LEVEL_MAP = {
   'ADVANCED': 'Nâng cao',
 } as const;
 
-const LEVELS = [
+const LEVELS: { value: CourseListParams['level']; label: string }[] = [
   { value: 'BEGINNER', label: 'Cơ bản' },
   { value: 'INTERMEDIATE', label: 'Trung cấp' },
   { value: 'ADVANCED', label: 'Nâng cao' },
@@ -102,11 +102,11 @@ const CourseCard = ({ course }: { course: ReturnType<typeof transformCourse> }) 
             {/* Content */}
             <div className="p-5 flex flex-col flex-1">
                 <div className="flex items-center justify-between mb-3 text-xs font-medium text-slate-500">
-                <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-md text-slate-600"><MonitorPlay size={12} className="text-indigo-500"/> {course.lessons} bài</span>
+                <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-md text-slate-600"><MonitorPlay size={12} className="text-primary"/> {course.lessons} bài</span>
                 <span className="flex items-center gap-1.5"><TrendingUp size={12}/> {course.duration}</span>
                 </div>
                 
-                <h3 className="font-bold text-[17px] text-slate-900 mb-2 line-clamp-2 leading-snug group-hover:text-indigo-600 transition-colors">
+                <h3 className="font-semibold text-[17px] text-slate-900 mb-2 line-clamp-2 leading-snug group-hover:text-primary transition-colors">
                 {course.title}
                 </h3>
 
@@ -128,7 +128,7 @@ const CourseCard = ({ course }: { course: ReturnType<typeof transformCourse> }) 
                 <div className="text-right">
                     {course.price > 0 ? (
                         <div className="flex flex-col items-end">
-                            <div className="font-bold text-indigo-600 text-lg">{formatVND(course.price)}</div>
+                            <div className="font-bold text-primary text-lg">{formatVND(course.price)}</div>
                             {course.oldPrice > course.price && <div className="text-xs text-slate-400 line-through">{formatVND(course.oldPrice)}</div>}
                         </div>
                     ) : (
@@ -147,7 +147,7 @@ const CourseCard = ({ course }: { course: ReturnType<typeof transformCourse> }) 
 const CourseListPage = () => {
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<string[]>([]);
-  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const [selectedLevel, setSelectedLevel] = useState<CourseListParams['level'] | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<string>('popular');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -166,14 +166,16 @@ const CourseListPage = () => {
 
   const categoryTree = useMemo(() => (categoriesData || []) as CategoryNode[], [categoriesData]);
 
-  useEffect(() => {
-    if (!categoryTree.length) return;
-    setExpandedCategoryIds(prev => (prev.length > 0 ? prev : categoryTree.map(node => node.id)));
-  }, [categoryTree]);
+  // Handle initial expansion of categories without using useEffect to avoid cascading renders
+  const [hasExpandedInitially, setHasExpandedInitially] = useState(false);
+  if (categoryTree.length > 0 && !hasExpandedInitially) {
+    setExpandedCategoryIds(categoryTree.map(node => node.id));
+    setHasExpandedInitially(true);
+  }
 
   // Build API params
   const apiParams = useMemo(() => {
-    const params: any = {
+    const params: CourseListParams = {
       page,
       limit,
       status: 'PUBLISHED',
@@ -302,7 +304,7 @@ const CourseListPage = () => {
     });
   };
 
-  const handleLevelChange = (level: string | null) => {
+  const handleLevelChange = (level: CourseListParams['level'] | null) => {
     setSelectedLevel(level);
     setPage(1);
   };
@@ -322,8 +324,8 @@ const CourseListPage = () => {
             <aside className="lg:col-span-3 space-y-8 sticky top-24">
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                     <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
-                        <Filter size={20} className="text-indigo-600"/> 
-                        <span className="font-bold text-slate-900">Bộ Lọc Tìm Kiếm</span>
+                        <Filter size={20} className="text-primary"/> 
+                        <span className="font-semibold text-slate-900">Bộ Lọc Tìm Kiếm</span>
                     </div>
                     
                     <div className="space-y-8">
@@ -395,7 +397,7 @@ const CourseListPage = () => {
                 {/* Filters Toolbar */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
                     <div>
-                        <h2 className="text-lg font-bold text-slate-800">Tất cả khóa học</h2>
+                        <h2 className="text-lg font-semibold text-slate-800">Tất cả khóa học</h2>
                         <p className="text-sm text-slate-500">
                             Hiển thị <span className="font-bold text-slate-900">{coursesData?.total || 0}</span> kết quả phù hợp
                         </p>
@@ -419,13 +421,13 @@ const CourseListPage = () => {
                         <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
                             <button 
                                 onClick={() => setViewMode('grid')}
-                                className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                             >
                                 <Grid size={18} />
                             </button>
                             <button 
                                 onClick={() => setViewMode('list')}
-                                className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                             >
                                 <List size={18} />
                             </button>
@@ -485,7 +487,7 @@ const CourseListPage = () => {
                                                 onClick={() => setPage(pageNum)}
                                                 className={`w-10 h-10 rounded-xl flex items-center justify-center font-medium transition-colors ${
                                                     page === pageNum
-                                                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                                                        ? 'bg-primary text-white shadow-md shadow-indigo-200'
                                                         : 'border border-transparent text-slate-600 hover:bg-slate-50'
                                                 }`}
                                             >
