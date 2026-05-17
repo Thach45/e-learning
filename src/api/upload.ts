@@ -1,4 +1,6 @@
 import apiClient from './axios';
+import axios from 'axios';
+
 
 export type UploadImageResponse = {
   url: string;
@@ -37,14 +39,21 @@ export const uploadApi = {
     return response.data.data || response.data;
   },
 
-  // Upload video to Cloudinary
+  // Upload video to Cloudflare R2 via Presigned URL
   uploadVideo: async (file: File, onProgress?: (progress: number) => void): Promise<UploadVideoResponse> => {
-    const formData = new FormData();
-    formData.append('file', file);
+    // 1. Get presigned upload URL from NestJS
+    const presignedRes = await apiClient.get('/upload/r2-presigned-url', {
+      params: {
+        fileName: file.name,
+        contentType: file.type,
+      },
+    });
+    const { presignedUrl, publicUrl, key } = presignedRes.data.data || presignedRes.data;
 
-    const response = await apiClient.post('/upload/video', formData, {
+    // 2. Upload file directly to R2 using raw axios (WITHOUT authentication headers which break S3 signature)
+    await axios.put(presignedUrl, file, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': file.type,
       },
       onUploadProgress: (progressEvent) => {
         if (onProgress && progressEvent.total) {
@@ -53,8 +62,13 @@ export const uploadApi = {
         }
       },
     });
-    return response.data.data || response.data;
+
+    return {
+      url: publicUrl,
+      publicId: key,
+    };
   },
+
 
   // Upload file (PDF, DOC, PPT, etc.) to Cloudinary
   uploadFile: async (file: File, onProgress?: (progress: number) => void): Promise<UploadFileResponse> => {
@@ -73,6 +87,16 @@ export const uploadApi = {
       },
     });
     return response.data.data || response.data;
+  },
+
+  // Trigger R2 HLS processing
+  processVideo: async (lessonId: string, videoUrl: string, isTranslate: boolean): Promise<any> => {
+    const response = await apiClient.post('/upload/r2-process-video', {
+      lessonId,
+      videoUrl,
+      isTranslate,
+    });
+    return response.data;
   },
 };
 

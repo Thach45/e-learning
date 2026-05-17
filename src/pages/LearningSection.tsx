@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { 
@@ -30,14 +30,17 @@ import { useCommentsByLesson, useCreateComment, useUpdateComment, useDeleteComme
 import type { Comment, CreateCommentBody } from '../api/comments';
 import { useAuthStatus } from '../hooks/useAuthStatus';
 
+// --- VIDSTACK IMPORTS ---
+import { MediaPlayer, MediaOutlet, MediaCommunitySkin, MediaPoster } from '@vidstack/react';
+import 'vidstack/styles/defaults.css';
+import 'vidstack/styles/community-skin/video.css';
+
 // --- COMPONENTS ---
 
 const VideoPlayer = ({ videoUrl, storageType, thumbnailUrl }: { videoUrl?: string | null; storageType?: string; thumbnailUrl?: string | null }) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
-  
   const getYouTubeEmbedUrl = (url: string) => {
-   
     return url ? `https://www.youtube.com/embed/${url}` : null;
   };
 
@@ -66,83 +69,78 @@ const VideoPlayer = ({ videoUrl, storageType, thumbnailUrl }: { videoUrl?: strin
     return trimmedUrl;
   };
 
-  const getVideoUrl = () => {
-    if (!videoUrl) return null;
-    if (storageType === 'YOUTUBE') {
-      return getYouTubeEmbedUrl(videoUrl);
-    }
-    if (storageType === 'GOOGLE_DRIVE') {
-      return getGoogleDriveEmbedUrl(videoUrl);
-    }
-    return videoUrl;
-  };
+  const isEmbedStorage = storageType === 'YOUTUBE' || storageType === 'GOOGLE_DRIVE';
 
-  const embedUrl = getVideoUrl();
+  const embedUrl = !isEmbedStorage ? null : (
+    storageType === 'YOUTUBE' ? getYouTubeEmbedUrl(videoUrl || '') : getGoogleDriveEmbedUrl(videoUrl || '')
+  );
+
+  useEffect(() => {
+    // Reset play state if URL changes
+    setIsPlaying(false);
+  }, [videoUrl]);
 
   return (
-    <div className="relative aspect-video bg-black group">
-      {embedUrl && isPlaying ? (
-        <iframe
-          src={embedUrl}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      ) : (
-        <>
-          <img 
-            src={thumbnailUrl || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'} 
-            alt="Video Thumbnail" 
-            className="w-full h-full object-cover opacity-60"
+    <div className="relative aspect-video bg-black overflow-hidden rounded-xl shadow-2xl border border-slate-800">
+      {isEmbedStorage && embedUrl ? (
+        isPlaying ? (
+          <iframe
+            src={embedUrl}
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
           />
-          
-          {/* Play Button Overlay */}
-          {!isPlaying && (
-            <div 
-              className="absolute inset-0 flex items-center justify-center cursor-pointer"
-              onClick={() => setIsPlaying(true)}
-            >
+        ) : (
+          <div className="relative w-full h-full cursor-pointer" onClick={() => setIsPlaying(true)}>
+            <img 
+              src={thumbnailUrl || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'} 
+              alt="Video Thumbnail" 
+              className="w-full h-full object-cover opacity-60"
+            />
+            {/* Play Button Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-transform hover:scale-110">
                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
                     <Play size={32} className="text-primary fill-primary ml-1" />
                  </div>
               </div>
             </div>
-          )}
-
-          {/* Controls Bar (Mock) */}
-          <div className="absolute bottom-0 left-0 right-0 h-14 bg-gradient-to-t from-black/80 to-transparent px-4 flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-             <button className="text-white hover:text-indigo-400">
-                {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-             </button>
-             
-             <div className="flex-1 h-1.5 bg-white/30 rounded-full cursor-pointer group/timeline relative">
-                <div className="absolute h-full bg-indigo-500 w-1/3 rounded-full"></div>
-                <div className="absolute h-3 w-3 bg-white rounded-full top-1/2 -translate-y-1/2 left-1/3 shadow-sm scale-0 group-hover/timeline:scale-100 transition-transform"></div>
-             </div>
-             
-             <span className="text-xs text-white font-medium">05:23 / 20:00</span>
-             
-             <div className="flex items-center gap-3 text-white">
-                <Volume2 size={20} />
-                <Settings size={20} />
-                <Maximize size={20} />
-             </div>
           </div>
+        )
+      ) : (
+        videoUrl && (
+          <MediaPlayer
+            title="Video Lesson"
+            src={videoUrl}
+            className="w-full h-full"
+            crossOrigin
+            playsInline
+            autoplay={true}
+          >
+            <MediaOutlet>
+              {thumbnailUrl && (
+                <MediaPoster
+                  src={thumbnailUrl}
+                  alt="Video Thumbnail"
+                />
+              )}
+            </MediaOutlet>
+            <MediaCommunitySkin />
+          </MediaPlayer>
+        )
+      )}
 
-          {storageType === 'GOOGLE_DRIVE' && videoUrl && (
-            <div className="absolute top-3 right-3">
-              <a
-                href={videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs px-3 py-1.5 rounded-md bg-white/90 text-slate-700 hover:bg-white"
-              >
-                Mo truc tiep tren Drive
-              </a>
-            </div>
-          )}
-        </>
+      {storageType === 'GOOGLE_DRIVE' && videoUrl && (
+        <div className="absolute top-3 right-3">
+          <a
+            href={videoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs px-3 py-1.5 rounded-md bg-white/90 text-slate-700 hover:bg-white"
+          >
+            Mở trực tiếp trên Drive
+          </a>
+        </div>
       )}
     </div>
   );

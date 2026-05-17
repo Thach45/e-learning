@@ -23,6 +23,8 @@ import {
 } from '../../hooks/useCourseContent';
 import VideoUpload from '../common/VideoUpload';
 import type { CourseContent, Lesson, StorageType } from '../../api/courseContent';
+import { uploadApi } from '../../api/upload';
+
 
 interface CourseContentManagerProps {
   courseId: string;
@@ -41,10 +43,11 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
     duration?: number;
   }>({
     title: '',
-    storageType: 'CLOUDINARY',
+    storageType: 'YOUTUBE',
     storageUrl: '',
     contentText: '',
   });
+
 
   const { data: contents, isLoading, error } = useCourseContents(courseId);
   const createChapterMutation = useCreateCourseContent();
@@ -118,10 +121,21 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
         },
       },
       {
-        onSuccess: () => {
+        onSuccess: (createdLesson: any) => {
+          if (
+            (createdLesson.storageType === 'CLOUDFLARE_R2' || createdLesson.storageType === 'DIRECT_UPLOAD') &&
+            createdLesson.storageUrl
+          ) {
+            const isTranslate = createdLesson.storageType === 'CLOUDFLARE_R2';
+            console.log(`[R2 Upload] Dispatching processVideo for new lesson: ${createdLesson.id} (isTranslate: ${isTranslate})`);
+            uploadApi.processVideo(createdLesson.id, createdLesson.storageUrl, isTranslate)
+              .then(() => console.log('Successfully triggered Celery transcoding task!'))
+              .catch((err) => console.error('Failed to trigger Celery transcoding task:', err));
+          }
+
           setNewLessonData({
             title: '',
-            storageType: 'CLOUDINARY',
+            storageType: 'YOUTUBE',
             storageUrl: '',
             contentText: '',
           });
@@ -131,22 +145,40 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
     );
   };
 
+
   const handleUpdateLesson = (chapterId: string, lessonId: string, lesson: Lesson) => {
     if (updateLessonMutation.isPending) return;
-    updateLessonMutation.mutate({
-      courseId,
-      contentId: chapterId,
-      id: lessonId,
-      body: {
-        title: lesson.title,
-        storageType: lesson.storageType,
-        storageUrl: lesson.storageUrl,
-        contentText: lesson.contentText,
-        duration: lesson.duration,
+    updateLessonMutation.mutate(
+      {
+        courseId,
+        contentId: chapterId,
+        id: lessonId,
+        body: {
+          title: lesson.title,
+          storageType: lesson.storageType,
+          storageUrl: lesson.storageUrl,
+          contentText: lesson.contentText,
+          duration: lesson.duration,
+        },
       },
-    });
+      {
+        onSuccess: (updatedLesson: any) => {
+          if (
+            (updatedLesson.storageType === 'CLOUDFLARE_R2' || updatedLesson.storageType === 'DIRECT_UPLOAD') &&
+            updatedLesson.storageUrl
+          ) {
+            const isTranslate = updatedLesson.storageType === 'CLOUDFLARE_R2';
+            console.log(`[R2 Upload] Dispatching processVideo for updated lesson: ${updatedLesson.id} (isTranslate: ${isTranslate})`);
+            uploadApi.processVideo(updatedLesson.id, updatedLesson.storageUrl, isTranslate)
+              .then(() => console.log('Successfully triggered Celery transcoding task!'))
+              .catch((err) => console.error('Failed to trigger Celery transcoding task:', err));
+          }
+        }
+      }
+    );
     setEditingLesson(null);
   };
+
 
   const handleDeleteLesson = (chapterId: string, lessonId: string) => {
     if (deleteLessonMutation.isPending) return;
@@ -465,8 +497,6 @@ interface LessonItemProps {
 
 const LessonItem = ({
   lesson,
-  chapterId,
-  courseId,
   isEditing,
   onEdit,
   onCancelEdit,
@@ -496,14 +526,15 @@ const LessonItem = ({
           onChange={(e) => setEditData({ ...editData, storageType: e.target.value as StorageType })}
           className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
         >
-          <option value="CLOUDINARY">Cloudinary (Upload video)</option>
+          <option value="CLOUDFLARE_R2" disabled>Cloudflare R2 (Auto Dubbing & HLS) [Tạm khóa]</option>
+          <option value="DIRECT_UPLOAD" disabled>Cloudflare R2 (Standard Upload - Bình thường) [Tạm khóa]</option>
+          <option value="CLOUDINARY" disabled>Cloudinary (Upload video) [Tạm khóa]</option>
           <option value="YOUTUBE">YouTube</option>
           <option value="GOOGLE_DRIVE">Google Drive</option>
-          <option value="DIRECT_UPLOAD">Direct Upload</option>
           <option value="OTHER">Other</option>
         </select>
 
-        {editData.storageType === 'CLOUDINARY' ? (
+        {editData.storageType === 'CLOUDFLARE_R2' || editData.storageType === 'DIRECT_UPLOAD' || editData.storageType === 'CLOUDINARY' ? (
           <VideoUpload
             value={editData.storageUrl || ''}
             onChange={(url, duration) => {
@@ -519,6 +550,8 @@ const LessonItem = ({
             placeholder="URL video"
           />
         )}
+
+
 
         <textarea
           value={editData.contentText || ''}
@@ -626,14 +659,15 @@ const NewLessonForm = ({ data, onChange, onSubmit, onCancel, isSubmitting }: New
         onChange={(e) => onChange({ ...data, storageType: e.target.value as StorageType })}
         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
       >
-        <option value="CLOUDINARY">Cloudinary (Upload video)</option>
+        <option value="CLOUDFLARE_R2" disabled>Cloudflare R2 (Auto Dubbing & HLS) [Tạm khóa]</option>
+        <option value="DIRECT_UPLOAD" disabled>Cloudflare R2 (Standard Upload - Bình thường) [Tạm khóa]</option>
+        <option value="CLOUDINARY" disabled>Cloudinary (Upload video) [Tạm khóa]</option>
         <option value="YOUTUBE">YouTube</option>
         <option value="GOOGLE_DRIVE">Google Drive</option>
-        <option value="DIRECT_UPLOAD">Direct Upload</option>
         <option value="OTHER">Other</option>
       </select>
 
-      {data.storageType === 'CLOUDINARY' ? (
+      {data.storageType === 'CLOUDFLARE_R2' || data.storageType === 'DIRECT_UPLOAD' || data.storageType === 'CLOUDINARY' ? (
         <VideoUpload
           value={data.storageUrl}
           onChange={(url, duration) => {
@@ -649,6 +683,8 @@ const NewLessonForm = ({ data, onChange, onSubmit, onCancel, isSubmitting }: New
           placeholder="URL video"
         />
       )}
+
+
 
       <textarea
         value={data.contentText}

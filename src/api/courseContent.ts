@@ -1,7 +1,8 @@
 import apiClient from './axios';
 
 // Types
-export type StorageType = 'YOUTUBE' | 'GOOGLE_DRIVE' | 'CLOUDINARY' | 'DIRECT_UPLOAD' | 'OTHER';
+export type StorageType = 'YOUTUBE' | 'GOOGLE_DRIVE' | 'CLOUDINARY' | 'DIRECT_UPLOAD' | 'CLOUDFLARE_R2' | 'OTHER';
+
 
 export interface CourseContent {
   id: string;
