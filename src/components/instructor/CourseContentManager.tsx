@@ -43,7 +43,7 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
     duration?: number;
   }>({
     title: '',
-    storageType: 'YOUTUBE',
+    storageType: 'CLOUDFLARE_R2',
     storageUrl: '',
     contentText: '',
   });
@@ -135,7 +135,7 @@ const CourseContentManager = ({ courseId }: CourseContentManagerProps) => {
 
           setNewLessonData({
             title: '',
-            storageType: 'YOUTUBE',
+            storageType: 'CLOUDFLARE_R2',
             storageUrl: '',
             contentText: '',
           });
@@ -526,9 +526,9 @@ const LessonItem = ({
           onChange={(e) => setEditData({ ...editData, storageType: e.target.value as StorageType })}
           className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
         >
-          <option value="CLOUDFLARE_R2" disabled>Cloudflare R2 (Auto Dubbing & HLS) [Tạm khóa]</option>
-          <option value="DIRECT_UPLOAD" disabled>Cloudflare R2 (Standard Upload - Bình thường) [Tạm khóa]</option>
-          <option value="CLOUDINARY" disabled>Cloudinary (Upload video) [Tạm khóa]</option>
+          <option value="CLOUDFLARE_R2">Cloudflare R2 (Auto Dubbing & HLS)</option>
+          <option value="DIRECT_UPLOAD">Cloudflare R2 (Standard Upload - Bình thường)</option>
+          <option value="CLOUDINARY">Cloudinary (Upload video)</option>
           <option value="YOUTUBE">YouTube</option>
           <option value="GOOGLE_DRIVE">Google Drive</option>
           <option value="OTHER">Other</option>
@@ -659,9 +659,9 @@ const NewLessonForm = ({ data, onChange, onSubmit, onCancel, isSubmitting }: New
         onChange={(e) => onChange({ ...data, storageType: e.target.value as StorageType })}
         className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
       >
-        <option value="CLOUDFLARE_R2" disabled>Cloudflare R2 (Auto Dubbing & HLS) [Tạm khóa]</option>
-        <option value="DIRECT_UPLOAD" disabled>Cloudflare R2 (Standard Upload - Bình thường) [Tạm khóa]</option>
-        <option value="CLOUDINARY" disabled>Cloudinary (Upload video) [Tạm khóa]</option>
+        <option value="CLOUDFLARE_R2">Cloudflare R2 (Auto Dubbing & HLS)</option>
+        <option value="DIRECT_UPLOAD">Cloudflare R2 (Standard Upload - Bình thường)</option>
+        <option value="CLOUDINARY">Cloudinary (Upload video)</option>
         <option value="YOUTUBE">YouTube</option>
         <option value="GOOGLE_DRIVE">Google Drive</option>
         <option value="OTHER">Other</option>

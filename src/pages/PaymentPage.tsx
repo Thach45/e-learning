@@ -16,7 +16,7 @@ const PaymentPage = () => {
   const [timeLeft, setTimeLeft] = useState(5 * 60); // 5 phút = 300 giây
 
   const { data: qrCodeData, isLoading: qrLoading } = useQrCode(orderId || '');
-  const pollingIntervalRef = useRef<number | null>(null);
+  const pollingIntervalRef = useRef<any>(null);
   const hasNavigatedRef = useRef(false);
 
   // Countdown timer
