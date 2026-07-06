@@ -10,24 +10,23 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/your_username/LearnHub">
-    <!-- You can add a logo image here if you have one -->
-    <!-- <img src="images/logo.png" alt="Logo" width="80" height="80"> -->
+  <a href="https://github.com/Thach45/backend-e-learning">
+    <img src="public/assets/image.png" alt="U Đê Mê Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">LearnHub Frontend</h3>
+  <h3 align="center">U Đê Mê - Nền tảng học tập trực tuyến</h3>
 
   <p align="center">
-    Nền tảng học trực tuyến hiện đại với trải nghiệm tối ưu
+    Nền tảng học trực tuyến toàn diện, hiệu năng cao và trải nghiệm tối ưu
     <br />
-    <a href="https://github.com/your_username/LearnHub"><strong>Khám phá tài liệu »</strong></a>
+    <a href="https://github.com/Thach45/backend-e-learning"><strong>Khám phá tài liệu »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/your_username/LearnHub">View Demo</a>
+    <a href="https://e-learning-hubpro.vercel.app/">View Demo</a>
     ·
-    <a href="https://github.com/your_username/LearnHub/issues">Báo lỗi</a>
+    <a href="https://github.com/Thach45/backend-e-learning/issues">Báo lỗi</a>
     ·
-    <a href="https://github.com/your_username/LearnHub/issues">Yêu cầu tính năng</a>
+    <a href="https://github.com/Thach45/backend-e-learning/issues">Yêu cầu tính năng</a>
   </p>
 </div>
 
@@ -51,7 +50,7 @@
         <li><a href="#installation">Cài đặt (Installation)</a></li>
       </ul>
     </li>
-    <li><a href="#folder-structure">Cấu trúc thư mục (Folder Structure)</a></li>
+    <li><a href="#folder-structure">Cấu trúc dự án (Folder Structure)</a></li>
     <li><a href="#roadmap">Định hướng (Roadmap)</a></li>
     <li><a href="#contributing">Đóng góp (Contributing)</a></li>
     <li><a href="#contact">Liên hệ (Contact)</a></li>
@@ -61,41 +60,38 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Đây là mã nguồn frontend cho hệ thống **LearnHub** - Nền tảng học trực tuyến hiện đại. Dự án được xây dựng với kiến trúc hướng Component, hiệu năng cao và thiết kế lấy cảm hứng từ hệ thống thiết kế (Design System) của Notion.
+Đây là mã nguồn toàn bộ hệ thống cho **U Đê Mê** - Nền tảng học trực tuyến hiện đại bao gồm cả Frontend (Client) và Backend (API Server). Dự án được xây dựng với kiến trúc Client-Server, hiệu năng cao.
 
-Giao diện của LearnHub được thiết kế chi tiết theo phong cách Notion (tham khảo chi tiết trong `DESIGN.md`), nổi bật với:
-- **Typograpghy:** Notion Sans (dựa trên Inter).
-- **Bảng màu:** Brand Navy, Primary Purple, cùng các thẻ màu pastel (Peach, Rose, Mint, Lavender).
-- **Component:** Các components dạng Card, Badge, Modal, Input được thiết kế tỉ mỉ, bo góc chuẩn mực (8px cho button, 12px cho cards).
+- **Giao diện (Frontend):** Được thiết kế lấy cảm hứng từ hệ thống thiết kế (Design System) của Notion, mang lại trải nghiệm mượt mà, typography rõ ràng và component bo góc chuẩn mực.
+- **Hệ thống (Backend):** Xử lý luồng dữ liệu mạnh mẽ, phân quyền rõ ràng (Admin, Instructor, Student) và tích hợp các dịch vụ ngoài (AWS S3, Redis, Cloudinary) phục vụ cho việc lưu trữ, streaming video.
 
 <p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
 
 ### Built With
 
-Dự án sử dụng các công nghệ hiện đại nhất trong hệ sinh thái React:
+Dự án là sự kết hợp của các công nghệ hiện đại nhất (Full-stack):
 
+**Frontend:**
 * [![React][React.js]][React-url]
 * [![TypeScript][TypeScript.ts]][TypeScript-url]
 * [![Vite][Vite.js]][Vite-url]
 * [![TailwindCSS][Tailwind.css]][Tailwind-url]
 * [![ReactQuery][ReactQuery.com]][ReactQuery-url]
 
-Các thư viện nổi bật khác:
-- **Routing:** React Router v7
-- **Video Player:** Vidstack & hls.js (Hỗ trợ phát video streaming HLS hiệu năng cao)
-- **Data Visualization:** Recharts
-- **HTTP Client:** Axios
-- **UI Components & Icons:** Lucide React, Sonner (Toasts)
+**Backend:**
+* [![NestJS][NestJS.com]][NestJS-url]
+* [![Prisma][Prisma.io]][Prisma-url]
+* [![Redis][Redis.io]][Redis-url]
+* **Celery, AWS S3, Cloudinary**
 
 <p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
-
 
 <!-- FEATURES -->
 ## Features
 
 Hệ thống cung cấp trải nghiệm học tập toàn diện với các phân hệ chính:
 
-- **Hệ thống Học tập (Learning Section):** Hỗ trợ phát video khoá học tốc độ cao (HLS) qua Vidstack, ghi nhận tiến trình học tập.
+- **Hệ thống Học tập (Learning Section):** Hỗ trợ phát video khoá học tốc độ cao (HLS) qua Vidstack, ghi nhận tiến trình học tập thời gian thực.
 - **Dành cho Học viên (Student):** 
   - Đăng ký/Đăng nhập, Quản lý tài khoản.
   - Xem danh sách khoá học, chi tiết khoá học.
@@ -103,13 +99,12 @@ Hệ thống cung cấp trải nghiệm học tập toàn diện với các phâ
   - Quản lý khoá học đã mua (My Courses) và Lịch sử đơn hàng (My Orders).
   - Tham gia thảo luận trong Cộng đồng (Community).
 - **Dành cho Giảng viên (Instructor):** 
-  - Phân hệ riêng (`/instructor`) để quản lý khoá học, thống kê doanh thu và tương tác với học viên.
+  - Phân hệ riêng để quản lý khoá học, upload video, thống kê doanh thu và tương tác với học viên.
 - **Dành cho Quản trị viên (Admin):** 
-  - Trang quản trị (`/admin`) kiểm soát toàn bộ hệ thống (người dùng, khoá học, giao dịch, thống kê báo cáo sử dụng Recharts).
-- **Phân quyền (Permissions):** Giao diện tự động thay đổi tuỳ theo vai trò (Role) của người dùng hiện tại (Admin, Instructor, Student).
+  - Trang quản trị kiểm soát toàn bộ hệ thống (người dùng, khoá học, giao dịch, thống kê báo cáo).
+- **Phân quyền (Permissions):** Giao diện tự động thay đổi tuỳ theo vai trò (Role) của người dùng hiện tại (Admin, Instructor, Student), được Backend kiểm soát bảo mật chặt chẽ.
 
 <p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
-
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -118,69 +113,74 @@ Dưới đây là hướng dẫn để bạn có thể cài đặt và chạy th
 
 ### Prerequisites
 
-* npm (hoặc yarn)
-  ```sh
-  npm install npm@latest -g
-  ```
 * Node.js (phiên bản 18+ khuyến nghị)
+* npm hoặc yarn
+* Redis Server (cho backend)
+* PostgreSQL (cho Prisma database)
 
 ### Installation
 
 1. Clone kho lưu trữ
    ```sh
-   git clone https://github.com/your_username/LearnHub.git
+   git clone https://github.com/Thach45/backend-e-learning.git
    ```
-2. Cài đặt các gói NPM
+
+2. Cài đặt Backend
    ```sh
+   cd e-learning-nest
    npm install
+   # Copy file .env
+   cp .env.example .env
+   # Setup database
+   npm run db:push
+   npm run db:seed
+   # Chạy server
+   npm run start:dev
    ```
-3. Cấu hình môi trường
-   Tạo file `.env` ở thư mục gốc (ngang hàng `package.json`)
-   ```js
-   VITE_API_BASE_URL=http://localhost:3000/api # Trỏ đến backend e-learning-nest
-   ```
-4. Khởi chạy server phát triển
+
+3. Cài đặt Frontend
    ```sh
+   cd ../frontend
+   npm install
+   # Cấu hình file .env
+   # VITE_API_BASE_URL=http://localhost:3000/api
    npm run dev
    ```
-   Ứng dụng sẽ chạy tại địa chỉ mặc định: `http://localhost:5173`
+   Ứng dụng Frontend sẽ chạy tại `http://localhost:5173`
 
 <p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
-
 
 <!-- FOLDER STRUCTURE -->
 ## Folder Structure
 
-Cấu trúc thư mục mã nguồn chính trong `src`:
+Cấu trúc dự án bao gồm 2 phân hệ chính:
 
 ```
-src/
-├── api/          # Nơi chứa các hàm gọi API (sử dụng axios)
-├── assets/       # Tài nguyên tĩnh (images, icons)
-├── components/   # Các thành phần giao diện dùng chung (UI components)
-├── custome/      # Các custom module/components
-├── hooks/        # Các custom hooks (vd: xử lý logic tái sử dụng, gọi React Query)
-├── layouts/      # Layout components (Header, Footer, Sidebar, Admin Layout...)
-├── pages/        # Các trang chính của ứng dụng
-├── types/        # Định nghĩa các TypeScript interfaces/types
-├── utils/        # Các hàm tiện ích (format date, tiền tệ, validation)
-├── App.tsx       # Component gốc, cấu hình Router & Providers
-└── main.tsx      # Entry point của ứng dụng
+online-learning-platform/
+├── e-learning-nest/   # Backend API Server
+│   ├── src/           # Mã nguồn NestJS
+│   ├── prisma/        # Schema Database
+│   ├── initialScript/ # Seed data
+│   └── ...
+└── frontend/          # Client React Application
+    ├── src/
+    │   ├── api/       # Tích hợp REST APIs
+    │   ├── components/# Các thành phần giao diện dùng chung
+    │   ├── pages/     # Các trang chính của ứng dụng
+    │   └── ...
 ```
 
 <p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
-
 
 <!-- ROADMAP -->
 ## Roadmap
 
-- [x] Tích hợp hệ thống Design Notion
-- [x] Xây dựng luồng học tập với Vidstack (HLS)
+- [x] Tích hợp hệ thống Design Notion cho giao diện
+- [x] Xây dựng luồng học tập với Vidstack (HLS) và tích hợp Backend
 - [ ] Thêm tính năng đa ngôn ngữ (Multi-language)
 - [ ] Tối ưu SEO và Performance
 
 <p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
-
 
 <!-- CONTRIBUTING -->
 ## Contributing
@@ -195,28 +195,26 @@ Bất kỳ đóng góp nào của bạn cũng được đánh giá cao và giúp
 
 <p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
 
-
 <!-- CONTACT -->
 ## Contact
 
-Tên của bạn - [@your_twitter](https://twitter.com/your_twitter) - email@example.com
+Hoang Thach - hoangthach.dev@gmail.com
 
-Project Link: [https://github.com/your_username/LearnHub](https://github.com/your_username/LearnHub)
+Backend Link: [https://github.com/Thach45/backend-e-learning](https://github.com/Thach45/backend-e-learning)
 
 <p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
 
-
 <!-- MARKDOWN LINKS & IMAGES -->
-[contributors-shield]: https://img.shields.io/github/contributors/your_username/LearnHub.svg?style=for-the-badge
-[contributors-url]: https://github.com/your_username/LearnHub/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/your_username/LearnHub.svg?style=for-the-badge
-[forks-url]: https://github.com/your_username/LearnHub/network/members
-[stars-shield]: https://img.shields.io/github/stars/your_username/LearnHub.svg?style=for-the-badge
-[stars-url]: https://github.com/your_username/LearnHub/stargazers
-[issues-shield]: https://img.shields.io/github/issues/your_username/LearnHub.svg?style=for-the-badge
-[issues-url]: https://github.com/your_username/LearnHub/issues
-[license-shield]: https://img.shields.io/github/license/your_username/LearnHub.svg?style=for-the-badge
-[license-url]: https://github.com/your_username/LearnHub/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/Thach45/backend-e-learning.svg?style=for-the-badge
+[contributors-url]: https://github.com/Thach45/backend-e-learning/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/Thach45/backend-e-learning.svg?style=for-the-badge
+[forks-url]: https://github.com/Thach45/backend-e-learning/network/members
+[stars-shield]: https://img.shields.io/github/stars/Thach45/backend-e-learning.svg?style=for-the-badge
+[stars-url]: https://github.com/Thach45/backend-e-learning/stargazers
+[issues-shield]: https://img.shields.io/github/issues/Thach45/backend-e-learning.svg?style=for-the-badge
+[issues-url]: https://github.com/Thach45/backend-e-learning/issues
+[license-shield]: https://img.shields.io/github/license/Thach45/backend-e-learning.svg?style=for-the-badge
+[license-url]: https://github.com/Thach45/backend-e-learning/blob/main/LICENSE
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [React-url]: https://reactjs.org/
 [TypeScript.ts]: https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white
@@ -227,3 +225,9 @@ Project Link: [https://github.com/your_username/LearnHub](https://github.com/you
 [Tailwind-url]: https://tailwindcss.com/
 [ReactQuery.com]: https://img.shields.io/badge/React_Query-FF4154?style=for-the-badge&logo=react-query&logoColor=white
 [ReactQuery-url]: https://tanstack.com/query/v5
+[NestJS.com]: https://img.shields.io/badge/nestjs-%23E0234E.svg?style=for-the-badge&logo=nestjs&logoColor=white
+[NestJS-url]: https://nestjs.com/
+[Prisma.io]: https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white
+[Prisma-url]: https://www.prisma.io/
+[Redis.io]: https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white
+[Redis-url]: https://redis.io/
