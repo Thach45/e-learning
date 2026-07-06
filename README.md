@@ -60,10 +60,14 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-Đây là mã nguồn toàn bộ hệ thống cho **U Đê Mê** - Nền tảng học trực tuyến hiện đại bao gồm cả Frontend (Client) và Backend (API Server). Dự án được xây dựng với kiến trúc Client-Server, hiệu năng cao.
+**U Đê Mê** ra đời với mong muốn giải quyết bài toán về một nền tảng học trực tuyến (E-Learning) tinh gọn, hiện đại và không gây xao nhãng cho người học. 
 
-- **Giao diện (Frontend):** Được thiết kế lấy cảm hứng từ hệ thống thiết kế (Design System) của Notion, mang lại trải nghiệm mượt mà, typography rõ ràng và component bo góc chuẩn mực.
-- **Hệ thống (Backend):** Xử lý luồng dữ liệu mạnh mẽ, phân quyền rõ ràng (Admin, Instructor, Student) và tích hợp các dịch vụ ngoài (AWS S3, Redis, Cloudinary) phục vụ cho việc lưu trữ, streaming video.
+Trong bối cảnh các nền tảng học tập thường quá phức tạp hoặc giật lag khi xem video chất lượng cao, **U Đê Mê** tập trung vào trải nghiệm cốt lõi:
+- **Tối ưu hóa sự tập trung:** Giao diện được thiết kế tối giản, sạch sẽ (lấy cảm hứng từ Notion), giúp người học đắm chìm vào nội dung bài giảng.
+- **Trải nghiệm mượt mà:** Khắc phục triệt để vấn đề giật lag nhờ công nghệ truyền phát video (streaming) hiệu năng cao.
+- **Kết nối dễ dàng:** Tạo ra một không gian "all-in-one" (tất cả trong một) nơi học viên có thể trao đổi kiến thức trong cộng đồng, còn giảng viên có đầy đủ bộ công cụ mạnh mẽ để quản lý và phân phối khóa học.
+
+Dự án không chỉ là một ứng dụng học tập thông thường, mà còn là một môi trường giáo dục số tối ưu — nơi kiến thức được truyền tải một cách nhanh chóng và hiệu quả nhất!
 
 <p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
 
