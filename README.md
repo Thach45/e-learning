@@ -11,7 +11,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/Thach45/backend-e-learning">
-    <img src="public/assets/image.png" alt="U Đê Mê Logo" width="80" height="80">
+    <img src="./public/assets/image.png" alt="U Đê Mê Logo" width="80" height="80">
   </a>
 
   <h3 align="center">U Đê Mê - Nền tảng học tập trực tuyến</h3>
