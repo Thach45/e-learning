@@ -55,7 +55,8 @@ apiClient.interceptors.response.use(
       !originalRequest.url?.includes('/auth/login') &&
       !originalRequest.url?.includes('/auth/register') &&
       !originalRequest.url?.includes('/auth/forgot-password') &&
-      !originalRequest.url?.includes('/auth/send-otp')
+      !originalRequest.url?.includes('/auth/send-otp') &&
+      !originalRequest.url?.includes('/cart')
     ) {
       if (isRefreshing) {
         // If already refreshing, queue this request
